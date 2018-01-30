@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <Import Project="$(CustomBeforeTraversalProps)" Condition=" '$(CustomBeforeTraversalProps)' != '' And Exists('$(CustomBeforeTraversalProps)') " />
+
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition=" '$(MicrosoftCommonPropsHasBeenImported)' != 'true' And Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props') "/>
+
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+
+    <!--
+      A list of project names that are considered traversal projects.  Add to this list if you name your projects something other than "dirs.proj"
+    -->
+    <TraversalProjectNames Condition=" '$(TraversalProjectNames)' == '' ">dirs.proj</TraversalProjectNames>
+
+    <IsTraversal Condition=" '$(IsTraversal)' != '' ">$([System.Convert]::ToBoolean($(IsTraversal)))</IsTraversal>
+    <IsTraversal Condition=" '$(IsTraversal)' == '' And $(TraversalProjectNames.Contains($(MSBuildProjectFile))) ">true</IsTraversal>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup Condition=" '$(TraversalDoNotReferenceOutputAssemblies)' != 'false' ">
+    <ProjectReference>
+      <!--
+        Setting ReferenceOutputAssembly skips adding the outputs of the referenced project to an item
+      -->
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <!--
+        Setting SkipGetTargetFrameworkProperties skips target framework cross-project validation in NuGet
+      -->
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+
+  <Import Project="$(CustomAfterTraversalProps)" Condition=" '$(CustomAfterTraversalProps)' != '' And Exists('$(CustomAfterTraversalProps)') " />
+</Project>
