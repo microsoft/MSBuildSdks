@@ -1,0 +1,14 @@
+﻿{
+  "version": "1.0",
+  "assemblyVersion": "1.0",
+  "cloudBuild": {
+    "setVersionVariables": true,
+    "buildNumber": {
+      "enabled": true,
+      "includeCommitId": {
+        "when": "nonPublicReleaseOnly",
+        "where": "buildMetadata"
+      }
+    }
+  }
+}

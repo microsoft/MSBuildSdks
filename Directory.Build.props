@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <ItemGroup>
+    <PackageReference Include="Nerdbank.GitVersioning" Version="2.1.17" PrivateAssets="All" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <DefaultItemExcludes>*log</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Authors>Microsoft</Authors>
+    <Company>company</Company>
+    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+    <PackageLicenseUrl>https://github.com/Microsoft/MSBuildSdks/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/Microsoft/MSBuildSdks</PackageProjectUrl>
+    <PackageIconUrl>https://github.com/Microsoft/msbuild/raw/master/branding/MSBuild-NuGet-Icon.png</PackageIconUrl>
+    <RepositoryUrl>https://github.com/Microsoft/MSBuildSdks.git</RepositoryUrl>
+  </PropertyGroup>
+
+</Project>

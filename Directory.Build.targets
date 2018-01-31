@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup Condition=" Exists('$(MSBuildProjectDirectory)\$(MSBuildProjectName).nuspec') ">
+    <NuspecFile>$(MSBuildProjectDirectory)\$(MSBuildProjectName).nuspec</NuspecFile>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(IncludeBuildOutput)' == 'false' ">
+    <IntermediateAssembly Remove="@(IntermediateAssembly)" />
+    <IntermediateRefAssembly Remove="@(IntermediateRefAssembly)" />
+  </ItemGroup>
+
+  <PropertyGroup Condition=" '$(IncludeBuildOutput)' == 'false' ">
+    <!--
+      This property must be overridden to remove a few targets that compile assemblies
+    -->
+    <CoreBuildDependsOn>
+      BuildOnlySettings;
+      PrepareForBuild;
+      PreBuildEvent;
+      ResolveProjectReferences;
+      GetTargetPath;
+      PrepareForRun;
+      IncrementalClean;
+      PostBuildEvent
+    </CoreBuildDependsOn>
+
+    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);SetNuSpecProperties</GenerateNuspecDependsOn>
+  </PropertyGroup>
+
+  <Target Name="SetNuSpecProperties" Condition=" Exists('$(NuspecFile)') ">
+    <PropertyGroup>
+      <NuspecProperties>
+        id=$(PackageId);
+        description=$(PackageDescription);
+        version=$(PackageVersion);
+        authors=$(Authors);
+        copyright=$(Copyright);
+        projecturl=$(PackageProjectUrl);
+        licenseurl=$(PackageLicenseUrl);
+        iconurl=$(PackageIconUrl);
+        tags=$(PackageTags);
+        packagetype=MSBuildSdk
+      </NuspecProperties>
+    </PropertyGroup>
+  </Target>
+
+</Project>
