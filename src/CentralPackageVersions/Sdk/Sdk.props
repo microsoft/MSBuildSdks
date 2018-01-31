@@ -2,6 +2,10 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(CustomBeforeCentralPackageVersionsProps)" Condition=" '$(CustomBeforeCentralPackageVersionsProps)' != '' And Exists('$(CustomBeforeCentralPackageVersionsProps)') " />
 
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildThisFileFullPath);$(MSBuildAllProjects)</MSBuildAllProjects>
+  </PropertyGroup>
+
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition=" '$(MicrosoftCommonPropsHasBeenImported)' != 'true' And Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props') "/>
 
   <Import Project="$(CustomAfterCentralPackageVersionsProps)" Condition=" '$(CustomAfterCentralPackageVersionsProps)' != '' And Exists('$(CustomAfterCentralPackageVersionsProps)') " />
