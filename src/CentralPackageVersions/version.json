@@ -3,6 +3,6 @@
   "version": "1.0-preview",
   "publicReleaseRefSpec": [
     "^refs/heads/master$",
-    "^refs/tags/Microsoft\\.Build\\.NoTargets-v\\d+\\.\\d+.\\d+"
+    "^refs/tags/Microsoft\\.Build\\.CentralPackageVersions-v\\d+\\.\\d+.\\d+"
   ]
 }

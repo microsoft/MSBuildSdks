@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <description>$description$</description>
+    <authors>$authors$</authors>
+    <owners>$authors$</owners>
+    <copyright>$copyright$</copyright>
+    <projectUrl>$projecturl$</projectUrl>
+    <licenseUrl>$licenseurl$</licenseUrl>
+    <iconUrl>$iconurl$</iconUrl>
+    <tags>$tags$</tags>
+    <packageTypes>
+      <packageType name="$packagetype$" />
+    </packageTypes>
+  </metadata>
+  <files>
+    <file src="Sdk\**" target="Sdk" />
+  </files>
+</package>
