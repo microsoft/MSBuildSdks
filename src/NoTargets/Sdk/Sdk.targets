@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <Import Project="$(CustomBeforeNoTargets)" Condition="'$(CustomBeforeNoTargets)' != '' and Exists('$(CustomBeforeNoTargets)')" />
+
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition=" Exists('$(MSBuildToolsPath)\Microsoft.Common.targets') " />
+
+  <ItemGroup>
+    <IntermediateAssembly Remove="@(IntermediateAssembly)" />
+    <IntermediateRefAssembly Remove="@(IntermediateRefAssembly)" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <!--
+      This property must be overridden to remove a few targets that compile assemblies
+    -->
+    <CoreBuildDependsOn>
+      BuildOnlySettings;
+      PrepareForBuild;
+      PreBuildEvent;
+      ResolveProjectReferences;
+      GetTargetPath;
+      PrepareForRun;
+      IncrementalClean;
+      PostBuildEvent
+    </CoreBuildDependsOn>
+  </PropertyGroup>
+
+  <Import Project="$(CustomAfterNoTargets)" Condition="'$(CustomAfterNoTargets)' != '' and Exists('$(CustomAfterNoTargets)')" />
+</Project>
