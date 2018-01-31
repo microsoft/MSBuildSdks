@@ -6,6 +6,9 @@ The MSBuild project SDKs are used to configure and extend your build.
 ### [Microsoft.Build.Traversal](src/Traversal)
 Supports creating traversal projects which are MSBuild projects that indicate what projects to include when building your tree.  For large project trees, they are replacements for Visual Studio solution files.
 
+### [Microsoft.Build.NoTargets](src/NoTargets)
+Supports utility projects that do not compile an assembly.
+
 ## What Are MSBuild SDKS?
 
 
