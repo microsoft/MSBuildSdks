@@ -15,6 +15,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{DC479DC1
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.NoTargets", "src\NoTargets\Microsoft.Build.NoTargets.csproj", "{86A02D27-6A67-461B-931C-96051F363CAD}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.CentralPackageVersions", "src\CentralPackageVersions\Microsoft.Build.CentralPackageVersions.csproj", "{720D8DE8-C7BA-4CD0-A00A-D8A169D7FE80}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,6 +31,10 @@ Global
 		{86A02D27-6A67-461B-931C-96051F363CAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{86A02D27-6A67-461B-931C-96051F363CAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{86A02D27-6A67-461B-931C-96051F363CAD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{720D8DE8-C7BA-4CD0-A00A-D8A169D7FE80}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{720D8DE8-C7BA-4CD0-A00A-D8A169D7FE80}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{720D8DE8-C7BA-4CD0-A00A-D8A169D7FE80}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{720D8DE8-C7BA-4CD0-A00A-D8A169D7FE80}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
