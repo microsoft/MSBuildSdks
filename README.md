@@ -1,6 +1,8 @@
 # MSBuild SDKs
 The MSBuild project SDKs are used to configure and extend your build.
 
+Packages are currently available in preview form on our MyGet feed https://www.myget.org/F/msbuildsdks/api/v3/index.json.
+
 ## What SDKs are available?
 
 ### [Microsoft.Build.Traversal](src/Traversal)
