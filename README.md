@@ -39,6 +39,8 @@ At evaluation time, MSBuild adds implicit imports at the top and bottom of the p
 </Project>
 ```
 
+More documentation is available [here](https://docs.microsoft.com/visualstudio/msbuild/how-to-use-project-sdk).
+
 Older versions of MSBuild 15 required that SDKs be installed prior to using them.  In MSBuild 15.6 and above, the SDKs are downloaded as NuGet packages instead.
 
 # Contributing
