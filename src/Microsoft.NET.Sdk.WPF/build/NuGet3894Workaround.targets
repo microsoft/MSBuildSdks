@@ -1,3 +1,5 @@
 <Project>
-  <Import Project="$(BaseIntermediateOuputPath)$(OriginalProjectName).*.targets" Condition=" '$(MSBuildProjectName)' != '$(OriginalProjectName)' and '$(ImportProjectExtensionTargetss)' != 'false' and exists('$(BaseIntermediateOuputPath)') and '$(_TargetFrameworkVersionWithoutV)' < '4.7.2'" />
+  <!-- WPF sometimes creates a temporary project. In order to properly import NuGet generated targets, we need to use _OriginalProjectName when set. -->
+  <Import Project="$(BaseIntermediateOutputPath)$(_OriginalProjectName).*.targets" Condition="'$(_OriginalProjectName)' != '' and '$(ImportProjectExtensionProps)' == 'true' and exists('$(BaseIntermediateOuputPath)')" />
+  <Import Project="$(BaseIntermediateOutputPath)$(OriginalProjectName).*.targets" Condition="'$(_OriginalProjectName)' == '' and '$(MSBuildProjectName)' != '$(OriginalProjectName)' and '$(ImportProjectExtensionProps)' != 'false' and exists('$(BaseIntermediateOutputPath)')" />
 </Project>
