@@ -1,7 +1,8 @@
 <Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <LanguageTargets>$(MSBuildThisFileDirectory)/../build/$(TargetFrameworkIdentifier).targets</LanguageTargets>
   </PropertyGroup>
 
-  <Import Project="$(MSBuildThisFileDirectory)/../build/$(TargetFrameworkIdentifier).targets" />
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>
