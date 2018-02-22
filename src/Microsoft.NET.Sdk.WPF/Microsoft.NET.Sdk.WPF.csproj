@@ -4,5 +4,6 @@
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Description>Provides C# functionality specific to WPF projects</Description>
     <IncludeBuildOutput>false</IncludeBuildOutput>
+    <PackageTags>tags</PackageTags>
   </PropertyGroup>
 </Project>
