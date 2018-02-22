@@ -4,7 +4,7 @@
   </PropertyGroup>
 
   <Choose>
-    <When Condition="'$(MSBuildProjectExtension)' == '.csproj' or ('$(MSBuildProjectExtension)' == '.tmp_proj' and Exists('$(MSBuildProjectDirectory)\$(AssemblyName).csproj'))">
+    <When Condition="'$(MSBuildProjectExtension)' == '.csproj'">
       <PropertyGroup>
         <_SdkLanguageName>CSharp</_SdkLanguageName>
         <_SdkLanguageExtension>.cs</_SdkLanguageExtension>
@@ -12,14 +12,14 @@
       </PropertyGroup>
     </When>
 
-    <When Condition="'$(MSBuildProjectExtension)' == '.vbproj' or ('$(MSBuildProjectExtension)' == '.tmp_proj' and Exists('$(MSBuildProjectDirectory)\$(AssemblyName).vbproj'))">
+    <When Condition="'$(MSBuildProjectExtension)' == '.vbproj'">
       <PropertyGroup>
         <_SdkLanguageName>VisualBasic</_SdkLanguageName>
         <_SdkLanguageExtension>.vb</_SdkLanguageExtension>
       </PropertyGroup>
     </When>
 
-    <When Condition="'$(MSBuildProjectExtension)' == '.fsproj' or ('$(MSBuildProjectExtension)' == '.tmp_proj' and Exists('$(MSBuildProjectDirectory)\$(AssemblyName).fsproj'))">
+    <When Condition="'$(MSBuildProjectExtension)' == '.fsproj'">
       <PropertyGroup>
         <_SdkLanguageName>FSharp</_SdkLanguageName>
         <_SdkLanguageExtension>.fs</_SdkLanguageExtension>
