@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <ProjectTypeGuids>{FEACFBD2-3405-455C-9665-78FE426C6842};$(_SdkLanguageProjectTypeGuid)</ProjectTypeGuids>
   </PropertyGroup>
 
   <PropertyGroup>
