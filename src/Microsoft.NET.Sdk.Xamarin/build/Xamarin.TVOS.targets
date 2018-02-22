@@ -1,0 +1,8 @@
+<Project>
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildExtensionsPath)\Xamarin\TVOS\Xamarin.TVOS.$(_SdkLanguageName).targets"
+    Condition="Exists('$(MSBuildExtensionsPath)\Xamarin\TVOS\Xamarin.TVOS.$(_SdkLanguageName).targets')" />
+</Project>

@@ -1,0 +1,36 @@
+<Project>
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFrameworkVersion Condition="'$(TargetFrameworkVersion)' == ''">v4.0.3</TargetFrameworkVersion>
+    <AndroidUseLatestPlatformSdk Condition="'$(AndroidUseLatestPlatformSdk)' == ''">false</AndroidUseLatestPlatformSdk>
+    <_SdkSetAndroidResgenFile Condition="'$(AndroidResgenFile)' == ''">true</_SdkSetAndroidResgenFile>
+    <AndroidResgenFile Condition="'$(AndroidResgenFile)' == ''">$(IntermediateOutputPath)$(TargetFramework)\Resource.Designer$(_SdkLanguageExtension)</AndroidResgenFile>
+
+    <!-- This is here to prevent a warning in the Xamarin.Android.Common.Debugging.targets when a blank is passed into _GetPrimaryCpuAbi -->
+    <AdbTarget Condition="'$(AdbTarget)' == ''">none</AdbTarget>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(DisableImplicitFrameworkReferences)' != 'true'">
+    <_ExtrasImplicitReference Include="Mono.Android" />
+    <_ExtrasImplicitReference Include="System" />
+    <_ExtrasImplicitReference Include="System.Core" />
+    <_ExtrasImplicitReference Include="System.Net.Http" />
+    <_ExtrasImplicitReference Include="System.Xml" />
+
+    <!-- Set Pack=false on implicit references so they don't get added to NuGet packages as framework assemblies -->
+    <_ExtrasImplicitReference Update="@(_ExtrasImplicitReference)" Pack="false" />
+    <!-- Don't duplicate any references that are explicit in the project file.  This means that if you do want to include a framework assembly in your
+         NuGet package, you can just add the Reference to your project file. -->
+    <_ExtrasImplicitReference Remove="@(Reference)" />
+
+    <!-- Add the implicit references to @(Reference) -->
+    <Reference Include="@(_ExtrasImplicitReference)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(AndroidResgenFile)" Condition="'$(_SdkSetAndroidResgenFile)' == 'true'" Visible="false" />
+  </ItemGroup>
+</Project>
