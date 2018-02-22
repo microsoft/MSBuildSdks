@@ -1,0 +1,9 @@
+<Project>
+  <Target Name="_VerifyNuGet2984Workaround" BeforeTargets="BeforeBuild">
+    <Warning
+      Text="The OriginalProjectName property must be specified for WPF builds to complete correctly when targeting .NET Framework versions older than 4.7.2."
+      Condition="'$(OriginalProjectName)' == '' and '$(_TargetFrameworkVersionWithoutV)' < '4.7.2'" />
+  </Target>
+
+  <Import Project="$(BaseIntermediateOuputPath)$(OriginalProjectName).*.props" Condition=" '$(MSBuildProjectName)' != '$(OriginalProjectName)' and '$(ImportProjectExtensionProps)' != 'false' and exists('$(BaseIntermediateOuputPath)') and '$(_TargetFrameworkVersionWithoutV)' < '4.7.2'" />
+</Project>

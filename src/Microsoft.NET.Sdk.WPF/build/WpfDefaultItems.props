@@ -1,0 +1,50 @@
+<Project>
+  <PropertyGroup>
+    <EnableDefaultWpfItems Condition="'$(EnableDefaultWpfItems)' == ''">True</EnableDefaultWpfItems>
+    <DefaultWpfPageExcludes>$(DefaultWpfPageExcludes);$(MSBuildProjectDirectory)/App.xaml;$(MSBuildProjectDirectory)/Application.xaml</DefaultWpfPageExcludes>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(EnableDefaultItems)' == 'True'">
+    <None Remove="**/*.xaml" Condition="'$(EnableDefaultWpfItems)' == 'True' and '$(EnableDefaultNoneItems)' == 'true'" />
+    <Page Include="**/*.xaml" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWpfPageExcludes)" Condition="'$(EnableDefaultWpfItems)' == 'True'" SubType="Designer" Generator="MSBuild:Compile" />
+    <None Remove="$(MSBuildProjectDirectory)/App.xaml" Condition="'$(EnableDefaultWpfItems)' == 'True' and Exists('$(MSBuildProjectDirectory)/App.xaml')" />
+    <ApplicationDefinition Include="$(MSBuildProjectDirectory)/App.xaml" Condition="'$(EnableDefaultWpfItems)' == 'True' and Exists('$(MSBuildProjectDirectory)/App.xaml')" />
+    <None Remove="$(MSBuildProjectDirectory)/Application.xaml" Condition="'$(EnableDefaultWpfItems)' == 'True' and Exists('$(MSBuildProjectDirectory)/Application.xaml')" />
+    <ApplicationDefinition Include="$(MSBuildProjectDirectory)/Application.xaml" Condition="'$(EnableDefaultWpfItems)' == 'True' and Exists('$(MSBuildProjectDirectory)/Application.xaml')" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="**\*.xaml$(_SdkLanguageExtension)" SubType="Code" DependentUpon="%(Filename)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)Rules/Wpf.ProjectItemsSchema.xml">
+      <Context>Project</Context>
+    </PropertyPageSchema>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)Rules/Page.xml">
+      <Context>File;BrowseObject</Context>
+    </PropertyPageSchema>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)Rules/ApplicationDefinition.xml">
+      <Context>File;BrowseObject</Context>
+    </PropertyPageSchema>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)Rules/Resource.xml">
+      <Context>File;BrowseObject</Context>
+    </PropertyPageSchema>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DisableImplicitFrameworkReferences)' != 'true'">
+    <_ExtrasImplicitReference Include="PresentationCore" Condition=" '$(_TargetFrameworkVersionWithoutV)' >= '3.5' " />
+    <_ExtrasImplicitReference Include="PresentationFramework" Condition=" '$(_TargetFrameworkVersionWithoutV)' >= '3.5' " />
+    <_ExtrasImplicitReference Include="WindowsBase" Condition=" '$(_TargetFrameworkVersionWithoutV)' >= '3.5' "/>
+    <_ExtrasImplicitReference Include="System.Xaml" Condition=" '$(_TargetFrameworkVersionWithoutV)' >= '4.0' " />
+
+    <!-- Set Pack=false on implicit references so they don't get added to NuGet packages as framework assemblies -->
+    <_ExtrasImplicitReference Update="@(_ExtrasImplicitReference)" Pack="false" />
+    <!-- Don't duplicate any references that are explicit in the project file.  This means that if you do want to include a framework assembly in your
+         NuGet package, you can just add the Reference to your project file. -->
+    <_ExtrasImplicitReference Remove="@(Reference)" />
+
+    <!-- Add the implicit references to @(Reference) -->
+    <Reference Include="@(_ExtrasImplicitReference)" />
+  </ItemGroup>
+</Project>

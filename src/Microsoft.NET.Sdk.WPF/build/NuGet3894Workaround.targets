@@ -1,0 +1,3 @@
+<Project>
+  <Import Project="$(BaseIntermediateOuputPath)$(OriginalProjectName).*.targets" Condition=" '$(MSBuildProjectName)' != '$(OriginalProjectName)' and '$(ImportProjectExtensionTargetss)' != 'false' and exists('$(BaseIntermediateOuputPath)') and '$(_TargetFrameworkVersionWithoutV)' < '4.7.2'" />
+</Project>
