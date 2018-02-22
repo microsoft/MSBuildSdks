@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27329.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.Traversal", "src\Traversal\Microsoft.Build.Traversal.csproj", "{B93918D4-75EA-467E-8F50-393A1324FF91}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Build.Traversal", "src\Traversal\Microsoft.Build.Traversal.csproj", "{B93918D4-75EA-467E-8F50-393A1324FF91}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{DC479DC1-DD8C-4DBA-AA37-FC3D39F24266}"
 	ProjectSection(SolutionItems) = preProject
@@ -13,9 +13,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{DC479DC1
 		version.json = version.json
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.NoTargets", "src\NoTargets\Microsoft.Build.NoTargets.csproj", "{86A02D27-6A67-461B-931C-96051F363CAD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Build.NoTargets", "src\NoTargets\Microsoft.Build.NoTargets.csproj", "{86A02D27-6A67-461B-931C-96051F363CAD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.CentralPackageVersions", "src\CentralPackageVersions\Microsoft.Build.CentralPackageVersions.csproj", "{720D8DE8-C7BA-4CD0-A00A-D8A169D7FE80}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Build.CentralPackageVersions", "src\CentralPackageVersions\Microsoft.Build.CentralPackageVersions.csproj", "{720D8DE8-C7BA-4CD0-A00A-D8A169D7FE80}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.NET.Sdk.WPF", "src\Microsoft.NET.Sdk.WPF\Microsoft.NET.Sdk.WPF.csproj", "{F5B8469D-A3FF-49D2-9876-05D84B3926B6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,6 +37,10 @@ Global
 		{720D8DE8-C7BA-4CD0-A00A-D8A169D7FE80}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{720D8DE8-C7BA-4CD0-A00A-D8A169D7FE80}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{720D8DE8-C7BA-4CD0-A00A-D8A169D7FE80}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5B8469D-A3FF-49D2-9876-05D84B3926B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5B8469D-A3FF-49D2-9876-05D84B3926B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5B8469D-A3FF-49D2-9876-05D84B3926B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5B8469D-A3FF-49D2-9876-05D84B3926B6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
