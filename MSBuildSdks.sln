@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.NET.Sdk.WPF", "sr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.NET.Sdk.Xamarin", "src\Microsoft.NET.Sdk.Xamarin\Microsoft.NET.Sdk.Xamarin.csproj", "{E33B8555-4BC9-4CD8-B179-641A5DFE5AC3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.NET.Sdk.WindowsForms", "src\Microsoft.NET.Sdk.WindowsForms\Microsoft.NET.Sdk.WindowsForms.csproj", "{900986BC-7E6A-44F2-9081-29B5E0CF6DBC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,11 +49,26 @@ Global
 		{E33B8555-4BC9-4CD8-B179-641A5DFE5AC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E33B8555-4BC9-4CD8-B179-641A5DFE5AC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E33B8555-4BC9-4CD8-B179-641A5DFE5AC3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{900986BC-7E6A-44F2-9081-29B5E0CF6DBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{900986BC-7E6A-44F2-9081-29B5E0CF6DBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{900986BC-7E6A-44F2-9081-29B5E0CF6DBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{900986BC-7E6A-44F2-9081-29B5E0CF6DBC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6AB3C4FB-938A-42B8-8E9E-A53178C94301}
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		Policies = $0
+		$0.TextStylePolicy = $1
+		$1.TabsToSpaces = True
+		$1.scope = text/x-json
+		$0.TextStylePolicy = $2
+		$2.TabWidth = 2
+		$2.TabsToSpaces = True
+		$2.IndentWidth = 2
+		$2.scope = application/x-csproject
 	EndGlobalSection
 EndGlobal

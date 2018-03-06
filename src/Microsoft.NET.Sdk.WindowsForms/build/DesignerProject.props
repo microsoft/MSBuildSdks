@@ -1,0 +1,37 @@
+<Project>
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(DesignerProjectPath)' == '' and '$(DesignerProjectRoot)' != ''">
+    <DesignerProjectPath>$(DesignerProjectRoot)/$(MSBuildProjectName).Designer</DesignerProjectPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(DesignerProjectPath)' != '' and Exists('$(DesignerProjectPath)')">
+    <WinFormsExcludes>$(DesignerProjectPath)/bin/**;$(DesignerProjectPath)/obj/**</WinFormsExcludes>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(DesignerProjectPath)' != '' and Exists('$(DesignerProjectPath)') and '$(EnableDefaultItems)' == 'true'">
+    <Compile Include="$(DesignerProjectPath)/**/*$(_SdkLanguageExtension)" Exclude="$(DefaultItemExcludes);$(WinFormsExcludes)" Link="%(RecursiveDir)%(FileName)%(Extension)" />
+    <EmbeddedResource Include="$(DesignerProjectPath)/**/*.resx" Exclude="$(DefualtItemExcludes);$(WinFormsExcludes)" Link="%(RecursiveDir)%(FileName)%(Extension)" />
+
+    <None Include="$(DesignerProjectPath)/**/*" Exclude="$(DefaultItemExcludes);$(WinFormsExcludes);$(DesignerProjectPath)/**/*$(_SdkLanguageExtension);$(DesignerProjectPath)/**/*.rsx" Link="%(RecursiveDir)%(FileName)%(Extension)" Condition="'$(EnableDefaultNoneItems)' == 'true'" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DesignerProjectPath)' != '' and Exists('$(DesignerProjectPath)')">
+    <Compile Update="$(DesignerProjectPath)/**/*$(DefaultLanguageSourceExtension)">
+      <PossiblyDependentUpon>$([System.String]::Copy('%(FileName)').Replace('.Designer', ''))$(DefualtLanguageSourceExtension)</PossiblyDependentUpon>
+    </Compile>
+
+    <EmbeddedResource Update="$(DesignerProjectPath)/**/*.resx">
+      <PossiblyDependentUpon>$([System.Text.RegularExpressions.Regex]::Replace('%(FileName)', '\.[a-z]{2}-[A-Z]{2}.resx', '$(DefaultLanguageSourceExtension)'))</PossiblyDependentUpon>
+    </EmbeddedResource>
+
+    <Compile Update="@(Compile)" Condition="Exists('$(PossiblyDependentUpon)')">
+      <DependentUpon>%(Compile.PossiblyDependentUpon)</DependentUpon>
+    </Compile>
+    <EmbeddedResource Update="@(EmbeddedResource)" Condition="Exists('$(PossiblyDependentUpon)')">
+      <DependentUpon>%(EmbeddedResource.PossiblyDependentUpon)</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard1.1</TargetFramework>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Description>Provides SDK functionality specific to Windows Forms projects</Description>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <PackageTags>tags</PackageTags>
+  </PropertyGroup>
+</Project>

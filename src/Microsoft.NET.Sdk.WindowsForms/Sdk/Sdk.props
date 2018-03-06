@@ -1,0 +1,19 @@
+<Project>
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">
+    <_SdkLanguageName>CSharp</_SdkLanguageName>
+    <_SdkLanguageExtension>.cs</_SdkLanguageExtension>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.vbproj'">
+    <_SdkLanguageName>VisualBasic</_SdkLanguageName>
+    <_SdkLanguageExtension>.vb</_SdkLanguageExtension>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+  <Import Project="$(MSBuildThisFileDirectory)/../build/DesignerProject.props" />
+  <Import Project="$(MSBuildThisFileDirectory)/../build/DefaultReferences.props" />
+</Project>
