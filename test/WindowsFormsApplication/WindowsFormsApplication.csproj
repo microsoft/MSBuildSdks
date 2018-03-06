@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.WindowsForms/1.0.27-gbf740609cd">
+<Project Sdk="Microsoft.NET.Sdk.WindowsForms/1.0.33-gcdc9133998">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net461</TargetFramework>

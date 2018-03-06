@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.WPF/1.0.28-preview-gead64de0d7">
+<Project Sdk="Microsoft.NET.Sdk.WPF/1.0.33-preview-gcdc9133998">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net461</TargetFramework>
