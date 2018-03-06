@@ -24,7 +24,7 @@
     </Compile>
 
     <EmbeddedResource Update="$(DesignerProjectPath)/**/*.resx">
-      <PossiblyDependentUpon>$([System.Text.RegularExpressions.Regex]::Replace('%(FileName)', '\.[a-z]{2}-[A-Z]{2}.resx', '$(DefaultLanguageSourceExtension)'))</PossiblyDependentUpon>
+      <PossiblyDependentUpon>$([System.Text.RegularExpressions.Regex]::Replace('%(FileName)', '\.[a-z]{2}-[A-Z]{2}\.resx', '$(DefaultLanguageSourceExtension)'))</PossiblyDependentUpon>
     </EmbeddedResource>
 
     <Compile Update="@(Compile)" Condition="Exists('$(PossiblyDependentUpon)')">
