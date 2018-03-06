@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27329.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Build.Traversal", "src\Traversal\Microsoft.Build.Traversal.csproj", "{B93918D4-75EA-467E-8F50-393A1324FF91}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.Traversal", "src\Traversal\Microsoft.Build.Traversal.csproj", "{B93918D4-75EA-467E-8F50-393A1324FF91}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{DC479DC1-DD8C-4DBA-AA37-FC3D39F24266}"
 	ProjectSection(SolutionItems) = preProject
@@ -13,15 +13,22 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{DC479DC1
 		version.json = version.json
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Build.NoTargets", "src\NoTargets\Microsoft.Build.NoTargets.csproj", "{86A02D27-6A67-461B-931C-96051F363CAD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.NoTargets", "src\NoTargets\Microsoft.Build.NoTargets.csproj", "{86A02D27-6A67-461B-931C-96051F363CAD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Build.CentralPackageVersions", "src\CentralPackageVersions\Microsoft.Build.CentralPackageVersions.csproj", "{720D8DE8-C7BA-4CD0-A00A-D8A169D7FE80}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.CentralPackageVersions", "src\CentralPackageVersions\Microsoft.Build.CentralPackageVersions.csproj", "{720D8DE8-C7BA-4CD0-A00A-D8A169D7FE80}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.NET.Sdk.WPF", "src\Microsoft.NET.Sdk.WPF\Microsoft.NET.Sdk.WPF.csproj", "{F5B8469D-A3FF-49D2-9876-05D84B3926B6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Sdk.WPF", "src\Microsoft.NET.Sdk.WPF\Microsoft.NET.Sdk.WPF.csproj", "{F5B8469D-A3FF-49D2-9876-05D84B3926B6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.NET.Sdk.Xamarin", "src\Microsoft.NET.Sdk.Xamarin\Microsoft.NET.Sdk.Xamarin.csproj", "{E33B8555-4BC9-4CD8-B179-641A5DFE5AC3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Sdk.Xamarin", "src\Microsoft.NET.Sdk.Xamarin\Microsoft.NET.Sdk.Xamarin.csproj", "{E33B8555-4BC9-4CD8-B179-641A5DFE5AC3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.NET.Sdk.WindowsForms", "src\Microsoft.NET.Sdk.WindowsForms\Microsoft.NET.Sdk.WindowsForms.csproj", "{900986BC-7E6A-44F2-9081-29B5E0CF6DBC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Sdk.WindowsForms", "src\Microsoft.NET.Sdk.WindowsForms\Microsoft.NET.Sdk.WindowsForms.csproj", "{900986BC-7E6A-44F2-9081-29B5E0CF6DBC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{0C7DFEB8-7CF2-47D7-B215-396892FF0721}"
+	ProjectSection(SolutionItems) = preProject
+		test\Directory.Build.props = test\Directory.Build.props
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WPFApplication", "test\WPFApplication\WPFApplication.csproj", "{D82B6B5F-42AA-40BF-AA10-72010C37C5CD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,19 +60,25 @@ Global
 		{900986BC-7E6A-44F2-9081-29B5E0CF6DBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{900986BC-7E6A-44F2-9081-29B5E0CF6DBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{900986BC-7E6A-44F2-9081-29B5E0CF6DBC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D82B6B5F-42AA-40BF-AA10-72010C37C5CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D82B6B5F-42AA-40BF-AA10-72010C37C5CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D82B6B5F-42AA-40BF-AA10-72010C37C5CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D82B6B5F-42AA-40BF-AA10-72010C37C5CD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D82B6B5F-42AA-40BF-AA10-72010C37C5CD} = {0C7DFEB8-7CF2-47D7-B215-396892FF0721}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6AB3C4FB-938A-42B8-8E9E-A53178C94301}
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		Policies = $0
-		$0.TextStylePolicy = $1
+		$0.TextStylePolicy = $2
 		$1.TabsToSpaces = True
 		$1.scope = text/x-json
-		$0.TextStylePolicy = $2
 		$2.TabWidth = 2
 		$2.TabsToSpaces = True
 		$2.IndentWidth = 2
