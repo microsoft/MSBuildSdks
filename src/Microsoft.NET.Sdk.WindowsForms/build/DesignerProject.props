@@ -20,17 +20,17 @@
 
   <ItemGroup Condition="'$(DesignerProjectPath)' != '' and Exists('$(DesignerProjectPath)')">
     <Compile Update="$(DesignerProjectPath)/**/*$(DefaultLanguageSourceExtension)">
-      <PossiblyDependentUpon>$([System.String]::Copy('%(FileName)').Replace('.Designer', ''))$(DefualtLanguageSourceExtension)</PossiblyDependentUpon>
+      <PossiblyDependentUpon>$([System.String]::Copy('%(FileName)').Replace('.Designer', ''))$(DefaultLanguageSourceExtension)</PossiblyDependentUpon>
     </Compile>
 
     <EmbeddedResource Update="$(DesignerProjectPath)/**/*.resx">
-      <PossiblyDependentUpon>$([System.Text.RegularExpressions.Regex]::Replace('%(FileName)', '\.[a-z]{2}-[A-Z]{2}\.resx', '$(DefaultLanguageSourceExtension)'))</PossiblyDependentUpon>
+      <PossiblyDependentUpon>$([System.Text.RegularExpressions.Regex]::Replace('%(FileName)', '(?:\.[a-z][a-z]-[A-Z][A-Z])?\.resx%24', ''))$(DefaultLanguageSourceExtension)</PossiblyDependentUpon>
     </EmbeddedResource>
 
-    <Compile Update="@(Compile)" Condition="Exists('$(PossiblyDependentUpon)')">
+    <Compile Update="@(Compile)" Condition="Exists('$(DesignerProjectPath)\%(PossiblyDependentUpon)')">
       <DependentUpon>%(Compile.PossiblyDependentUpon)</DependentUpon>
     </Compile>
-    <EmbeddedResource Update="@(EmbeddedResource)" Condition="Exists('$(PossiblyDependentUpon)')">
+    <EmbeddedResource Update="@(EmbeddedResource)" Condition="Exists('$(DesignerProjectPath)\%(PossiblyDependentUpon)')">
       <DependentUpon>%(EmbeddedResource.PossiblyDependentUpon)</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
