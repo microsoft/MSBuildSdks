@@ -15,7 +15,7 @@
     <Compile Include="$(DesignerProjectPath)/**/*$(DefaultLanguageSourceExtension)" Exclude="$(DefaultItemExcludes);$(WinFormsExcludes)" Link="%(RecursiveDir)%(FileName)%(Extension)" />
     <EmbeddedResource Include="$(DesignerProjectPath)/**/*.resx" Exclude="$(DefualtItemExcludes);$(WinFormsExcludes)" Link="%(RecursiveDir)%(FileName)%(Extension)" />
 
-    <None Include="$(DesignerProjectPath)/**/*" Exclude="$(DefaultItemExcludes);$(WinFormsExcludes);$(DesignerProjectPath)/**/*$(DefaultLanguageSourceExtension);$(DesignerProjectPath)/**/*.rsx" Link="%(RecursiveDir)%(FileName)%(Extension)" Condition="'$(EnableDefaultNoneItems)' == 'true'" />
+    <None Include="$(DesignerProjectPath)/**/*" Exclude="$(DefaultItemExcludes);$(WinFormsExcludes);$(DesignerProjectPath)/**/*$(DefaultLanguageSourceExtension);$(DesignerProjectPath)/**/*.resx" Link="%(RecursiveDir)%(FileName)%(Extension)" Condition="'$(EnableDefaultNoneItems)' == 'true'" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(DesignerProjectPath)' != '' and Exists('$(DesignerProjectPath)')">
