@@ -1,8 +1,0 @@
-<Project>
-  <PropertyGroup>
-    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-  </PropertyGroup>
-
-  <Import Project="$(MSBuildExtensionsPath)\Xamarin\WatchOS\Xamarin.WatchOS.$(_SdkLanguageName).targets"
-    Condition="Exists('$(MSBuildExtensionsPath)\Xamarin\WatchOS\Xamarin.WatchOS.$(_SdkLanguageName).targets')" />
-</Project>

@@ -19,8 +19,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.CentralPack
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Sdk.WPF", "src\Microsoft.NET.Sdk.WPF\Microsoft.NET.Sdk.WPF.csproj", "{F5B8469D-A3FF-49D2-9876-05D84B3926B6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Sdk.Xamarin", "src\Microsoft.NET.Sdk.Xamarin\Microsoft.NET.Sdk.Xamarin.csproj", "{E33B8555-4BC9-4CD8-B179-641A5DFE5AC3}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Sdk.WindowsForms", "src\Microsoft.NET.Sdk.WindowsForms\Microsoft.NET.Sdk.WindowsForms.csproj", "{900986BC-7E6A-44F2-9081-29B5E0CF6DBC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{0C7DFEB8-7CF2-47D7-B215-396892FF0721}"
@@ -56,10 +54,6 @@ Global
 		{F5B8469D-A3FF-49D2-9876-05D84B3926B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F5B8469D-A3FF-49D2-9876-05D84B3926B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F5B8469D-A3FF-49D2-9876-05D84B3926B6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E33B8555-4BC9-4CD8-B179-641A5DFE5AC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E33B8555-4BC9-4CD8-B179-641A5DFE5AC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E33B8555-4BC9-4CD8-B179-641A5DFE5AC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E33B8555-4BC9-4CD8-B179-641A5DFE5AC3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{900986BC-7E6A-44F2-9081-29B5E0CF6DBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{900986BC-7E6A-44F2-9081-29B5E0CF6DBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{900986BC-7E6A-44F2-9081-29B5E0CF6DBC}.Release|Any CPU.ActiveCfg = Release|Any CPU

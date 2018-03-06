@@ -1,8 +1,0 @@
-<Project>
-  <PropertyGroup>
-    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-  </PropertyGroup>
-
-  <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.$(_SdkLanguageName).targets"
-    Condition="Exists('$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.$(_SdkLanguageName).targets')" />
-</Project>

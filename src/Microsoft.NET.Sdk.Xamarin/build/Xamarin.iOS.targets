@@ -1,8 +1,0 @@
-<Project>
-  <PropertyGroup>
-    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-  </PropertyGroup>
-
-  <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.$(_SdkLanguageName).targets"
-    Condition="Exists('$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.$(_SdkLanguageName).targets')" />
-</Project>

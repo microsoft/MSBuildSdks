@@ -1,9 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Description>Provides C# functionality specific to Xamarin projects</Description>
-    <IncludeBuildOutput>false</IncludeBuildOutput>
-    <PackageTags>tags</PackageTags>
-  </PropertyGroup>
-</Project>
