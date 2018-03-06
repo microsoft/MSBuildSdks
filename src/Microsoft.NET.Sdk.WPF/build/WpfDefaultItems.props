@@ -33,10 +33,10 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(DisableImplicitFrameworkReferences)' != 'true'">
-    <_ExtrasImplicitReference Include="PresentationCore" Condition=" '$(_TargetFrameworkVersionWithoutV)' >= '3.5' " />
-    <_ExtrasImplicitReference Include="PresentationFramework" Condition=" '$(_TargetFrameworkVersionWithoutV)' >= '3.5' " />
-    <_ExtrasImplicitReference Include="WindowsBase" Condition=" '$(_TargetFrameworkVersionWithoutV)' >= '3.5' "/>
-    <_ExtrasImplicitReference Include="System.Xaml" Condition=" '$(_TargetFrameworkVersionWithoutV)' >= '4.0' " />
+    <_ExtrasImplicitReference Include="PresentationCore" />
+    <_ExtrasImplicitReference Include="PresentationFramework" />
+    <_ExtrasImplicitReference Include="WindowsBase" />
+    <_ExtrasImplicitReference Include="System.Xaml" />
 
     <!-- Set Pack=false on implicit references so they don't get added to NuGet packages as framework assemblies -->
     <_ExtrasImplicitReference Update="@(_ExtrasImplicitReference)" Pack="false" />
