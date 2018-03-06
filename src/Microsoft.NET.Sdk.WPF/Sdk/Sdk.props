@@ -30,5 +30,5 @@
 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
   <Import Project="$(MSBuildThisFileDirectory)/../build/WpfDefaultItems.props" />
-  <Import Project="$(MSBuildThisFileDirectory)/../build/NuGet5894Workaround.props" />
+  <Import Project="$(MSBuildThisFileDirectory)/../build/NuGet3894Workaround.props" />
 </Project>

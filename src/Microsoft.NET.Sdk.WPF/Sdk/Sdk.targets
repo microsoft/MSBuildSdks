@@ -17,5 +17,5 @@
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
   <Import Project="$(MSBuildThisFileDirectory)/../build/ProjectSystem2488Workaround.targets" />
-  <Import Project="$(MSBuildThisFileDirectory)/../build/NuGet5894Workaround.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)/../build/NuGet3894Workaround.targets" />
 </Project>
