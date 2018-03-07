@@ -1,4 +1,7 @@
-﻿# Microsoft.Build.CentralPackageVersions
+# Microsoft.Build.CentralPackageVersions
+[![NuGet](https://img.shields.io/nuget/v/Microsoft.Build.CentralPackageVersions.svg)](https://www.nuget.org/packages/Microsoft.Build.CentralPackageVersions)
+ [![NuGet](https://img.shields.io/nuget/dt/Microsoft.Build.CentralPackageVersions.svg)](https://www.nuget.org/packages/Microsoft.Build.CentralPackageVersions)
+ 
 The `Microsoft.Build.CentralPackageVersions` MSBuild project SDK allows project tree owners to manage their NuGet package versions in one place.  Stock NuGet requires that each project contain a version.  You can also use MSBuild properties to manage versions.
 
 ## Centrally Managing Package Versions
