@@ -1,17 +1,26 @@
 # MSBuild SDKs
-The MSBuild project SDKs are used to configure and extend your build.
+[![Build status](https://ci.appveyor.com/api/projects/status/7413vus4cp40pvsf?svg=true)](https://ci.appveyor.com/project/CBT/msbuildsdks)
 
-Packages are currently available in preview form on our MyGet feed https://www.myget.org/F/msbuildsdks/api/v3/index.json.
+The MSBuild project SDKs are used to configure and extend your build.
 
 ## What SDKs are available?
 
 ### [Microsoft.Build.Traversal](src/Traversal)
+[![NuGet](https://img.shields.io/nuget/v/Microsoft.Build.Traversal.svg)](https://www.nuget.org/packages/Microsoft.Build.Traversal)
+ [![NuGet](https://img.shields.io/nuget/dt/Microsoft.Build.Traversal.svg)](https://www.nuget.org/packages/Microsoft.Build.Traversal)
+
 Supports creating traversal projects which are MSBuild projects that indicate what projects to include when building your tree.  For large project trees, they are replacements for Visual Studio solution files.
 
 ### [Microsoft.Build.CentralPackageVersions](src/CentralPackageVersions)
+[![NuGet](https://img.shields.io/nuget/v/Microsoft.Build.CentralPackageVersions.svg)](https://www.nuget.org/packages/Microsoft.Build.CentralPackageVersions)
+ [![NuGet](https://img.shields.io/nuget/dt/Microsoft.Build.CentralPackageVersions.svg)](https://www.nuget.org/packages/Microsoft.Build.CentralPackageVersions)
+
 Supports centrally managing NuGet package versions in a code base.  Also allows adding global package references to all projects.
 
 ### [Microsoft.Build.NoTargets](src/NoTargets)
+[![NuGet](https://img.shields.io/nuget/v/Microsoft.Build.NoTargets.svg)](https://www.nuget.org/packages/Microsoft.Build.NoTargets)
+ [![NuGet](https://img.shields.io/nuget/dt/Microsoft.Build.NoTargets.svg)](https://www.nuget.org/packages/Microsoft.Build.NoTargets)
+
 Supports utility projects that do not compile an assembly.
 
 ## What Are MSBuild SDKS?
