@@ -1,4 +1,7 @@
-﻿# Microsoft.Build.NoTargets
+# Microsoft.Build.NoTargets
+[![NuGet](https://img.shields.io/nuget/v/Microsoft.Build.NoTargets.svg)](https://www.nuget.org/packages/Microsoft.Build.NoTargets)
+ [![NuGet](https://img.shields.io/nuget/dt/Microsoft.Build.NoTargets.svg)](https://www.nuget.org/packages/Microsoft.Build.NoTargets)
+ 
 The `Microsoft.Build.NoTargets` MSBuild project SDK allows project tree owners the ability to define projects that do not compile an assembly.  This can be useful for utility projects that just copy files, build packages, or any other function where an assembly is not compiled.
 
 ## Example
