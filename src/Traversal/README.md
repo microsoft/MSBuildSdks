@@ -1,4 +1,7 @@
-﻿# Microsoft.Build.Traversal
+# Microsoft.Build.Traversal
+[![NuGet](https://img.shields.io/nuget/v/Microsoft.Build.Traversal.svg)](https://www.nuget.org/packages/Microsoft.Build.Traversal)
+ [![NuGet](https://img.shields.io/nuget/dt/Microsoft.Build.Traversal.svg)](https://www.nuget.org/packages/Microsoft.Build.Traversal)
+ 
 The `Microsoft.Build.Traversal` MSBuild project SDK allows project tree owners the ability to define what projects should be built.  Visual Studio solution files are more targeted for end-users and are not good for build systems.  Additionally, large project trees usually have several Visual Studio solution files scoped to different parts of the tree.
 
 In an enterprise-level build, you want to have a way to control what projects are a built in your hosted build system.  Traversal projects allow you to define a set of projects at any level of your folder structure and can be built locally or in a hosted build environment.
