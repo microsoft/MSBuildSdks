@@ -5,7 +5,7 @@
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Description>Provides the ability to centrally manage your NuGet package versions when using PackageReference.</Description>
     <IncludeBuildOutput>false</IncludeBuildOutput>
-    <PackageTags>tags</PackageTags>
+    <PackageTags>MSBuild MSBuildSdk</PackageTags>
   </PropertyGroup>
 
 </Project>

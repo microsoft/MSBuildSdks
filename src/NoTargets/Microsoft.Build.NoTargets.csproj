@@ -5,7 +5,7 @@
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Description>Provides targets for projects that do not compile an assembly.</Description>
     <IncludeBuildOutput>false</IncludeBuildOutput>
-    <PackageTags>tags</PackageTags>
+    <PackageTags>MSBuild MSBuildSdk notargets notarget</PackageTags>
   </PropertyGroup>
 
 </Project>
