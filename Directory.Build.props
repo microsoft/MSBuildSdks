@@ -11,7 +11,7 @@
 
   <PropertyGroup>
     <Authors>Microsoft</Authors>
-    <Company>company</Company>
+    <Company>Microsoft</Company>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <PackageLicenseUrl>https://github.com/Microsoft/MSBuildSdks/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/Microsoft/MSBuildSdks</PackageProjectUrl>
