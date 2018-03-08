@@ -3,10 +3,6 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(DesignerProjectPath)' == '' and '$(DesignerProjectRoot)' != ''">
-    <DesignerProjectPath>$(DesignerProjectRoot)/$(MSBuildProjectName).Designer</DesignerProjectPath>
-  </PropertyGroup>
-
   <PropertyGroup Condition="'$(DesignerProjectPath)' != '' and Exists('$(DesignerProjectPath)')">
     <WinFormsExcludes>$(DesignerProjectPath)/bin/**;$(DesignerProjectPath)/obj/**</WinFormsExcludes>
   </PropertyGroup>
