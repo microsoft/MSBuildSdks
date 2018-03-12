@@ -13,7 +13,7 @@ To have a project that just copies a file:
     <FilesToCopy Include="files\**" />
   </ItemGroup>
 
-  <Target Name="CopyFiles" AfterTarget="Build">
+  <Target Name="CopyFiles" AfterTargets="Build">
     <Copy
         SourceFiles="@(FilesToCopy)"
         DestinationFolder="$(OutDir)"
@@ -37,7 +37,7 @@ Or a project that runs a tool:
     <MyTool>mytool.exe</MyTool>
   </PropertyGroup>
 
-  <Target Name="RunTool" AfterTarget="Build">
+  <Target Name="RunTool" AfterTargets="Build">
     <Exec Command="$(MyTool) -arg1 value" />
   </Target>
 </Project>
