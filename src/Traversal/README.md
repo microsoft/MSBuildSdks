@@ -13,7 +13,7 @@ To build all projects under an "src" folder, use the following as your `dirs.pro
 <Project Sdk="Microsoft.Build.Traversal">
   <ItemGroup>
     <!-- Build all projects recursively under the "src" folder -->
-    <ProjectReference Include="src\**.*proj" />
+    <ProjectReference Include="src\**\*.*proj" />
   </ItemGroup>
 </Project>
 ```
