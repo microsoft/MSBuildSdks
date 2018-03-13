@@ -167,6 +167,11 @@
              BuildInParallel="$(BuildInParallel)"
              SkipNonexistentProjects="$(SkipNonexistentProjects)" />
   </Target>
+  
+  <!--
+    Traversal projects do not build anything and should not check for invalid configuration/platform.
+  -->
+  <Target Name="_CheckForInvalidConfigurationAndPlatform" />
 
   <Import Project="$(CustomAfterTraversalTargets)" Condition=" '$(CustomAfterTraversalTargets)' != '' And Exists('$(CustomAfterTraversalTargets)') " />
 </Project>
