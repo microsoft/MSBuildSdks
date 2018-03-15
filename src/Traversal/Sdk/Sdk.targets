@@ -20,7 +20,6 @@
       PrepareForBuild;
       PreBuildEvent;
       ResolveReferences;
-      IncrementalClean;
       PostBuildEvent
     </CoreBuildDependsOn>
 
