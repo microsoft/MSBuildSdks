@@ -1,0 +1,4 @@
+/Restore
+/ConsoleLoggerParameters:Verbosity=Minimal;Summary
+/MaxCPUCount
+/NodeReuse:false
