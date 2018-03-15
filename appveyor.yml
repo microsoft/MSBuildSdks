@@ -10,7 +10,7 @@ build_script:
 - cmd: >-
     IF /I "%APPVEYOR_REPO_TAG%" EQU "TRUE" SET Configuration=Release
 
-    MSBuild MSBuildSdks.sln /Restore /NodeReuse:false /MaxCpuCount /ConsoleLoggerParameters:Verbosity=Minimal /BinaryLogger /Logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+    MSBuild dirs.proj /BinaryLogger /Logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 artifacts:
 - path: msbuild.binlog
   name: logs
