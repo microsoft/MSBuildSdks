@@ -1,0 +1,25 @@
+<Project>
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(DesignerProjectPath)' != '' and Exists('$(DesignerProjectPath)')">
+    <WinFormsExcludes>$(DesignerProjectPath)/bin/**;$(DesignerProjectPath)/obj/**</WinFormsExcludes>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(DesignerProjectPath)' != '' and Exists('$(DesignerProjectPath)') and '$(EnableDefaultItems)' == 'true'">
+    <Compile Include="$(DesignerProjectPath)/**/*$(DefaultLanguageSourceExtension)" Exclude="$(DefaultItemExcludes);$(WinFormsExcludes)" Link="%(RecursiveDir)%(FileName)%(Extension)" />
+    <EmbeddedResource Include="$(DesignerProjectPath)/**/*.resx" Exclude="$(DefualtItemExcludes);$(WinFormsExcludes)" Link="%(RecursiveDir)%(FileName)%(Extension)" />
+
+    <None Include="$(DesignerProjectPath)/**/*" Exclude="$(DefaultItemExcludes);$(WinFormsExcludes);$(DesignerProjectPath)/**/*$(DefaultLanguageSourceExtension);$(DesignerProjectPath)/**/*.resx" Link="%(RecursiveDir)%(FileName)%(Extension)" Condition="'$(EnableDefaultNoneItems)' == 'true'" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DesignerProjectPath)' != '' and Exists('$(DesignerProjectPath)')">
+    <Compile Update="$(DesignerProjectPath)/**/*.Designer$(DefaultLanguageSourceExtension)">
+      <DependentUpon>$([System.String]::Copy('%(FileName)').Replace('.Designer', ''))$(DefaultLanguageSourceExtension)</DependentUpon>
+    </Compile>
+    <EmbeddedResource Update="$(DesignerProjectPath)/**/*.resx">
+      <DependentUpon>$([System.Text.RegularExpressions.Regex]::Replace('%(FileName)', '(?:\.[a-z][a-z]-[A-Z][A-Z])?\.resx%24', ''))$(DefaultLanguageSourceExtension)</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+</Project>

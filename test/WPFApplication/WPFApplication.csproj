@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk.WPF/1.0.33-preview-gcdc9133998">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net461</TargetFramework>
+
+    <EmbeddedResourceGeneratorVisibilityIsInternal>false</EmbeddedResourceGeneratorVisibilityIsInternal>
+  </PropertyGroup>
+</Project>

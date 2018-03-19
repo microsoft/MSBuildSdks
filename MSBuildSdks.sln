@@ -20,6 +20,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.NoTargets",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.CentralPackageVersions", "src\CentralPackageVersions\Microsoft.Build.CentralPackageVersions.csproj", "{720D8DE8-C7BA-4CD0-A00A-D8A169D7FE80}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Sdk.WPF", "src\Microsoft.NET.Sdk.WPF\Microsoft.NET.Sdk.WPF.csproj", "{F5B8469D-A3FF-49D2-9876-05D84B3926B6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Sdk.WindowsForms", "src\Microsoft.NET.Sdk.WindowsForms\Microsoft.NET.Sdk.WindowsForms.csproj", "{900986BC-7E6A-44F2-9081-29B5E0CF6DBC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,11 +42,29 @@ Global
 		{720D8DE8-C7BA-4CD0-A00A-D8A169D7FE80}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{720D8DE8-C7BA-4CD0-A00A-D8A169D7FE80}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{720D8DE8-C7BA-4CD0-A00A-D8A169D7FE80}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5B8469D-A3FF-49D2-9876-05D84B3926B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5B8469D-A3FF-49D2-9876-05D84B3926B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5B8469D-A3FF-49D2-9876-05D84B3926B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5B8469D-A3FF-49D2-9876-05D84B3926B6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{900986BC-7E6A-44F2-9081-29B5E0CF6DBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{900986BC-7E6A-44F2-9081-29B5E0CF6DBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{900986BC-7E6A-44F2-9081-29B5E0CF6DBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{900986BC-7E6A-44F2-9081-29B5E0CF6DBC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6AB3C4FB-938A-42B8-8E9E-A53178C94301}
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		Policies = $0
+		$0.TextStylePolicy = $2
+		$1.TabsToSpaces = True
+		$1.scope = text/x-json
+		$2.TabWidth = 2
+		$2.TabsToSpaces = True
+		$2.IndentWidth = 2
+		$2.scope = application/x-csproject
 	EndGlobalSection
 EndGlobal

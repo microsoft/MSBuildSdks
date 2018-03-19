@@ -1,0 +1,21 @@
+<Project>
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <_SdkVisualStudioVersion>$(VisualStudioVersion)</_SdkVisualStudioVersion>
+    <_SdkVisualStudioVersion Condition="'$(_SdkVisualStudioVersion)' == '' or '$(_SdkVisualStudioVersion)' &lt; '14.0' ">15.0</_SdkVisualStudioVersion>
+
+    <!-- Workaround for lack of XAML support in the new project system -->
+    <LanguageTargets Condition="'$(_SdkLanguageName)' != 'FSharp'">$(MSBuildExtensionsPath)\$(_SdkVisualStudioVersion)\Bin\Microsoft.$(_SdkLanguageName).targets</LanguageTargets>
+    <LanguageTargets Condition="'$(_SdkLanguageName)' == 'FSharp'">$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(_SdkVisualStudioVersion)\FSharp\Microsoft.FSharp.Targets</LanguageTargets>
+
+    <!-- Don't generate assembly info for *.tmp_proj files -->
+    <GenerateAssemblyInfo Condition="'$(MSBuildProjectExtension)' == '.tmp_proj'">false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+  <Import Project="$(MSBuildThisFileDirectory)/../build/ProjectSystem2488Workaround.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)/../build/NuGet3894Workaround.targets" />
+</Project>

@@ -1,0 +1,8 @@
+﻿{
+  "inherit": true,
+  "version": "1.0-preview",
+  "publicReleaseRefSpec": [
+    "^refs/heads/master$",
+    "^refs/tags/Microsoft\\.Build\\.Traversal-v\\d+\\.\\d+.\\d+"
+  ]
+}

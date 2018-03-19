@@ -1,0 +1,20 @@
+<Project>
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(DisableImplicitFrameworkReferences)' != 'true'">
+    <_ExtrasImplicitReference Include="System.Windows.Forms" />
+    <_ExtrasImplicitReference Include="System.Drawing" />
+    <_ExtrasImplicitReference Include="System.Design" />
+
+    <!-- Set Pack=false on implicit references so they don't get added to NuGet packages as framework assemblies -->
+    <_ExtrasImplicitReference Update="@(_ExtrasImplicitReference)" Pack="false" />
+    <!-- Don't duplicate any references that are explicit in the project file.  This means that if you do want to include a framework assembly in your
+         NuGet package, you can just add the Reference to your project file. -->
+    <_ExtrasImplicitReference Remove="@(Reference)" />
+
+    <!-- Add the implicit references to @(Reference) -->
+    <Reference Include="@(_ExtrasImplicitReference)" />
+  </ItemGroup>
+</Project>
