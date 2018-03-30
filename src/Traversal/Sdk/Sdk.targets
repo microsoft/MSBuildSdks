@@ -32,6 +32,10 @@
       FindInvalidProjectReferences;
       AfterResolveReferences
     </ResolveReferencesDependsOn>
+
+    <TestDependsOn>
+      Build
+    </TestDependsOn>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TraversalTranslateProjectFileItems)' != 'false' ">
@@ -62,33 +66,38 @@
              Properties="$(PreTraversalGlobalProperties)"
              Condition=" '@(PreTraversalProject)' != '' "
              BuildInParallel="$(BuildInParallel)"
-             SkipNonexistentProjects="$(SkipNonexistentProjects)" />
+             SkipNonexistentProjects="$(SkipNonexistentProjects)"
+             SkipNonexistentTargets="$(SkipNonexistentTargets)" />
 
     <MSBuild Projects="@(PreTraversalBuildProject)"
              Targets="Build"
              Properties="$(PreTraversalBuildGlobalProperties)"
              Condition=" '@(PreTraversalBuildProject)' != '' "
              BuildInParallel="$(BuildInParallel)"
-             SkipNonexistentProjects="$(SkipNonexistentProjects)" />
+             SkipNonexistentProjects="$(SkipNonexistentProjects)"
+             SkipNonexistentTargets="$(SkipNonexistentTargets)" />
 
     <MSBuild Projects="@(_MSBuildProjectReferenceExistent)"
              Properties="$(TraversalGlobalProperties);$(TraversalBuildGlobalProperties)"
              BuildInParallel="$(BuildInParallel)"
-             SkipNonexistentProjects="$(SkipNonexistentProjects)" />
+             SkipNonexistentProjects="$(SkipNonexistentProjects)"
+             SkipNonexistentTargets="$(SkipNonexistentTargets)" />
 
     <MSBuild Projects="@(PostTraversalBuildProject)"
              Targets="Build"
              Properties="$(PostTraversalBuildGlobalProperties)"
              Condition=" '@(PostTraversalBuildProject)' != '' "
              BuildInParallel="$(BuildInParallel)"
-             SkipNonexistentProjects="$(SkipNonexistentProjects)" />
+             SkipNonexistentProjects="$(SkipNonexistentProjects)"
+             SkipNonexistentTargets="$(SkipNonexistentTargets)" />
 
     <MSBuild Projects="@(PostTraversalProject)"
              Targets="Build"
              Properties="$(PostTraversalGlobalProperties)"
              Condition=" '@(PostTraversalProject)' != '' "
              BuildInParallel="$(BuildInParallel)"
-             SkipNonexistentProjects="$(SkipNonexistentProjects)" />
+             SkipNonexistentProjects="$(SkipNonexistentProjects)"
+             SkipNonexistentTargets="$(SkipNonexistentTargets)" />
   </Target>
 
   <Target Name="Clean"
@@ -99,34 +108,39 @@
              Properties="$(PreTraversalGlobalProperties)"
              Condition=" '@(PreTraversalProject)' != '' "
              BuildInParallel="$(BuildInParallel)"
-             SkipNonexistentProjects="$(SkipNonexistentProjects)" />
+             SkipNonexistentProjects="$(SkipNonexistentProjects)"
+             SkipNonexistentTargets="$(SkipNonexistentTargets)" />
 
     <MSBuild Projects="@(PreTraversalCleanProject)"
-             Targets="Build"
+             Targets="Clean"
              Properties="$(PreTraversalCleanGlobalProperties)"
              Condition=" '@(PreTraversalCleanProject)' != '' "
              BuildInParallel="$(BuildInParallel)"
-             SkipNonexistentProjects="$(SkipNonexistentProjects)" />
+             SkipNonexistentProjects="$(SkipNonexistentProjects)"
+             SkipNonexistentTargets="$(SkipNonexistentTargets)" />
 
     <MSBuild Projects="@(_MSBuildProjectReferenceExistent)"
              Targets="Clean"
              Properties="$(TraversalGlobalProperties);$(TraversalCleanGlobalProperties)"
              BuildInParallel="$(BuildInParallel)"
-             SkipNonexistentProjects="$(SkipNonexistentProjects)" />
+             SkipNonexistentProjects="$(SkipNonexistentProjects)"
+             SkipNonexistentTargets="$(SkipNonexistentTargets)" />
 
     <MSBuild Projects="@(PostTraversalCleanProject)"
-             Targets="Build"
+             Targets="Clean"
              Properties="$(PostTraversalCleanGlobalProperties)"
              Condition=" '@(PostTraversalCleanProject)' != '' "
              BuildInParallel="$(BuildInParallel)"
-             SkipNonexistentProjects="$(SkipNonexistentProjects)" />
+             SkipNonexistentProjects="$(SkipNonexistentProjects)"
+             SkipNonexistentTargets="$(SkipNonexistentTargets)" />
 
     <MSBuild Projects="@(PostTraversalProject)"
              Targets="Clean"
              Properties="$(PostTraversalGlobalProperties)"
              Condition=" '@(PostTraversalProject)' != '' "
              BuildInParallel="$(BuildInParallel)"
-             SkipNonexistentProjects="$(SkipNonexistentProjects)" />
+             SkipNonexistentProjects="$(SkipNonexistentProjects)"
+             SkipNonexistentTargets="$(SkipNonexistentTargets)" />
   </Target>
 
   <Target Name="Test"
@@ -137,34 +151,39 @@
              Properties="$(PreTraversalGlobalProperties)"
              Condition=" '@(PreTraversalProject)' != '' "
              BuildInParallel="$(BuildInParallel)"
-             SkipNonexistentProjects="$(SkipNonexistentProjects)" />
+             SkipNonexistentProjects="$(SkipNonexistentProjects)"
+             SkipNonexistentTargets="$(SkipNonexistentTargets)" />
 
     <MSBuild Projects="@(PreTraversalTestProject)"
-             Targets="Build"
+             Targets="Test"
              Properties="$(PreTraversalTestGlobalProperties)"
              Condition=" '@(PreTraversalTestProject)' != '' "
              BuildInParallel="$(BuildInParallel)"
-             SkipNonexistentProjects="$(SkipNonexistentProjects)" />
+             SkipNonexistentProjects="$(SkipNonexistentProjects)"
+             SkipNonexistentTargets="$(SkipNonexistentTargets)" />
 
     <MSBuild Projects="@(_MSBuildProjectReferenceExistent)"
              Targets="Test"
              Properties="$(TraversalGlobalProperties);$(TraversalTestGlobalProperties)"
              BuildInParallel="$(BuildInParallel)"
-             SkipNonexistentProjects="$(SkipNonexistentProjects)" />
+             SkipNonexistentProjects="$(SkipNonexistentProjects)"
+             SkipNonexistentTargets="$(SkipNonexistentTargets)" />
 
     <MSBuild Projects="@(PostTraversalTestProject)"
-             Targets="Build"
+             Targets="Test"
              Properties="$(PostTraversalTestGlobalProperties)"
              Condition=" '@(PostTraversalTestProject)' != '' "
              BuildInParallel="$(BuildInParallel)"
-             SkipNonexistentProjects="$(SkipNonexistentProjects)" />
+             SkipNonexistentProjects="$(SkipNonexistentProjects)"
+             SkipNonexistentTargets="$(SkipNonexistentTargets)" />
 
     <MSBuild Projects="@(PostTraversalProject)"
              Targets="Test"
              Properties="$(PostTraversalGlobalProperties)"
              Condition=" '@(PostTraversalProject)' != '' "
              BuildInParallel="$(BuildInParallel)"
-             SkipNonexistentProjects="$(SkipNonexistentProjects)" />
+             SkipNonexistentProjects="$(SkipNonexistentProjects)"
+             SkipNonexistentTargets="$(SkipNonexistentTargets)" />
   </Target>
   
   <!--
