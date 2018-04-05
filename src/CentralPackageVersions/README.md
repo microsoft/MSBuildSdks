@@ -30,6 +30,8 @@ In this example, packages like `Newtonsoft.Json` are set to exactly version `10.
 **SampleProject.csproj**
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="1.0.12" />
+  
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
