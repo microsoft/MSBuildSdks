@@ -10,15 +10,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Traversal\Microsoft.Build.Traversal.csproj">
+    <ProjectReference Include="..\NoTargets\Microsoft.Build.NoTargets.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
     <ProjectReference Include="..\UnitTest.Common\UnitTest.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\Traversal\Sdk\Sdk.props" Link="Sdk\Sdk.props" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="..\Traversal\Sdk\Sdk.targets" Link="Sdk\Sdk.targets" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\NoTargets\Sdk\Sdk.props" Link="Sdk\Sdk.props" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\NoTargets\Sdk\Sdk.targets" Link="Sdk\Sdk.targets" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

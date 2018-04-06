@@ -22,6 +22,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.CentralPack
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.Traversal.UnitTests", "src\Traversal.UnitTests\Microsoft.Build.Traversal.UnitTests.csproj", "{48AEFD7C-4F21-4855-9EB0-75B1EB58955C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest.Common", "src\UnitTest.Common\UnitTest.Common.csproj", "{8B1D3EDD-EFF1-4D1A-98D5-58B799784A99}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Build.NoTargets.UnitTests", "src\NoTargets.UnitTests\Microsoft.Build.NoTargets.UnitTests.csproj", "{FE997E79-94D9-4663-9727-ABF40B67E1CF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,6 +48,14 @@ Global
 		{48AEFD7C-4F21-4855-9EB0-75B1EB58955C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{48AEFD7C-4F21-4855-9EB0-75B1EB58955C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{48AEFD7C-4F21-4855-9EB0-75B1EB58955C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8B1D3EDD-EFF1-4D1A-98D5-58B799784A99}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B1D3EDD-EFF1-4D1A-98D5-58B799784A99}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B1D3EDD-EFF1-4D1A-98D5-58B799784A99}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B1D3EDD-EFF1-4D1A-98D5-58B799784A99}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FE997E79-94D9-4663-9727-ABF40B67E1CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE997E79-94D9-4663-9727-ABF40B67E1CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE997E79-94D9-4663-9727-ABF40B67E1CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE997E79-94D9-4663-9727-ABF40B67E1CF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

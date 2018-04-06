@@ -8,7 +8,7 @@
 
   <Import Project="$(CustomBeforeNoTargets)" Condition="'$(CustomBeforeNoTargets)' != '' and Exists('$(CustomBeforeNoTargets)')" />
 
-  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition=" Exists('$(MSBuildToolsPath)\Microsoft.Common.targets') " />
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" Condition=" '$(CommonTargetsPath)' == '' " />
 
   <ItemGroup>
     <IntermediateAssembly Remove="@(IntermediateAssembly)" />
