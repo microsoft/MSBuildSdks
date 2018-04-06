@@ -10,6 +10,9 @@
     <PackageReference Include="MSBuild.ProjectCreation" Version="1.0.6" />
     <PackageReference Include="Microsoft.Build" Version="15.6.82" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.Build.Framework" Version="15.6.82" ExcludeAssets="runtime" />
+    <PackageReference Include="Shouldly" Version="3.0.0" />
+    <PackageReference Include="xunit" Version="2.3.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
   </ItemGroup>
 
 </Project>
