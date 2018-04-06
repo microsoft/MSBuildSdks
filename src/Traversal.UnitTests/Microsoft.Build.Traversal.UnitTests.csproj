@@ -11,10 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Locator" Version="1.0.7-preview-ge60d679b53" />
-    <PackageReference Include="MSBuild.ProjectCreation" Version="1.0.6" />
-    <PackageReference Include="Microsoft.Build" Version="15.6.82" ExcludeAssets="runtime" />
-    <PackageReference Include="Microsoft.Build.Framework" Version="15.6.82" ExcludeAssets="runtime" />
+    
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.6.2" />
     <PackageReference Include="Shouldly" Version="3.0.0" />
     <PackageReference Include="xunit" Version="2.3.1" />
@@ -25,6 +22,7 @@
     <ProjectReference Include="..\Traversal\Microsoft.Build.Traversal.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
+    <ProjectReference Include="..\UnitTest.Common\UnitTest.Common.csproj" />
   </ItemGroup>
 
 </Project>
