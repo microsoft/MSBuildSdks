@@ -28,7 +28,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTest.Common", "src\Unit
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.NoTargets.UnitTests", "src\NoTargets.UnitTests\Microsoft.Build.NoTargets.UnitTests.csproj", "{FE997E79-94D9-4663-9727-ABF40B67E1CF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Build.CentralPackageVersions.UnitTests", "src\Microsoft.Build.CentralPackageVersions.UnitTests\Microsoft.Build.CentralPackageVersions.UnitTests.csproj", "{9D14030D-B050-48B0-82A4-9ADE28392533}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Build.CentralPackageVersions.UnitTests", "src\CentralPackageVersions.UnitTests\Microsoft.Build.CentralPackageVersions.UnitTests.csproj", "{9D14030D-B050-48B0-82A4-9ADE28392533}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
