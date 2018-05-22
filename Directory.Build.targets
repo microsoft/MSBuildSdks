@@ -10,6 +10,11 @@
     <IntermediateRefAssembly Remove="@(IntermediateRefAssembly)" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <!-- Full symbols so that unit test assertions have more info -->
+    <DebugType Condition=" '$(Configuration)' == 'Debug' ">Full</DebugType>
+  </PropertyGroup>
+
   <PropertyGroup Condition=" '$(IncludeBuildOutput)' == 'false' ">
     <!--
       This property must be overridden to remove a few targets that compile assemblies

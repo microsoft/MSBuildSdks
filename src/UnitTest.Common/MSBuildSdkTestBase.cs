@@ -1,11 +1,16 @@
 ﻿using System;
 using System.IO;
+using System.Reflection;
 
-namespace Microsoft.Build.Traversal.UnitTests
+namespace UnitTest.Common
 {
     public abstract class MSBuildSdkTestBase : MSBuildTestBase, IDisposable
     {
         private readonly string _testRootPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+
+        private static readonly string TestAssemblyPathValue = typeof(MSBuildSdkTestBase).Assembly.ManifestModule.FullyQualifiedName;
+
+        public string TestAssemblyPath => TestAssemblyPathValue;
 
         public string TestRootPath
         {
