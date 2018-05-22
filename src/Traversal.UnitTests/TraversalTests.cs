@@ -2,6 +2,7 @@
 using Microsoft.Build.Utilities.ProjectCreation;
 using Shouldly;
 using System.Linq;
+using UnitTest.Common;
 using Xunit;
 
 namespace Microsoft.Build.Traversal.UnitTests

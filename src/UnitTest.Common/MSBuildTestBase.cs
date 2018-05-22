@@ -1,7 +1,6 @@
-﻿using System;
-using Microsoft.Build.Locator;
+﻿using Microsoft.Build.Locator;
 
-namespace Microsoft.Build.Traversal.UnitTests
+namespace UnitTest.Common
 {
     public abstract class MSBuildTestBase
     {

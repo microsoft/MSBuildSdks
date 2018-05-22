@@ -1,8 +1,10 @@
-﻿using System.Linq;
+﻿using Microsoft.Build.Evaluation;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Traversal.UnitTests;
 using Microsoft.Build.Utilities.ProjectCreation;
 using Shouldly;
+using System.Collections.Generic;
+using System.Linq;
+using UnitTest.Common;
 using Xunit;
 
 namespace Microsoft.Build.NoTargets.UnitTests
@@ -14,6 +16,10 @@ namespace Microsoft.Build.NoTargets.UnitTests
         {
             ProjectCreator.Templates.NoTargetsProject(
                 path: GetTempFileWithExtension(".csproj"),
+                projectCollection: new ProjectCollection(new Dictionary<string, string>
+                {
+                    ["DesignTimeBuild"] = "true"
+                }),
                 customAction: creator =>
                 {
                     creator.Target("TakeAction", afterTargets: "Build")

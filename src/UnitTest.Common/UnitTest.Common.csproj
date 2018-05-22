@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.Locator" Version="1.0.13" />
-    <PackageReference Include="MSBuild.ProjectCreation" Version="1.0.8" />
+    <PackageReference Include="MSBuild.ProjectCreation" Version="1.0.11" />
     <PackageReference Include="Microsoft.Build" Version="15.7.179" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.Build.Framework" Version="15.7.179" ExcludeAssets="runtime" />
     <PackageReference Include="Shouldly" Version="3.0.0" />
