@@ -1,4 +1,8 @@
-﻿using Microsoft.Build.Utilities.ProjectCreation;
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+//
+// Licensed under the MIT license.
+
+using Microsoft.Build.Utilities.ProjectCreation;
 using System.Collections.Generic;
 
 namespace Microsoft.Build.CentralPackageVersions.UnitTests

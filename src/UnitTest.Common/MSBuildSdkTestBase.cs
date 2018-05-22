@@ -1,14 +1,17 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+//
+// Licensed under the MIT license.
+
+using System;
 using System.IO;
-using System.Reflection;
 
 namespace UnitTest.Common
 {
     public abstract class MSBuildSdkTestBase : MSBuildTestBase, IDisposable
     {
-        private readonly string _testRootPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-
         private static readonly string TestAssemblyPathValue = typeof(MSBuildSdkTestBase).Assembly.ManifestModule.FullyQualifiedName;
+
+        private readonly string _testRootPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
         public string TestAssemblyPath => TestAssemblyPathValue;
 

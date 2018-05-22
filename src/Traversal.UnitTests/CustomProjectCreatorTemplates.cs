@@ -1,15 +1,19 @@
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+//
+// Licensed under the MIT license.
+
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Utilities.ProjectCreation;
 using System;
 using System.IO;
 
-namespace Microsoft.Build.NoTargets.UnitTests
+namespace Microsoft.Build.Traversal.UnitTests
 {
     public static class CustomProjectCreatorTemplates
     {
-        public static ProjectCreator NoTargetsProject(
+        public static ProjectCreator TraversalProject(
             this ProjectCreatorTemplates templates,
-            Action<ProjectCreator> customAction = null,
+            string[] projectReferences,
             string path = null,
             string defaultTargets = null,
             string initialTargets = null,
@@ -31,8 +35,10 @@ namespace Microsoft.Build.NoTargets.UnitTests
                     projectCollection,
                     projectFileOptions)
                 .Import(Path.Combine(currentDirectory, "Sdk", "Sdk.props"))
-                .Property("TargetFramework", "netstandard1.0")
-                .CustomAction(customAction)
+                .ForEach(projectReferences, (projectReference, i) =>
+                {
+                    i.ItemProjectReference(projectReference);
+                })
                 .Import(Path.Combine(currentDirectory, "Sdk", "Sdk.targets"));
         }
     }
