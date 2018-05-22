@@ -10,9 +10,6 @@ build_script:
     IF /I "%APPVEYOR_REPO_TAG%" EQU "TRUE" SET Configuration=Release
 
     MSBuild dirs.proj /BinaryLogger /Logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
-artifacts:
-- path: msbuild.binlog
-  name: logs
 on_success:
 - ps: >-
     if($env:APPVEYOR_REPO_TAG_NAME -ne $null) {
