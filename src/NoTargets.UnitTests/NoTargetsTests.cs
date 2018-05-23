@@ -35,11 +35,7 @@ namespace Microsoft.Build.NoTargets.UnitTests
 
             result.ShouldBeTrue(() => buildOutput.GetConsoleLog());
 
-            buildOutput
-                .MessagesHighImportance
-                 .Select(i => i.Message)
-                .ToList()
-                .ShouldContain("86F00AF59170450E9D687652D74A6394");
+            buildOutput.Messages.High.ShouldContain("86F00AF59170450E9D687652D74A6394");
         }
     }
 }
