@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.Build.NoTargets/1.0.26">
+  <PropertyGroup>
+    <TargetFramework>net46</TargetFramework>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <EnableGitVersioning>false</EnableGitVersioning>
+    <EnableStyleCop>false</EnableStyleCop>
+    <SignType Condition=" '$(SignType)' == '' ">Test</SignType>
+    <ESRPSigning Condition=" '$(ESRPSigning)' == '' ">true</ESRPSigning>
+    <ArtifactsPath Condition=" '$(ArtifactsPath)' == '' ">..\artifacts</ArtifactsPath>
+    <OutputPath>$(ArtifactsPath)\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>$(ArtifactsPath)\obj\$(Configuration)\</IntermediateOutputPath>
+    <LanguageTargets Condition="'$(LanguageTargets)' == ''">$(MSBuildToolsPath)\Microsoft.Common.targets</LanguageTargets>
+    <_GetChildProjectCopyToOutputDirectoryItems>false</_GetChildProjectCopyToOutputDirectoryItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MicroBuild.Core" Version="0.3.0" PrivateAssets="All" />
+
+    <ProjectReference Include="..\src\CentralPackageVersions\Microsoft.Build.CentralPackageVersions.csproj"  />
+    <ProjectReference Include="..\src\NoTargets\Microsoft.Build.NoTargets.csproj" />
+    <ProjectReference Include="..\src\Traversal\Microsoft.Build.Traversal.csproj" />
+
+    <ProjectReference Update="@(ProjectReference)" OutputItemType="ProjectOutput" Targets="Build;_GetProjectVersion;_GetOutputItemsFromPack;GetTargetPath" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
+    
+    <ProjectReference Include="..\src\**\*UnitTests.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
+  </ItemGroup>
+
+  <Target Name="StageArtifacts"
+          BeforeTargets="AfterBuild">
+    <ItemGroup>
+      <Artifact Include="@(ProjectOutput)" Authenticode="NuGet" Condition=" '%(Extension)' == '.nupkg' " />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(Artifact->Distinct())"
+          DestinationFiles="$([System.IO.Path]::GetFullPath('$(OutputPath)%(Filename)%(Extension)'))"
+          OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+          Retries="$(CopyRetryCount)"
+          RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)">
+      <Output TaskParameter="CopiedFiles" ItemName="FilesToSign" />
+    </Copy>
+
+    <Message Text="FilesToSign: %(FilesToSign.Identity) / %(FilesToSign.Authenticode)" Importance="High" />
+  </Target>
+</Project>

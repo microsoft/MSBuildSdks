@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.Build.Traversal">
   <ItemGroup>
     <ProjectReference Include="src\**\*.*proj" />
+    <ProjectReference Include="build\Sign.proj" Condition=" '$(SignType)' != '' " />
   </ItemGroup>
 </Project>
