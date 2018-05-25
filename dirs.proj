@@ -3,28 +3,4 @@
     <ProjectReference Include="src\**\*.*proj" />
     <ProjectReference Include="build\Sign.proj" Condition=" '$(SignType)' != '' " />
   </ItemGroup>
-
-  <!--
-    When building in Visual Studio Team Services (VSTS) update the build number to the current
-    git tag if one is found.
-  -->
-  <Target Name="SetBuildNumberToGitTagInVsts"
-          AfterTargets="Build"
-          Condition=" '$(SYSTEM_TEAMPROJECTID)' != '' ">
-
-    <Exec Command="git tag --points-at HEAD"
-          ConsoleToMSBuild="true"
-          EchoOff="true"
-          StandardOutputImportance="Normal">
-      <Output TaskParameter="ConsoleOutput"
-              ItemName="GitTag" />
-    </Exec>
-
-    <Error Text="There are multiple tags associated with this commit: @(GitTag, ', ')"
-           Condition="@(GitTag->Count()) > 1" />
-
-    <Message Text="##vso[build.updatebuildnumber]@(GitTag)"
-             Importance="High"
-             Condition=" @(GitTag->Count()) == 1 " />
-  </Target>
 </Project>
