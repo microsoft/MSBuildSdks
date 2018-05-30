@@ -8,6 +8,16 @@
 
   <Import Project="$(CustomBeforeTraversalTargets)" Condition=" '$(CustomBeforeTraversalTargets)' != '' And Exists('$(CustomBeforeTraversalTargets)') " />
 
+  <PropertyGroup Condition=" '$(OutputPath)' == '' ">
+    <!--
+      OutputPath is required to be set because targets like Clean will read it.  Traversal projects shouldn't really emit any
+      output but it could be hard to track down all of the places where $(OutputPath) and $(OutDir) are expected to be set.
+    -->
+    <OutputPath Condition=" '$(Configuration)' == '' And '$(Platform)' == '' ">bin\Debug\</OutputPath>
+    <OutputPath Condition=" '$(Configuration)' != '' And '$(Platform)' == '' ">bin\$(Configuration)\</OutputPath>
+    <OutputPath Condition=" '$(Configuration)' != '' And '$(Platform)' != '' ">bin\$(Configuration)\$(Platform)\</OutputPath>
+  </PropertyGroup>
+  
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition=" Exists('$(MSBuildToolsPath)\Microsoft.Common.targets') " />
 
   <PropertyGroup>
@@ -36,6 +46,15 @@
     <TestDependsOn>
       Build
     </TestDependsOn>
+
+    <CleanDependsOn>
+      BeforeClean;
+      UnmanagedUnregistration;
+      CoreClean;
+      PrepareProjectReferences;
+      CleanPublishFolder;
+      AfterClean
+    </CleanDependsOn>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TraversalTranslateProjectFileItems)' != 'false' ">
