@@ -49,23 +49,5 @@
       </NuspecProperties>
     </PropertyGroup>
   </Target>
-  
-  <!--
-    Removes the prerelease version when $(PublicRelease) is true.  This allows us to have -preview in the version.json for local
-    unreleased builds.  When we create a tag for a particular SDK, then PublicRelease is 'true' and the -preview is dropped.
-  -->
-  <Target Name="GetBuildVersionEx" AfterTargets="GetBuildVersion" BeforeTargets="SetCloudBuildVersionVars" DependsOnTargets="GetBuildVersion" Condition=" '$(PublicRelease)' == 'true' ">
-    <PropertyGroup>
-      <PrereleaseVersion></PrereleaseVersion>
-      <AssemblyInformationalVersion>$(BuildVersionSimple)$(SemVerBuildSuffix)</AssemblyInformationalVersion>
-      <CloudBuildNumber>$(BuildVersionSimple)</CloudBuildNumber>
-      <NuGetPackageVersion>$(BuildVersionSimple)</NuGetPackageVersion>
-      <PackageVersion>$(BuildVersionSimple)</PackageVersion>
-      <NPMPackageVersion>$(BuildVersionSimple)</NPMPackageVersion>
-    </PropertyGroup>
-    <ItemGroup>
-      <CloudBuildVersionVars GitAssemblyInformationalVersion="$(AssemblyInformationalVersion)"/>
-    </ItemGroup>
-  </Target>
 
 </Project>
