@@ -33,6 +33,14 @@
   <ItemDefinitionGroup Condition=" '$(EnableCentralPackageVersions)' != 'false' ">
     <GlobalPackageReference Condition=" $([MSBuild]::ValueOrDefault('$(EnableGlobalPackageReferencePrivateAssetsAll)', 'true')) ">
       <!--
+        Default global package references to only consume the Analyzers and Build logic in a package.
+        This helps ensure that the package assets are not passed to the compiler or copied to the
+        output directory.  Having a compile-time reference to a package for all projects in a tree
+        is not recommended.  You should only have "global" references to packages that are used for
+        build.
+      -->
+      <IncludeAssets>Analyzers;Build</IncludeAssets>
+      <!--
         Default global package references to have all assets private.  This is because global package
         references are generally stuff like versioning, signing, etc and should not flow to downstream
         dependencies.  Also, global package references are already referenced by every project in the

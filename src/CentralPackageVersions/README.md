@@ -60,14 +60,19 @@ In some cases, you may need to override the version for a particular project.  T
 ```
 
 ## Global Package References
-Some packages should be referenced by all projects in your tree.  This includes packages that do versioning, extend your build, or do any other function that is needed repository-wide.  Global package references have their `PrivateAssets` metadata set to `All` by default which prevents them from being picked up by downstream dependencies.
+Some packages should be referenced by all projects in your tree and are development dependencies only.  This includes packages that do versioning, extend your build, or do any other function that is needed repository-wide.  Global package references are added to the `PackageReference` item group with the following metadata:
+
+1. `IncludeAssets="Analyzers;Build"`<br/>
+Ensures that the package is only used for analyzers and build logic and prevents any compile-time dependencies. 
+2. `PrivateAssets="All"`<br/>
+This prevents package references from being picked up by downstream dependencies.
 
 **Packages.props**
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="[2.1.16]" Condition=" '$(EnableGitVersioning)' != 'false' " />
+    <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="2.1.16" Condition=" '$(EnableGitVersioning)' != 'false' " />
   </ItemGroup>
 </Project>
 ```
