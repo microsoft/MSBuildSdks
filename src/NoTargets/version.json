@@ -1,7 +1,4 @@
 ﻿{
   "inherit": true,
-  "version": "1.0-preview",
-  "publicReleaseRefSpec": [
-    "^refs/tags/Microsoft\\.Build\\.NoTargets-v\\d+\\.\\d+.\\d+"
-  ]
+  "version": "1.0"
 }
