@@ -14,20 +14,4 @@
     <RepositoryUrl>https://github.com/Microsoft/MSBuildSdks.git</RepositoryUrl>
   </PropertyGroup>
 
-  <ItemDefinitionGroup>
-    <PackageReference>
-      <PrivateAssets>Compile</PrivateAssets>
-    </PackageReference>
-  </ItemDefinitionGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Nerdbank.GitVersioning" Version="2.1.23" PrivateAssets="All" Condition=" '$(EnableGitVersioning)' != 'false' " />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(EnableStyleCop)' != 'false' ">
-    <PackageReference Include="StyleCop.Analyzers" Version="[1.0.2]" PrivateAssets="All" />
-    <Compile Include="..\GlobalSuppressions.cs" Visible="False" />
-    <AdditionalFiles Include="..\..\stylecop.json" Visible="False" />
-  </ItemGroup>
-
 </Project>

@@ -11,9 +11,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{DC479DC1
 		Directory.Build.props = Directory.Build.props
 		Directory.Build.rsp = Directory.Build.rsp
 		Directory.Build.targets = Directory.Build.targets
+		dirs.proj = dirs.proj
 		global.json = global.json
 		src\GlobalSuppressions.cs = src\GlobalSuppressions.cs
 		NuGet.config = NuGet.config
+		Packages.props = Packages.props
 		stylecop.json = stylecop.json
 		version.json = version.json
 	EndProjectSection
@@ -28,7 +30,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTest.Common", "src\Unit
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.NoTargets.UnitTests", "src\NoTargets.UnitTests\Microsoft.Build.NoTargets.UnitTests.csproj", "{FE997E79-94D9-4663-9727-ABF40B67E1CF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Build.CentralPackageVersions.UnitTests", "src\CentralPackageVersions.UnitTests\Microsoft.Build.CentralPackageVersions.UnitTests.csproj", "{9D14030D-B050-48B0-82A4-9ADE28392533}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.CentralPackageVersions.UnitTests", "src\CentralPackageVersions.UnitTests\Microsoft.Build.CentralPackageVersions.UnitTests.csproj", "{9D14030D-B050-48B0-82A4-9ADE28392533}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
