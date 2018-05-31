@@ -13,7 +13,7 @@
     <_GetChildProjectCopyToOutputDirectoryItems>false</_GetChildProjectCopyToOutputDirectoryItems>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="MicroBuild.Core" Version="0.3.0" PrivateAssets="All" />
+    <PackageReference Include="MicroBuild.Core" PrivateAssets="All" />
 
     <ProjectReference Include="..\src\CentralPackageVersions\Microsoft.Build.CentralPackageVersions.csproj"  />
     <ProjectReference Include="..\src\NoTargets\Microsoft.Build.NoTargets.csproj" />

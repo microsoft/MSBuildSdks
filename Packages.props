@@ -9,6 +9,7 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
+    <PackageReference Update="MicroBuild.Core" Version="0.3.0" />
     <PackageReference Update="Microsoft.Build" Version="15.7.179" />
     <PackageReference Update="Microsoft.Build.Framework" Version="15.7.179" />
     <PackageReference Update="Microsoft.Build.Locator" Version="1.0.18" />
