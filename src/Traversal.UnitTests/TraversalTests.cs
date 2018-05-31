@@ -61,11 +61,7 @@ namespace Microsoft.Build.Traversal.UnitTests
 
             result.ShouldBeTrue(customMessage: () => buildOutput.GetConsoleLog());
 
-            buildOutput
-                .MessagesHighImportance
-                .Select(i => i.Message)
-                .ToList()
-                .ShouldBe(
+            buildOutput.Messages.High.ShouldBe(
                     new[]
                     {
                         "BF0C6E1044514FE3AE4B78EC308D6F45",

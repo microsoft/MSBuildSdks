@@ -22,8 +22,8 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
             string treatAsLocalProperty = null,
             ProjectCollection projectCollection = null,
             NewProjectFileOptions? projectFileOptions = NewProjectFileOptions.IncludeXmlDeclaration | NewProjectFileOptions.IncludeXmlNamespace,
-            IReadOnlyDictionary<string, string> packageVersions = null,
-            IReadOnlyCollection<string> globalPackageReferences = null)
+            IReadOnlyDictionary<string, string> packageReferences = null,
+            IReadOnlyDictionary<string, string> globalPackageReferences = null)
         {
             return ProjectCreator.Create(
                         path,
@@ -34,9 +34,9 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                         treatAsLocalProperty,
                         projectCollection,
                         projectFileOptions)
-                    .ForEach(packageVersions, (i, creator) => creator.ItemPackageVersion(i.Key, i.Value))
+                    .ForEach(packageReferences, (i, creator) => creator.ItemCentralPackageReference(i.Key, i.Value))
                     .ItemGroup()
-                    .ForEach(globalPackageReferences, (i, creator) => creator.ItemGlobalPackageReference(i))
+                    .ForEach(globalPackageReferences, (i, creator) => creator.ItemGlobalPackageReference(i.Key, i.Value))
                     .CustomAction(customAction);
         }
     }

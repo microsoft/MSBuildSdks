@@ -19,25 +19,89 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
         [Fact]
         public void CanDisableCentralPackageVersions()
         {
+            WritePackagesProps();
+
             ProjectCreator.Templates
                 .SdkCsproj(
                     path: Path.Combine(TestRootPath, "test.csproj"),
                     projectCollection: new ProjectCollection(new Dictionary<string, string>
                     {
-                        { "EnableCentralPackageVersions", "false" },
-                        { "DisableImplicitFrameworkReferences", "true" }
+                        ["EnableCentralPackageVersions"] = "false",
+                        ["DisableImplicitFrameworkReferences"] = "true"
                     }),
                     projectCreator: creator => creator
                         .ItemPackageReference("Foo", "10.0.0")
                         .Import(Path.Combine(Environment.CurrentDirectory, @"Sdk\Sdk.targets")))
-                .Save()
                 .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput)
                 .Project
                 .GetItems("PackageReference").ToDictionary(i => i.EvaluatedInclude, i => i.GetMetadataValue("Version"))
                 .ShouldBe(new Dictionary<string, string>
                 {
-                    { "Foo", "10.0.0" }
+                    ["Foo"] = "10.0.0"
                 });
+
+            result.ShouldBeTrue(() => buildOutput.GetConsoleLog());
+        }
+
+        [Fact]
+        public void CanDisableGlobalPackageReferences()
+        {
+            WritePackagesProps();
+
+            ProjectCreator.Templates
+                .SdkCsproj(
+                    path: Path.Combine(TestRootPath, "test.csproj"),
+                    projectCollection: new ProjectCollection(new Dictionary<string, string>
+                    {
+                        ["DisableImplicitFrameworkReferences"] = "true",
+                        ["EnableGlobalPackageReferences"] = "false"
+                    }),
+                    projectCreator: creator => creator
+                        .ItemPackageReference("Foo")
+                        .Import(Path.Combine(Environment.CurrentDirectory, @"Sdk\Sdk.targets")))
+                .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput)
+                .Project
+                .GetItems("PackageReference").ToDictionary(i => i.EvaluatedInclude, i => i.GetMetadataValue("Version"))
+                .ShouldBe(
+                    new Dictionary<string, string>
+                    {
+                        ["Foo"] = "1.2.3"
+                    },
+                    ignoreOrder: true);
+
+            result.ShouldBeTrue(() => buildOutput.GetConsoleLog());
+        }
+
+        [Fact]
+        public void CanOverridePackageVersion()
+        {
+            WritePackagesProps();
+
+            ProjectCreator.Templates
+                .SdkCsproj(
+                    path: Path.Combine(TestRootPath, "test.csproj"),
+                    projectCollection: new ProjectCollection(new Dictionary<string, string>
+                    {
+                        ["DisableImplicitFrameworkReferences"] = "true"
+                    }),
+                    projectCreator: creator => creator
+                        .ItemPackageReference(
+                            "Foo",
+                            metadata: new Dictionary<string, string>
+                            {
+                                ["VersionOverride"] = "9.0.1"
+                            })
+                        .Import(Path.Combine(Environment.CurrentDirectory, @"Sdk\Sdk.targets")))
+                .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput)
+                .Project
+                .GetItems("PackageReference").ToDictionary(i => i.EvaluatedInclude, i => i.GetMetadataValue("Version"))
+                .ShouldBe(
+                    new Dictionary<string, string>
+                    {
+                        ["Foo"] = "9.0.1",
+                        ["Global1"] = "1.0.0"
+                    },
+                    ignoreOrder: true);
 
             result.ShouldBeTrue(() => buildOutput.GetConsoleLog());
         }
@@ -54,15 +118,11 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                         .ItemPackageReference("Foo")
                         .ItemPackageReference("Global1")
                         .Import(Path.Combine(Environment.CurrentDirectory, @"Sdk\Sdk.targets")))
-                .Save()
                 .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeFalse(() => buildOutput.GetConsoleLog());
 
-            buildOutput.Errors
-                .Select(i => i.Message)
-                .ToList()
-                .ShouldBe(new[] { $"The package reference \'Global1\' is already defined as a GlobalPackageReference in \'{packagesProps.FullPath}\'.  Individual projects do not need to include a PackageReference if a GlobalPackageReference is declared." });
+            buildOutput.Errors.ShouldBe(new[] { $"The package reference \'Global1\' is already defined as a GlobalPackageReference in \'{packagesProps.FullPath}\'.  Individual projects do not need to include a PackageReference if a GlobalPackageReference is declared." });
         }
 
         [Fact]
@@ -77,15 +137,11 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                         .ItemPackageReference("Foo")
                         .ItemPackageReference("Baz")
                         .Import(Path.Combine(Environment.CurrentDirectory, @"Sdk\Sdk.targets")))
-                .Save()
                 .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeFalse(() => buildOutput.GetConsoleLog());
 
-            buildOutput.Errors
-                .Select(i => i.Message)
-                .ToList()
-                .ShouldBe(new[] { $"The package reference \'Baz\' must have a version defined in \'{packagesProps.FullPath}\'." });
+            buildOutput.Errors.ShouldBe(new[] { $"The package reference \'Baz\' must have a version defined in \'{packagesProps.FullPath}\'." });
         }
 
         [Fact]
@@ -99,16 +155,34 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                     projectCreator: creator => creator
                         .ItemPackageReference("Foo", "10.0.0")
                         .Import(Path.Combine(Environment.CurrentDirectory, @"Sdk\Sdk.targets")))
-
-                .Save()
                 .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeFalse(() => buildOutput.GetConsoleLog());
 
-            buildOutput.Errors
-                .Select(i => i.Message)
-                .ToList()
-                .ShouldBe(new[] { $"The package reference \'Foo\' should not specify a version.  Please specify the version in \'{packagesProps.FullPath}\'." });
+            buildOutput.Errors.ShouldBe(new[] { $"The package reference \'Foo\' should not specify a version.  Please specify the version in \'{packagesProps.FullPath}\' or set VersionOverride to override the centrally defined version." });
+        }
+
+        [Fact]
+        public void LogErrorIfProjectSpecifiesVersionAndVersionOverrideIsDisabled()
+        {
+            ProjectCreator packagesProps = WritePackagesProps();
+
+            ProjectCreator.Templates
+                .SdkCsproj(
+                    path: Path.Combine(TestRootPath, "test.csproj"),
+                    projectCollection: new ProjectCollection(new Dictionary<string, string>
+                    {
+                        ["DisableImplicitFrameworkReferences"] = "true",
+                        ["EnablePackageVersionOverride"] = "false"
+                    }),
+                    projectCreator: creator => creator
+                        .ItemPackageReference("Foo", "10.0.0")
+                        .Import(Path.Combine(Environment.CurrentDirectory, @"Sdk\Sdk.targets")))
+                .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput);
+
+            result.ShouldBeFalse(() => buildOutput.GetConsoleLog());
+
+            buildOutput.Errors.ShouldBe(new[] { $"The package reference \'Foo\' should not specify a version.  Please specify the version in \'{packagesProps.FullPath}\'." });
         }
 
         [Fact]
@@ -121,14 +195,12 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                     path: Path.Combine(TestRootPath, "test.csproj"),
                     projectCollection: new ProjectCollection(new Dictionary<string, string>
                     {
-                        { "DisableImplicitFrameworkReferences", "true" }
+                        ["DisableImplicitFrameworkReferences"] = "true"
                     }),
                     projectCreator: creator => creator
                         .ItemPackageReference("Foo")
                         .ItemPackageReference("Bar")
                         .Import(Path.Combine(Environment.CurrentDirectory, @"Sdk\Sdk.targets")))
-
-                .Save()
                 .Project
                 .GetItems("PackageReference").ToDictionary(i => i.EvaluatedInclude, i => i.GetMetadataValue("Version"))
                 .ShouldBe(new Dictionary<string, string>
@@ -144,16 +216,15 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
             return ProjectCreator.Templates
                 .PackagesProps(
                     path: Path.Combine(TestRootPath, "Packages.props"),
-                    packageVersions: new Dictionary<string, string>
+                    packageReferences: new Dictionary<string, string>
                     {
                         ["Foo"] = "1.2.3",
                         ["Bar"] = "4.5.6",
-                        ["Global1"] = "1.0.0",
                         ["NETStandard.Library"] = "2.0.0"
                     },
-                    globalPackageReferences: new List<string>
+                    globalPackageReferences: new Dictionary<string, string>
                     {
-                        "Global1"
+                        ["Global1"] = "1.0.0"
                     })
                 .Save();
         }
