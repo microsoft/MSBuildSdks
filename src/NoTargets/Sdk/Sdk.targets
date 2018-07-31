@@ -7,12 +7,15 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <!--
-    Setup LanguageTargets to include Microsoft.Common.targets
-    Normally Microsoft.Common.targets is imported via the Language specific targets, but the 
-    NoTargets SDK does not have any "language", so we import the common targets directly
+    Set LanguageTargets to Microsoft.Common.targets for any project that the SDK won't (.proj, .noproj, etc)
+    https://github.com/dotnet/sdk/blob/50ddfbb91be94d068514e8f4b0ce1052156364a0/src/Tasks/Microsoft.NET.Build.Tasks/sdk/Sdk.targets#L28
+    
+    We can't default LanguageTargets it is set in the SDK and immediately imported.  So we can only default
+    it if we know the SDK won't.  Projects probably won't load in Visual Studio but will build from the
+    command-line just fine.
   -->
   <PropertyGroup>
-    <LanguageTargets Condition="'$(LanguageTargets)' == ''">$(MSBuildToolsPath)\Microsoft.Common.targets</LanguageTargets>
+    <LanguageTargets Condition=" '$(LanguageTargets)' == '' And '$(MSBuildProjectExtension)' != '.csproj' And '$(MSBuildProjectExtension)' != '.vbproj' And '$(MSBuildProjectExtension)' != '.fsproj' ">$(MSBuildToolsPath)\Microsoft.Common.targets</LanguageTargets>
   </PropertyGroup>
 
   <Import Project="$(CustomBeforeNoTargets)" Condition="'$(CustomBeforeNoTargets)' != '' and Exists('$(CustomBeforeNoTargets)')" />
