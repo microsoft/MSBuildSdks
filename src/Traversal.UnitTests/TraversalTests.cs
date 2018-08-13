@@ -16,6 +16,40 @@ namespace Microsoft.Build.Traversal.UnitTests
 {
     public class TraversalTests : MSBuildSdkTestBase
     {
+        [Theory]
+        [InlineData("dirs.proj")]
+        [InlineData("Dirs.proj")]
+        [InlineData("Dirs.Proj")]
+        [InlineData("DiRs.PrOj")]
+        public void IsTraversalPropertyCaseInsensitive(string projectName)
+        {
+            ProjectCreator
+                .Templates
+                .TraversalProject(
+                    new string[0],
+                    path: GetTempFile(projectName))
+                .Save()
+                .TryGetPropertyValue("IsTraversal", out string isTraversal);
+
+            isTraversal.ShouldBe("true", StringCompareShould.IgnoreCase);
+        }
+
+        [Theory]
+        [InlineData("dirs.proj", "true")]
+        [InlineData("asdf.proj", "")]
+        public void IsTraversalPropertySetCorrectly(string projectName, string expectedValue)
+        {
+            ProjectCreator
+                .Templates
+                .TraversalProject(
+                    new string[0],
+                    path: GetTempFile(projectName))
+                .Save()
+                .TryGetPropertyValue("IsTraversal", out string isTraversal);
+
+            isTraversal.ShouldBe(expectedValue, StringCompareShould.IgnoreCase);
+        }
+
         [Fact]
         public void SkipsNonExistentTargets()
         {
