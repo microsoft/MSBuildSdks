@@ -19,7 +19,7 @@
     <TraversalProjectNames Condition=" '$(TraversalProjectNames)' == '' ">dirs.proj</TraversalProjectNames>
 
     <IsTraversal Condition=" '$(IsTraversal)' != '' ">$([System.Convert]::ToBoolean($(IsTraversal)))</IsTraversal>
-    <IsTraversal Condition=" '$(IsTraversal)' == '' And $(TraversalProjectNames.Contains($(MSBuildProjectFile))) ">true</IsTraversal>
+    <IsTraversal Condition=" '$(IsTraversal)' == '' And $(TraversalProjectNames.IndexOf($(MSBuildProjectFile), System.StringComparison.OrdinalIgnoreCase)) >= 0 ">true</IsTraversal>
   </PropertyGroup>
 
   <ItemDefinitionGroup Condition=" '$(TraversalDoNotReferenceOutputAssemblies)' != 'false' ">
