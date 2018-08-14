@@ -1,0 +1,45 @@
+queue:
+  name: Hosted VS2017
+  condition: succeeded()
+  demands: 
+  - msbuild
+  - visualstudio
+  - vstest
+
+
+variables:
+  Configuration: 'Debug'
+steps:
+- script: 'echo ##vso[task.setvariable variable=Configuration;]Release' 
+  displayName: Set Configuration to Release for Tagged Builds
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/Microsoft.Build'))
+
+- task: VSBuild@1
+  displayName: Build Solution
+  inputs:
+    solution: dirs.proj
+    msbuildArgs: '/BinaryLogger'
+    configuration: '$(Configuration)'
+
+- task: VSTest@2
+  displayName: Run Unit Tests
+  inputs:
+    testAssemblyVer2: |
+     **\*Tests.dll
+     !**\obj\**
+    runInParallel: true
+
+- task: CopyFiles@2
+  displayName: Copy Files to: $(Build.ArtifactStagingDirectory)
+  inputs:
+    SourceFolder: '$(System.DefaultWorkingDirectory)'
+    Contents: '**\bin\**\*.nupkg'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/Microsoft.Build'))
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish Artifacts
+  inputs:
+    ArtifactName: artifacts
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/Microsoft.Build'))
+
