@@ -10,18 +10,18 @@
 
   <ItemGroup>
     <PackageReference Update="MicroBuild.Core" Version="0.3.0" />
-    <PackageReference Update="Microsoft.Build" Version="15.7.179" />
-    <PackageReference Update="Microsoft.Build.Framework" Version="15.7.179" />
+    <PackageReference Update="Microsoft.Build" Version="15.8.166" />
+    <PackageReference Update="Microsoft.Build.Framework" Version="15.8.166" />
     <PackageReference Update="Microsoft.Build.Locator" Version="1.0.18" />
-    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="15.7.2" />
-    <PackageReference Update="MSBuild.ProjectCreation" Version="1.1.4" />
+    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="15.8.0" />
+    <PackageReference Update="MSBuild.ProjectCreation" Version="1.2.5" />
     <PackageReference Update="Shouldly" Version="3.0.0" />
-    <PackageReference Update="xunit" Version="2.3.1" />
-    <PackageReference Update="xunit.runner.visualstudio" Version="2.3.1" />
+    <PackageReference Update="xunit" Version="2.4.0" />
+    <PackageReference Update="xunit.runner.visualstudio" Version="2.4.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="2.1.23" Condition=" '$(EnableGitVersioning)' != 'false' " />
+    <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="2.2.13" Condition=" '$(EnableGitVersioning)' != 'false' " />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(EnableStyleCop)' != 'false' ">
