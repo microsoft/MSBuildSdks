@@ -75,6 +75,7 @@ namespace Microsoft.Build.Traversal.UnitTests
         [InlineData("Clean")]
         [InlineData("Build")]
         [InlineData("Test")]
+        [InlineData("Pack")]
         public void TraversalTargetsRun(string target)
         {
             string[] projects = new[]
