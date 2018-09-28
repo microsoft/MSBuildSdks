@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!--
   Copyright (c) Microsoft Corporation. All rights reserved.
-  
+
   Licensed under the MIT license.
 -->
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -17,7 +17,7 @@
     <OutputPath Condition=" '$(Configuration)' != '' And '$(Platform)' == '' ">bin\$(Configuration)\</OutputPath>
     <OutputPath Condition=" '$(Configuration)' != '' And '$(Platform)' != '' ">bin\$(Configuration)\$(Platform)\</OutputPath>
   </PropertyGroup>
-  
+
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition=" Exists('$(MSBuildToolsPath)\Microsoft.Common.targets') " />
 
   <PropertyGroup>
@@ -46,6 +46,10 @@
     <TestDependsOn>
       Build
     </TestDependsOn>
+
+    <VSTestDependsOn>
+      Build
+    </VSTestDependsOn>
 
     <CleanDependsOn>
       BeforeClean;
@@ -209,6 +213,49 @@
              SkipNonexistentTargets="$(SkipNonexistentTargets)" />
   </Target>
 
+  <Target Name="VSTest"
+          DependsOnTargets="$(VSTestDependsOn)">
+
+    <MSBuild Projects="@(PreTraversalProject)"
+             Targets="VSTest"
+             Properties="$(PreTraversalGlobalProperties)"
+             Condition=" '@(PreTraversalProject)' != '' "
+             BuildInParallel="$(BuildInParallel)"
+             SkipNonexistentProjects="$(SkipNonexistentProjects)"
+             SkipNonexistentTargets="$(SkipNonexistentTargets)" />
+
+    <MSBuild Projects="@(PreTraversalVSTestProject)"
+             Targets="VSTest"
+             Properties="$(PreTraversalVSTestGlobalProperties)"
+             Condition=" '@(PreTraversalVSTestProject)' != '' "
+             BuildInParallel="$(BuildInParallel)"
+             SkipNonexistentProjects="$(SkipNonexistentProjects)"
+             SkipNonexistentTargets="$(SkipNonexistentTargets)" />
+
+    <MSBuild Projects="@(_MSBuildProjectReferenceExistent)"
+             Targets="VSTest"
+             Properties="$(TraversalGlobalProperties);$(TraversalVSTestGlobalProperties)"
+             BuildInParallel="$(BuildInParallel)"
+             SkipNonexistentProjects="$(SkipNonexistentProjects)"
+             SkipNonexistentTargets="$(SkipNonexistentTargets)" />
+
+    <MSBuild Projects="@(PostTraversalVSTestProject)"
+             Targets="VSTest"
+             Properties="$(PostTraversalVSTestGlobalProperties)"
+             Condition=" '@(PostTraversalVSTestProject)' != '' "
+             BuildInParallel="$(BuildInParallel)"
+             SkipNonexistentProjects="$(SkipNonexistentProjects)"
+             SkipNonexistentTargets="$(SkipNonexistentTargets)" />
+
+    <MSBuild Projects="@(PostTraversalProject)"
+             Targets="VSTest"
+             Properties="$(PostTraversalGlobalProperties)"
+             Condition=" '@(PostTraversalProject)' != '' "
+             BuildInParallel="$(BuildInParallel)"
+             SkipNonexistentProjects="$(SkipNonexistentProjects)"
+             SkipNonexistentTargets="$(SkipNonexistentTargets)" />
+  </Target>
+
   <Target Name="Pack"
           DependsOnTargets="$(PackDependsOn)">
 
@@ -251,7 +298,7 @@
              SkipNonexistentProjects="$(SkipNonexistentProjects)"
              SkipNonexistentTargets="$(SkipNonexistentTargets)" />
   </Target>
-  
+
   <!--
     Traversal projects do not build anything and should not check for invalid configuration/platform.
   -->
