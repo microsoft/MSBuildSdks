@@ -63,6 +63,10 @@
     <PackDependsOn>
       ResolveReferences;
     </PackDependsOn>
+
+    <PublishDependsOn>
+      Build;
+    </PublishDependsOn>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TraversalTranslateProjectFileItems)' != 'false' ">
@@ -292,6 +296,49 @@
 
     <MSBuild Projects="@(PostTraversalProject)"
              Targets="Pack"
+             Properties="$(PostTraversalGlobalProperties)"
+             Condition=" '@(PostTraversalProject)' != '' "
+             BuildInParallel="$(BuildInParallel)"
+             SkipNonexistentProjects="$(SkipNonexistentProjects)"
+             SkipNonexistentTargets="$(SkipNonexistentTargets)" />
+  </Target>
+
+  <Target Name="Publish"
+          DependsOnTargets="$(PublishDependsOn)">
+
+    <MSBuild Projects="@(PreTraversalProject)"
+             Targets="Publish"
+             Properties="$(PreTraversalGlobalProperties)"
+             Condition=" '@(PreTraversalProject)' != '' "
+             BuildInParallel="$(BuildInParallel)"
+             SkipNonexistentProjects="$(SkipNonexistentProjects)"
+             SkipNonexistentTargets="$(SkipNonexistentTargets)" />
+
+    <MSBuild Projects="@(PreTraversalPublishProject)"
+             Targets="Publish"
+             Properties="$(PreTraversalPublishGlobalProperties)"
+             Condition=" '@(PreTraversalPublishProject)' != '' "
+             BuildInParallel="$(BuildInParallel)"
+             SkipNonexistentProjects="$(SkipNonexistentProjects)"
+             SkipNonexistentTargets="$(SkipNonexistentTargets)" />
+
+    <MSBuild Projects="@(_MSBuildProjectReferenceExistent)"
+             Targets="Publish"
+             Properties="$(TraversalGlobalProperties);$(TraversalPublishGlobalProperties)"
+             BuildInParallel="$(BuildInParallel)"
+             SkipNonexistentProjects="$(SkipNonexistentProjects)"
+             SkipNonexistentTargets="$(SkipNonexistentTargets)" />
+
+    <MSBuild Projects="@(PostTraversalPublishProject)"
+             Targets="Publish"
+             Properties="$(PostTraversalPublishGlobalProperties)"
+             Condition=" '@(PostTraversalPublishProject)' != '' "
+             BuildInParallel="$(BuildInParallel)"
+             SkipNonexistentProjects="$(SkipNonexistentProjects)"
+             SkipNonexistentTargets="$(SkipNonexistentTargets)" />
+
+    <MSBuild Projects="@(PostTraversalProject)"
+             Targets="Publish"
              Properties="$(PostTraversalGlobalProperties)"
              Condition=" '@(PostTraversalProject)' != '' "
              BuildInParallel="$(BuildInParallel)"
