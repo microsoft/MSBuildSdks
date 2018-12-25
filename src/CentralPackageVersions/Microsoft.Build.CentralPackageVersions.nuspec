@@ -8,7 +8,7 @@
     <owners>$authors$</owners>
     <copyright>$copyright$</copyright>
     <projectUrl>$projecturl$</projectUrl>
-    <licenseUrl>$licenseurl$</licenseUrl>
+    <license type="file">LICENSE.txt</license>
     <iconUrl>$iconurl$</iconUrl>
     <tags>$tags$</tags>
     <packageTypes>
@@ -17,5 +17,6 @@
   </metadata>
   <files>
     <file src="Sdk\**" target="Sdk" />
+    <file src="$licensefile$" target="" />
   </files>
 </package>
