@@ -42,7 +42,7 @@
         authors=$(Authors);
         copyright=$(Copyright);
         projecturl=$(PackageProjectUrl);
-        licenseurl=$(PackageLicenseUrl);
+        licensefile=$(PackageLicenseFile);
         iconurl=$(PackageIconUrl);
         tags=$(PackageTags);
         packagetype=MSBuildSdk
