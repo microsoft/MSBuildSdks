@@ -99,7 +99,7 @@ Setting the following properties control how Central Package Versions works.
 
 | Property                            | Description |
 |-------------------------------------|-------------|
-| `CentralPackagesFile `  | The full path to the file containing your package versions.  Defaults to `Packages.props` at the root of your repository. |
+| `CentralPackagesFile `  | The full path to the file containing your package versions.  Defaults to the first `Packages.props` file found in the current directory or any of its ancestors. It is recommended that you place your version file at the root of your repository so it is shared by all projects and is easy to locate. You should only set this property if you want to use a custom path. |
 | `CustomBeforeCentralPackageVersionsProps`    | A list of custom MSBuild projects to import **before** central package version properties are declared.|
 | `CustomAfterCentralPackageVersionsProps`    | A list of custom MSBuild projects to import **after** central package version properties are declared.|
 | `CustomBeforeCentralPackageVersionsTargets`    | A list of custom MSBuild projects to import **before** central package version targets are declared.|
