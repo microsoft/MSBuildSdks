@@ -4,7 +4,7 @@
  
 The `Microsoft.Build.Traversal` MSBuild project SDK allows project tree owners the ability to define what projects should be built.  Visual Studio solution files are more targeted for end-users and are not good for build systems.  Additionally, large project trees usually have several Visual Studio solution files scoped to different parts of the tree.
 
-In an enterprise-level build, you want to have a way to control what projects are a built in your hosted build system.  Traversal projects allow you to define a set of projects at any level of your folder structure and can be built locally or in a hosted build environment.
+In an enterprise-level build, you want to have a way to control what projects are built in your hosted build system.  Traversal projects allow you to define a set of projects at any level of your folder structure and can be built locally or in a hosted build environment.
 
 ## Example
 
@@ -72,7 +72,7 @@ The following `<ItemGroup />` items extend how Traversal works.
 | Item Name                                        | Description |
 |--------------------------------------------------|-------------|
 | `PreTraversalProject`        | A list of projects to build before all other projects.|
-| `PostTraversalProject`       | A list of projects to build before after other projects. |
+| `PostTraversalProject`       | A list of projects to build after all other projects. |
 | `PreTraversalBuildProject`  | A list of projects to build before all other projects. These projects are built only before the **Build** target.|
 | `PostTraversalBuildProject` | A list of projects to build after all other projects. These projects are built only after the **Build** target.|
 | `PreTraversalCleanProject`  | A list of projects to build before all other projects. These projects are built only before the **Clean** target.|
