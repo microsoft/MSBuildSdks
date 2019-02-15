@@ -35,7 +35,7 @@
       BuildOnlySettings;
       PrepareForBuild;
       PreBuildEvent;
-      ResolveProjectReferences;
+      ResolveReferences;
       GetTargetPath;
       PrepareForRun;
       IncrementalClean;
