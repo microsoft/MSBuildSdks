@@ -16,6 +16,20 @@ namespace Microsoft.Build.Traversal.UnitTests
 {
     public class TraversalTests : MSBuildSdkTestBase
     {
+        [Fact]
+        public void IsUsingMicrosoftTraversalSdkSet()
+        {
+            ProjectCreator
+                .Templates
+                .TraversalProject(
+                    new string[0],
+                    path: GetTempFile("dirs.proj"))
+                .Save()
+                .TryGetPropertyValue("UsingMicrosoftTraversalSdk", out string usingMicrosoftTraversalSdk);
+
+            usingMicrosoftTraversalSdk.ShouldBe("true", StringCompareShould.IgnoreCase);
+        }
+
         [Theory]
         [InlineData("dirs.proj")]
         [InlineData("Dirs.proj")]
