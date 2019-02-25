@@ -8,7 +8,7 @@ The `Microsoft.Build.CentralPackageVersions` MSBuild project SDK allows project 
 
 ## Centrally Managing Package Versions
 
-To get started, you will need to create an MSBuild project at the root of your repository named `Packages.props` that declares `PackageVersion` items.
+To get started, you will need to create an MSBuild project at the root of your repository named `Packages.props` that declares `PackageReference` items that set the versions for projects.
 
 In this example, packages like `Newtonsoft.Json` are set to exactly version `10.0.1`.  All projects that reference this package will be locked to that version.  If someone attempts to specify a version in a project they will encounter a build error.
 
