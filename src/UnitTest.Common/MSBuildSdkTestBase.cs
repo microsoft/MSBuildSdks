@@ -2,6 +2,7 @@
 //
 // Licensed under the MIT license.
 
+using Microsoft.Build.Utilities.ProjectCreation;
 using System;
 using System.IO;
 
@@ -9,11 +10,7 @@ namespace UnitTest.Common
 {
     public abstract class MSBuildSdkTestBase : MSBuildTestBase, IDisposable
     {
-        private static readonly string TestAssemblyPathValue = typeof(MSBuildSdkTestBase).Assembly.ManifestModule.FullyQualifiedName;
-
         private readonly string _testRootPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-
-        public string TestAssemblyPath => TestAssemblyPathValue;
 
         public string TestRootPath
         {
