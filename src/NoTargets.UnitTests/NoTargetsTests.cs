@@ -7,7 +7,6 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities.ProjectCreation;
 using Shouldly;
 using System.Collections.Generic;
-using System.Linq;
 using UnitTest.Common;
 using Xunit;
 
@@ -36,6 +35,16 @@ namespace Microsoft.Build.NoTargets.UnitTests
             result.ShouldBeTrue(() => buildOutput.GetConsoleLog());
 
             buildOutput.Messages.High.ShouldContain("86F00AF59170450E9D687652D74A6394");
+        }
+
+        [Fact]
+        public void UsingMicrosoftNoTargetsSdkValueSet()
+        {
+            ProjectCreator.Templates.NoTargetsProject(
+                path: GetTempFileWithExtension(".csproj"))
+                .TryGetPropertyValue("UsingMicrosoftNoTargetsSdk", out string propertyValue);
+
+            propertyValue.ShouldBe("true");
         }
     }
 }
