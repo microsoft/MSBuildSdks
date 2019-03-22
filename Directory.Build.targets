@@ -1,36 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-
-  <PropertyGroup Condition=" Exists('$(MSBuildProjectDirectory)\$(MSBuildProjectName).nuspec') ">
-    <NuspecFile>$(MSBuildProjectDirectory)\$(MSBuildProjectName).nuspec</NuspecFile>
-  </PropertyGroup>
-
-  <ItemGroup Condition=" '$(IncludeBuildOutput)' == 'false' ">
-    <IntermediateAssembly Remove="@(IntermediateAssembly)" />
-    <IntermediateRefAssembly Remove="@(IntermediateRefAssembly)" />
-  </ItemGroup>
-
   <PropertyGroup>
+    <NuspecFile Condition=" Exists('$(MSBuildProjectDirectory)\$(MSBuildProjectName).nuspec') ">$(MSBuildProjectDirectory)\$(MSBuildProjectName).nuspec</NuspecFile>
+
     <!-- Full symbols so that unit test assertions have more info -->
     <DebugType Condition=" '$(Configuration)' == 'Debug' ">Full</DebugType>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(IncludeBuildOutput)' == 'false' ">
-    <!--
-      This property must be overridden to remove a few targets that compile assemblies
-    -->
-    <CoreBuildDependsOn>
-      BuildOnlySettings;
-      PrepareForBuild;
-      PreBuildEvent;
-      ResolveProjectReferences;
-      GetTargetPath;
-      PrepareForRun;
-      IncrementalClean;
-      PostBuildEvent
-    </CoreBuildDependsOn>
 
     <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);SetNuSpecProperties</GenerateNuspecDependsOn>
+
+    <GeneratePackageOnBuild Condition="'$(IsPackable)' != 'false'">true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <Target Name="SetNuSpecProperties" Condition=" Exists('$(NuspecFile)') ">

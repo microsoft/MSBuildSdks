@@ -1,6 +1,7 @@
 {
   "msbuild-sdks": {
     "Microsoft.Build.CentralPackageVersions": "2.0.1",
-    "Microsoft.Build.Traversal": "1.0.41"
+    "Microsoft.Build.NoTargets": "1.0.53",
+    "Microsoft.Build.Traversal": "1.0.52"
   }
 }
