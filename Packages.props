@@ -12,7 +12,7 @@
     <PackageReference Update="MicroBuild.Core" Version="0.3.0" />
     <PackageReference Update="Microsoft.Build" Version="15.9.20" />
     <PackageReference Update="Microsoft.Build.Framework" Version="15.9.20" />
-    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="15.9.0" />
+    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="16.0.1" />
     <PackageReference Update="MSBuild.ProjectCreation" Version="1.2.8" />
     <PackageReference Update="Shouldly" Version="3.0.2" />
     <PackageReference Update="xunit" Version="2.4.1" />
@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="2.3.105" Condition=" '$(EnableGitVersioning)' != 'false' " />
+    <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="2.3.138" Condition=" '$(EnableGitVersioning)' != 'false' " />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(EnableStyleCop)' != 'false' ">
