@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.Build.NoTargets/1.0.26">
+﻿<Project Sdk="Microsoft.Build.NoTargets">
   <PropertyGroup>
     <TargetFramework>net46</TargetFramework>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -9,19 +9,18 @@
     <ArtifactsPath Condition=" '$(ArtifactsPath)' == '' ">..\artifacts</ArtifactsPath>
     <OutputPath>$(ArtifactsPath)\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>$(ArtifactsPath)\obj\$(Configuration)\</IntermediateOutputPath>
-    <LanguageTargets Condition="'$(LanguageTargets)' == ''">$(MSBuildToolsPath)\Microsoft.Common.targets</LanguageTargets>
     <_GetChildProjectCopyToOutputDirectoryItems>false</_GetChildProjectCopyToOutputDirectoryItems>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="MicroBuild.Core" PrivateAssets="All" />
+  </ItemGroup>
 
-    <ProjectReference Include="..\src\CentralPackageVersions\Microsoft.Build.CentralPackageVersions.csproj"  />
-    <ProjectReference Include="..\src\NoTargets\Microsoft.Build.NoTargets.csproj" />
-    <ProjectReference Include="..\src\Traversal\Microsoft.Build.Traversal.csproj" />
-
-    <ProjectReference Update="@(ProjectReference)" OutputItemType="ProjectOutput" Targets="Build;_GetProjectVersion;_GetOutputItemsFromPack;GetTargetPath" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
-    
-    <ProjectReference Include="..\src\**\*UnitTests.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
+  <ItemGroup>
+    <ProjectReference Include="..\src\CentralPackageVersions\Microsoft.Build.CentralPackageVersions.csproj"  OutputItemType="ProjectOutput" Targets="Pack;_GetOutputItemsFromPack" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\src\NoTargets\Microsoft.Build.NoTargets.csproj" OutputItemType="ProjectOutput" Targets="Pack;_GetOutputItemsFromPack" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\src\Traversal\Microsoft.Build.Traversal.csproj" OutputItemType="ProjectOutput" Targets="Pack;_GetOutputItemsFromPack" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <Target Name="StageArtifacts"
