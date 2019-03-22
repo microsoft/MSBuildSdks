@@ -1,0 +1,28 @@
+pool:
+  name: VSEng-MicroBuildVS2019
+  demands: msbuild
+
+variables:
+  SignType: 'Test'
+
+steps:
+- task: MSBuild@1
+  displayName: 'Build dirs.proj'
+  inputs:
+    solution: dirs.proj
+    platform: 'AnyCPU'
+    configuration: '$(Configuration)'
+    msbuildArguments: '"/Property:ArtifactsPath=$(Build.StagingDirectory);SignType=$(SignType);PublicRelease=true" "/BinaryLogger:$(Build.StagingDirectory)\logs\build.binlog"'
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: Logs'
+  inputs:
+    PathtoPublish: '$(Build.StagingDirectory)\logs'
+    ArtifactName: logs
+  condition: failed()
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: $(Configuration)'
+  inputs:
+    PathtoPublish: '$(Build.StagingDirectory)\$(Configuration)'
+    ArtifactName: '$(Configuration)'
