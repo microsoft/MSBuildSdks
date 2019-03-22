@@ -1,6 +1,5 @@
 pool:
-  name: VSEng-MicroBuildVS2019
-  demands: msbuild
+  name: Hosted VS2017
 
 variables:
   SignType: 'Test'
