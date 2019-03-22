@@ -1,5 +1,5 @@
 # MSBuild SDKs
-[![Build status](https://ci.appveyor.com/api/projects/status/7413vus4cp40pvsf?svg=true)](https://ci.appveyor.com/project/CBT/msbuildsdks)
+[![Build status](https://devdiv.visualstudio.com/DevDiv/_apis/build/status/MSBuild/MSBuildSdks)](https://devdiv.visualstudio.com/DevDiv/_build/latest?definitionId=9267)
 
 The MSBuild project SDKs are used to configure and extend your build.
 
