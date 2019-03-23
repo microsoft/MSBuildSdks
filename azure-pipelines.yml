@@ -1,0 +1,30 @@
+pool:
+  name: Hosted VS2017
+
+variables:
+  SignType: 'Test'
+  Configuration: 'Debug'
+
+steps:
+- task: MSBuild@1
+  displayName: 'Build dirs.proj'
+  inputs:
+    solution: dirs.proj
+    platform: 'AnyCPU'
+    configuration: '$(Configuration)'
+    msbuildArguments: '"/Property:ArtifactsPath=$(Build.StagingDirectory);SignType=$(SignType);PublicRelease=true" "/BinaryLogger:$(Build.StagingDirectory)\logs\build.binlog"'
+
+- task: VSTest@2
+  displayName: 'Run Unit Tests'
+  inputs:
+    testAssemblyVer2: |
+     **\*Tests.dll
+     !**\obj\**
+    runInParallel: false
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: Logs'
+  inputs:
+    PathtoPublish: '$(Build.StagingDirectory)\logs'
+    ArtifactName: logs
+  condition: always()
