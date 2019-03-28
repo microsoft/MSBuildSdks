@@ -19,9 +19,14 @@
     <CentralPackagesFile Condition=" '$(CentralPackagesFile)' == '' ">$([MSBuild]::GetPathOfFileAbove('Packages.props', $(MSBuildProjectDirectory)))</CentralPackagesFile>
 
     <!--
-      Disable all functionality if the central package management file does not exist.
+      Disable all functionality if:
+      * The central package management file does not exist.
+      * The project is using packages.config.  Visual Studio project systems will get confused if there are any PackageReference
+        items and it won't show the packages in the packages.config.  NuGet does not support using both and so packages.config has to win.
+      * The project is a type that doesn't not support PackageReference in Visual Studio (like vcxproj or ccproj).
     -->
-    <EnableCentralPackageVersions Condition=" !Exists('$(CentralPackagesFile)') ">false</EnableCentralPackageVersions>
+    <EnableCentralPackageVersions
+      Condition="!Exists('$(CentralPackagesFile)') Or Exists('$(MSBuildProjectDirectory)\packages.config') Or '$(MSBuildProjectExtension)' == '.vcxproj' Or '$(MSBuildProjectExtension)' == '.ccproj'">false</EnableCentralPackageVersions>
 
     <!--
       Include this file and the Packages.props file (if necessary) in MSBuildAllProjects so that rebuilds happen if the Packages.props changes.

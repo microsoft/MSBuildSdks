@@ -106,6 +106,34 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
             result.ShouldBeTrue(() => buildOutput.GetConsoleLog());
         }
 
+        [Theory]
+        [InlineData(true, ".csproj")]
+        [InlineData(true, ".sfproj")]
+        [InlineData(false, ".ccproj")]
+        [InlineData(false, ".vcxproj")]
+        public void IsDisabledForProjectsWithPackagesConfigOrDoNotSupportPackageReference(bool createPackagesConfig, string extension)
+        {
+            WritePackagesProps();
+
+            if (createPackagesConfig)
+            {
+                File.WriteAllText(Path.Combine(TestRootPath, "packages.config"), "<packages />");
+            }
+
+            ProjectCreator.Templates
+                .SdkCsproj(
+                    path: Path.Combine(TestRootPath, $"test{extension}"),
+                    projectCollection: new ProjectCollection(new Dictionary<string, string>
+                    {
+                        ["DisableImplicitFrameworkReferences"] = "true"
+                    }),
+                    projectCreator: creator => creator
+                        .Import(Path.Combine(Environment.CurrentDirectory, @"Sdk\Sdk.targets")))
+                .TryGetPropertyValue("EnableCentralPackageVersions", out string enableCentralPackageVersions);
+
+            enableCentralPackageVersions.ShouldBe("false");
+        }
+
         [Fact]
         public void LogErrorIfProjectSpecifiesGlobalPackageReference()
         {
