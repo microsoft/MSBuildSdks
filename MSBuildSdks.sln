@@ -1,13 +1,12 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27329.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28801.201
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.Traversal", "src\Traversal\Microsoft.Build.Traversal.csproj", "{B93918D4-75EA-467E-8F50-393A1324FF91}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{DC479DC1-DD8C-4DBA-AA37-FC3D39F24266}"
 	ProjectSection(SolutionItems) = preProject
-		appveyor.yml = appveyor.yml
 		Directory.Build.props = Directory.Build.props
 		Directory.Build.rsp = Directory.Build.rsp
 		Directory.Build.targets = Directory.Build.targets
@@ -42,6 +41,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NoTargets", "NoTargets", "{
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleNoTargets", "samples\NoTargets\SampleNoTargets\SampleNoTargets.csproj", "{48F56A6B-A285-4B40-9E96-044F7AA2C532}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.Artifacts", "src\Artifacts\Microsoft.Build.Artifacts.csproj", "{6E84BA77-308F-4780-852F-B27F8BFD2797}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Build.Artifacts.UnitTests", "src\Artifacts.UnitTests\Microsoft.Build.Artifacts.UnitTests.csproj", "{359B2C2B-B9B8-496F-B4B1-9E4359729F89}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -81,6 +84,14 @@ Global
 		{48F56A6B-A285-4B40-9E96-044F7AA2C532}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{48F56A6B-A285-4B40-9E96-044F7AA2C532}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{48F56A6B-A285-4B40-9E96-044F7AA2C532}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6E84BA77-308F-4780-852F-B27F8BFD2797}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E84BA77-308F-4780-852F-B27F8BFD2797}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6E84BA77-308F-4780-852F-B27F8BFD2797}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E84BA77-308F-4780-852F-B27F8BFD2797}.Release|Any CPU.Build.0 = Release|Any CPU
+		{359B2C2B-B9B8-496F-B4B1-9E4359729F89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{359B2C2B-B9B8-496F-B4B1-9E4359729F89}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{359B2C2B-B9B8-496F-B4B1-9E4359729F89}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{359B2C2B-B9B8-496F-B4B1-9E4359729F89}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

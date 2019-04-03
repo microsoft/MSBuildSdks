@@ -5,6 +5,7 @@
 using Microsoft.Build.Utilities.ProjectCreation;
 using System;
 using System.IO;
+using System.Linq;
 
 namespace UnitTest.Common
 {
@@ -25,6 +26,20 @@ namespace UnitTest.Common
         {
             Dispose(true);
             GC.SuppressFinalize(this);
+        }
+
+        protected DirectoryInfo CreateFiles(string directoryName, params string[] files)
+        {
+            DirectoryInfo directory = new DirectoryInfo(Path.Combine(TestRootPath, directoryName));
+
+            foreach (FileInfo file in files.Select(i => new FileInfo(Path.Combine(directory.FullName, i))))
+            {
+                file.Directory.Create();
+
+                File.WriteAllBytes(file.FullName, new byte[0]);
+            }
+
+            return directory;
         }
 
         protected virtual void Dispose(bool disposing)

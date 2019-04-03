@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net46;netcoreapp2.1</TargetFrameworks>
+    <BuildOutputTargetFolder>build\</BuildOutputTargetFolder>
+    <EnableDefaultNoneItems>true</EnableDefaultNoneItems>
+    <PackageLicenseFile></PackageLicenseFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="build\*" Pack="true" PackagePath="build\" />
+    <None Include="buildCrossTargeting\*" Pack="true" PackagePath="buildCrossTargeting\" />
+    <None Include="Sdk\*" Pack="true" PackagePath="Sdk\" />
+  </ItemGroup>
+
+</Project>
