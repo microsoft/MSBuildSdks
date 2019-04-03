@@ -18,8 +18,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\Artifacts\Microsoft.Build.Artifacts.csproj" OutputItemType="AssemblyOutput" Targets="GetTargetPath" SetTargetFramework="TargetFramework=net46" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\src\Artifacts\Microsoft.Build.Artifacts.csproj" OutputItemType="AssemblyOutput" Targets="GetTargetPath" SetTargetFramework="TargetFramework=netcoreapp2.1" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\src\Artifacts\Microsoft.Build.Artifacts.csproj" OutputItemType="PackageOutput" Targets="Pack;_GetOutputItemsFromPack" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\src\CentralPackageVersions\Microsoft.Build.CentralPackageVersions.csproj"  OutputItemType="PackageOutput" Targets="Pack;_GetOutputItemsFromPack" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\src\NoTargets\Microsoft.Build.NoTargets.csproj" OutputItemType="PackageOutput" Targets="Pack;_GetOutputItemsFromPack" ReferenceOutputAssembly="false" />
@@ -29,7 +27,6 @@
   <Target Name="StageArtifacts"
           BeforeTargets="AfterBuild">
     <ItemGroup>
-      <FilesToSign Include="@(AssemblyOutput)" Authenticode="Microsoft" StrongName="StrongName" />
       <Artifact Include="@(PackageOutput)" Authenticode="NuGet" Condition=" '%(Extension)' == '.nupkg' " />
     </ItemGroup>
 

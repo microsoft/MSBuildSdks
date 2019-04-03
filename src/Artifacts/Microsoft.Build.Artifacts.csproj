@@ -6,10 +6,11 @@
     <EnableDefaultNoneItems>true</EnableDefaultNoneItems>
     <PackageLicenseFile></PackageLicenseFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <DevelopmentDependency>true</DevelopmentDependency>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
