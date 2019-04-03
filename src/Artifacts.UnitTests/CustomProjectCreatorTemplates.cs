@@ -11,7 +11,8 @@ namespace Microsoft.Build.Artifacts.UnitTests
 {
     internal static class CustomProjectCreatorTemplates
     {
-        private static readonly string ThisAssemblyDirectory = Path.GetDirectoryName(typeof(CustomProjectCreatorTemplates).Assembly.Location);
+        private static readonly string CurrentDirectory = Environment.CurrentDirectory;
+        private static readonly string ArtifactsTaskAssembly = Path.Combine(CurrentDirectory, "Microsoft.Build.Artifacts.dll");
 
         public static ProjectCreator ProjectWithArtifacts(
             this ProjectCreatorTemplates templates,
@@ -36,14 +37,14 @@ namespace Microsoft.Build.Artifacts.UnitTests
                     treatAsLocalProperty,
                     projectCollection,
                     projectFileOptions)
-                .Property("ArtifactsTaskAssembly", Path.Combine(ThisAssemblyDirectory, "Microsoft.Build.Artifacts.dll"))
-                .Import(Path.Combine(ThisAssemblyDirectory, "build", "Microsoft.Build.Artifacts.props"))
+                .Property("ArtifactsTaskAssembly", ArtifactsTaskAssembly)
+                .Import(Path.Combine(CurrentDirectory, "build", "Microsoft.Build.Artifacts.props"))
                 .Property("OutputPath", outputPath)
                 .Property("ArtifactsPath", artifactsPath)
                 .CustomAction(customAction)
                 .Target("Build")
                 .Target("AfterBuild", afterTargets: "Build")
-                .Import(Path.Combine(ThisAssemblyDirectory, "build", "Microsoft.Build.Artifacts.targets"));
+                .Import(Path.Combine(CurrentDirectory, "build", "Microsoft.Build.Artifacts.targets"));
         }
 
         public static ProjectCreator SdkProjectWithArtifacts(
@@ -69,14 +70,14 @@ namespace Microsoft.Build.Artifacts.UnitTests
                     treatAsLocalProperty,
                     projectCollection,
                     projectFileOptions)
-                .Property("ArtifactsTaskAssembly", Path.Combine(ThisAssemblyDirectory, "Microsoft.Build.Artifacts.dll"))
-                .Import(Path.Combine(ThisAssemblyDirectory, "Sdk", "Sdk.props"))
+                .Property("ArtifactsTaskAssembly", ArtifactsTaskAssembly)
+                .Import(Path.Combine(CurrentDirectory, "Sdk", "Sdk.props"))
                 .Property("OutputPath", outputPath)
                 .Property("ArtifactsPath", artifactsPath)
                 .CustomAction(customAction)
                 .Target("Build")
                 .Target("AfterBuild", afterTargets: "Build")
-                .Import(Path.Combine(ThisAssemblyDirectory, "Sdk", "Sdk.targets"));
+                .Import(Path.Combine(CurrentDirectory, "Sdk", "Sdk.targets"));
         }
     }
 }
