@@ -111,6 +111,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
         [InlineData(true, ".sfproj")]
         [InlineData(false, ".ccproj")]
         [InlineData(false, ".vcxproj")]
+        [InlineData(false, ".nuproj")]
         public void IsDisabledForProjectsWithPackagesConfigOrDoNotSupportPackageReference(bool createPackagesConfig, string extension)
         {
             WritePackagesProps();
