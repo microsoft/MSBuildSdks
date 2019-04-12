@@ -35,12 +35,12 @@ It is recommended that you configure a root artifacts staging directory in a com
 ```xml
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <BaseArtifactsPath>$(MSBuildThisFileDirectory)artifacts</CustomAfterTraversalTargets>
+    <BaseArtifactsPath>$(MSBuildThisFileDirectory)artifacts</BaseArtifactsPath>
   </PropertyGroup>
 </Project>
 ```
 
-Your projects can then append to that pathA traversal project can also reference other traversal projects.  This is useful so you can build from any folder in your tree:
+Your projects can then append to the base path so artifacts directories share a common root.
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
