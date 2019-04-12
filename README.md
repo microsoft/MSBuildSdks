@@ -23,6 +23,12 @@ Supports centrally managing NuGet package versions in a code base.  Also allows 
 
 Supports utility projects that do not compile an assembly.
 
+### [Microsoft.Build.Artifacts](src/Artifacts)
+[![NuGet](https://img.shields.io/nuget/v/Microsoft.Build.Artifacts.svg)](https://www.nuget.org/packages/Microsoft.Build.Artifacts)
+ [![NuGet](https://img.shields.io/nuget/dt/Microsoft.Build.Artifacts.svg)](https://www.nuget.org/packages/Microsoft.Build.Artifacts)
+
+Supports staging artifacts from build outputs.
+
 ## What Are MSBuild SDKS?
 MSBuild 15.0 introduced new project XML for .NET Core that we refer to as SDK-style.  These SDK-style projects looks like:
 
