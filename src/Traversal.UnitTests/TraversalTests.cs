@@ -16,20 +16,6 @@ namespace Microsoft.Build.Traversal.UnitTests
 {
     public class TraversalTests : MSBuildSdkTestBase
     {
-        [Fact]
-        public void IsUsingMicrosoftTraversalSdkSet()
-        {
-            ProjectCreator
-                .Templates
-                .TraversalProject(
-                    new string[0],
-                    path: GetTempFile("dirs.proj"))
-                .Save()
-                .TryGetPropertyValue("UsingMicrosoftTraversalSdk", out string usingMicrosoftTraversalSdk);
-
-            usingMicrosoftTraversalSdk.ShouldBe("true", StringCompareShould.IgnoreCase);
-        }
-
         [Theory]
         [InlineData("dirs.proj")]
         [InlineData("Dirs.proj")]
@@ -65,6 +51,60 @@ namespace Microsoft.Build.Traversal.UnitTests
         }
 
         [Fact]
+        public void IsUsingMicrosoftTraversalSdkSet()
+        {
+            ProjectCreator
+                .Templates
+                .TraversalProject(
+                    new string[0],
+                    path: GetTempFile("dirs.proj"))
+                .Save()
+                .TryGetPropertyValue("UsingMicrosoftTraversalSdk", out string usingMicrosoftTraversalSdk);
+
+            usingMicrosoftTraversalSdk.ShouldBe("true", StringCompareShould.IgnoreCase);
+        }
+
+        [Theory]
+        [InlineData("Build")]
+        [InlineData("Clean")]
+        [InlineData("Pack")]
+        [InlineData("Publish")]
+        [InlineData("Test")]
+        [InlineData("VSTest")]
+        public void PropertiesAreSet(string target)
+        {
+            string[] projects = new[]
+            {
+                ProjectCreator.Templates.LogsMessage("$(Property1) / $(Property2)", MessageImportance.High, targetName: target, path: GetTempFileWithExtension(".proj"))
+                    .Save(),
+            }.Select(i => i.FullPath).ToArray();
+
+            ProjectCollection projectCollection = new ProjectCollection(new Dictionary<string, string>
+            {
+                ["Property1"] = "6A120037EE0E4D36865F3301CC2ABBB8",
+                ["Property2"] = "8531F12EB990413BA95CD48A953F927E"
+            });
+
+            ProjectCreator
+                .Templates
+                .TraversalProject(
+                    projects,
+                    projectCollection: projectCollection,
+                    path: GetTempFile("dirs.proj"))
+                .Save()
+                .TryBuild(target, out bool result, out BuildOutput buildOutput);
+
+            result.ShouldBeTrue(customMessage: () => buildOutput.GetConsoleLog());
+
+            buildOutput.Messages.High.ShouldBe(
+                new[]
+                {
+                    "6A120037EE0E4D36865F3301CC2ABBB8 / 8531F12EB990413BA95CD48A953F927E"
+                },
+                () => buildOutput.GetConsoleLog());
+        }
+
+        [Fact]
         public void SkipsNonExistentTargets()
         {
             string[] projects = new[]
@@ -86,12 +126,12 @@ namespace Microsoft.Build.Traversal.UnitTests
         }
 
         [Theory]
-        [InlineData("Clean")]
         [InlineData("Build")]
-        [InlineData("Test")]
-        [InlineData("VSTest")]
+        [InlineData("Clean")]
         [InlineData("Pack")]
         [InlineData("Publish")]
+        [InlineData("Test")]
+        [InlineData("VSTest")]
         public void TraversalTargetsRun(string target)
         {
             string[] projects = new[]

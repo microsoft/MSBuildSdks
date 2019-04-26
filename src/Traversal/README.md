@@ -67,57 +67,19 @@ Add to the list of custom files to import after Traversal targets.  This can be 
 
 <br />
 
-The following `<ItemGroup />` items extend how Traversal works.
-
-| Item Name                                        | Description |
-|--------------------------------------------------|-------------|
-| `PreTraversalProject`        | A list of projects to build before all other projects.|
-| `PostTraversalProject`       | A list of projects to build after all other projects. |
-| `PreTraversalBuildProject`  | A list of projects to build before all other projects. These projects are built only before the **Build** target.|
-| `PostTraversalBuildProject` | A list of projects to build after all other projects. These projects are built only after the **Build** target.|
-| `PreTraversalCleanProject`  | A list of projects to build before all other projects. These projects are built only before the **Clean** target.|
-| `PostTraversalCleanProject` | A list of projects to build after all other projects. These projects are built only after the **Clean** target.|
-| `PreTraversalTestProject`   | A list of projects to build before all other projects. These projects are built only before the **Test** target.|
-| `PostTraversalTestProject`  | A list of projects to build after all other projects. These projects are built only after the **Test** target.|
-
-**Example**
-
-Have a project named `PreTraversal.proj` built before all other projects.
-```xml
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ItemGroup>
-    <PreTraversalProject Include="$(MSBuildThisFileDirectory)PreTraversal.proj"/>
-  </ItemGroup>
-</Project>
-```
-
-<br />
-
 The following properties control global properties passed to different parts of the traversal build.
 
 | Property                            | Description |
 |-------------------------------------|-------------|
-| `PreTraversalGlobalProperties `       | A list of properties to set when building **all** **pre-traversal** projects. |
 | `TraversalGlobalProperties `          | A list of properties to set when building **all** traversal projects. |
-| `PostTraversalGlobalProperties `      | A list of properties to set when building **all** **post-traversal** projects. |
-| `PreTraversalBuildGlobalProperties`  | A list of properties to set when building **pre-traversal** projects. These are only set when building the **Build** target.|
-| `TraversalBuildGlobalProperties`      | A list of properties to set when building traversal projects. These are only set when building the **Build** target.|
-| `PostTraversalBuildGlobalProperties` | A list of properties to set when building **post-traversal** projects. These are only set when building the **Build** target.|
-| `PreTraversalCleanGlobalProperties`  | A list of properties to set when building **pre-traversal** projects. These are only set when building the **Clean** target.|
-| `TraversalCleanGlobalProperties`      | A list of properties to set when building traversal projects. These are only set when building the **Clean** target.|
-| `PostTraversalCleanGlobalProperties` | A list of properties to set when building **post-traversal** projects. These are only set when building the **Clean** target.|
-| `PreTraversalTestGlobalProperties`   | A list of properties to set when building **pre-traversal** projects. These are only set when building the **Test** target.|
-| `TraversalTestGlobalProperties`       | A list of properties to set when building traversal projects. These are only set when building the **Test** target.|
-| `PostTraversalTestGlobalProperties`  | A list of properties to set when building **pre-traversal** projects. These are only set when building the **Test** target.|
 
 **Example**
 
-Set some properties during pre-traversal and post-traversal build.
+Set some properties during build.
 ```xml
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <PreTraversalBuildGlobalProperties>IsPreTraversal=true;EnableSomething=true</PreTraversalBuildGlobalProperties>
-    <PostTraversalBuildGlobalProperties>SomeProperty=Value</PostTraversalBuildGlobalProperties>
+    <TraversalGlobalProperties>Property1=true;EnableSomething=true</TraversalGlobalProperties>
   </PropertyGroup>
 </Project>
 ```
