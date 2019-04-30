@@ -196,5 +196,54 @@ namespace Microsoft.Build.Traversal.UnitTests
 
             result.ShouldBeTrue(customMessage: () => buildOutput.GetConsoleLog());
         }
+
+        [Theory]
+        [InlineData("Build")]
+        [InlineData("Clean")]
+        [InlineData("Pack")]
+        [InlineData("Publish")]
+        [InlineData("Test")]
+        [InlineData("VSTest")]
+        public void StaticGraphProjectReferenceTargetsAreSetForEachTraversalTarget(string target)
+        {
+            ProjectCreator
+                .Templates
+                .TraversalProject(
+                    null,
+                    GetTempFile("dirs.proj"))
+                .Save().TryGetItems("ProjectReferenceTargets", "Targets", out var items);
+
+            items.Keys.ShouldContain(target);
+
+            items[target].ShouldBe(
+                target == "Build"
+                    ? ".default"
+                    : target);
+        }
+
+        [Theory]
+        [InlineData("Build")]
+        [InlineData("Clean")]
+        [InlineData("Pack")]
+        [InlineData("Publish")]
+        [InlineData("Test")]
+        [InlineData("VSTest")]
+        public void TraversalTargetsShouldBeConditionedOnIsGraphBuild(string target)
+        {
+            var traversalTarget = ProjectCreator
+                .Templates
+                .TraversalProject(
+                    null,
+                    GetTempFile("dirs.proj"))
+                .Save()
+                .Project.Targets.Values.FirstOrDefault(t => t.Name.Equals(target, StringComparison.OrdinalIgnoreCase));
+
+            traversalTarget.ShouldNotBeNull();
+
+            traversalTarget.Condition
+                .Replace(" ", string.Empty)
+                .Replace('\"', '\'')
+                .ShouldContain("'$(IsGraphBuild)'!='true'");
+        }
     }
 }

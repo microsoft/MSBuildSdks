@@ -20,6 +20,17 @@
 
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition=" Exists('$(MSBuildToolsPath)\Microsoft.Common.targets') " />
 
+  <ItemGroup>
+    <ProjectReferenceTargets Remove="@(ProjectReferenceTargets)" />
+
+    <ProjectReferenceTargets Include="Build" Targets=".default" />
+    <ProjectReferenceTargets Include="Clean" Targets="Clean" />
+    <ProjectReferenceTargets Include="Test" Targets="Test" />
+    <ProjectReferenceTargets Include="VSTest" Targets="VSTest" />
+    <ProjectReferenceTargets Include="Publish" Targets="Publish" />
+    <ProjectReferenceTargets Include="Pack" Targets="Pack" />
+  </ItemGroup>
+
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
     <!--
@@ -77,7 +88,7 @@
 
   <ItemGroup>
     <ProjectReference Update="@(ProjectReference)"
-                      Properties="$(TraversalGlobalProperties)" />
+                      AdditionalProperties="$(TraversalGlobalProperties)" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TraversalRemoveCurrentProject)' != 'false' ">
@@ -92,7 +103,8 @@
           DependsOnTargets="$(PrepareForBuildDependsOn)" />
 
   <Target Name="Build"
-          DependsOnTargets="$(BuildDependsOn)">
+          DependsOnTargets="$(BuildDependsOn)"
+          Condition=" '$(IsGraphBuild)' != 'true' " >
     <MSBuild Projects="@(ProjectReference)"
              BuildInParallel="$(BuildInParallel)"
              SkipNonexistentProjects="$(SkipNonexistentProjects)"
@@ -100,7 +112,8 @@
   </Target>
 
   <Target Name="Clean"
-          DependsOnTargets="$(CleanDependsOn)">
+          DependsOnTargets="$(CleanDependsOn)"
+          Condition=" '$(IsGraphBuild)' != 'true' ">
     <MSBuild Projects="@(ProjectReference)"
              Targets="Clean"
              BuildInParallel="$(BuildInParallel)"
@@ -109,7 +122,8 @@
   </Target>
 
   <Target Name="Test"
-          DependsOnTargets="$(TestDependsOn)">
+          DependsOnTargets="$(TestDependsOn)"
+          Condition=" '$(IsGraphBuild)' != 'true' ">
     <MSBuild Projects="@(ProjectReference)"
              Targets="Test"
              BuildInParallel="$(BuildInParallel)"
@@ -118,7 +132,8 @@
   </Target>
 
   <Target Name="VSTest"
-          DependsOnTargets="$(VSTestDependsOn)">
+          DependsOnTargets="$(VSTestDependsOn)"
+          Condition=" '$(IsGraphBuild)' != 'true' ">
     <MSBuild Projects="@(ProjectReference)"
              Targets="VSTest"
              BuildInParallel="$(BuildInParallel)"
@@ -127,7 +142,8 @@
   </Target>
 
   <Target Name="Pack"
-          DependsOnTargets="$(PackDependsOn)">
+          DependsOnTargets="$(PackDependsOn)"
+          Condition=" '$(IsGraphBuild)' != 'true' ">
     <MSBuild Projects="@(ProjectReference)"
              Targets="Pack"
              BuildInParallel="$(BuildInParallel)"
@@ -136,7 +152,8 @@
   </Target>
 
   <Target Name="Publish"
-          DependsOnTargets="$(PublishDependsOn)">
+          DependsOnTargets="$(PublishDependsOn)"
+          Condition=" '$(IsGraphBuild)' != 'true' ">
     <MSBuild Projects="@(ProjectReference)"
              Properties="$(TraversalPublishGlobalProperties)"
              Targets="Publish"
