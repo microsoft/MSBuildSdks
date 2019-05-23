@@ -44,7 +44,16 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleNoTargets", "samples\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.Artifacts", "src\Artifacts\Microsoft.Build.Artifacts.csproj", "{6E84BA77-308F-4780-852F-B27F8BFD2797}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Build.Artifacts.UnitTests", "src\Artifacts.UnitTests\Microsoft.Build.Artifacts.UnitTests.csproj", "{359B2C2B-B9B8-496F-B4B1-9E4359729F89}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.Artifacts.UnitTests", "src\Artifacts.UnitTests\Microsoft.Build.Artifacts.UnitTests.csproj", "{359B2C2B-B9B8-496F-B4B1-9E4359729F89}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CentralPackageVersions", "CentralPackageVersions", "{FCF015C3-82E5-488D-8438-1410F6572F0B}"
+	ProjectSection(SolutionItems) = preProject
+		samples\CentralPackageVersions\Directory.Build.props = samples\CentralPackageVersions\Directory.Build.props
+		samples\CentralPackageVersions\Directory.Build.targets = samples\CentralPackageVersions\Directory.Build.targets
+		samples\CentralPackageVersions\Packages.props = samples\CentralPackageVersions\Packages.props
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClassLibrary", "samples\CentralPackageVersions\src\ClassLibrary\ClassLibrary.csproj", "{A266FDFA-BE7C-4E3E-9BEA-EF18EF66540C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -92,6 +101,10 @@ Global
 		{359B2C2B-B9B8-496F-B4B1-9E4359729F89}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{359B2C2B-B9B8-496F-B4B1-9E4359729F89}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{359B2C2B-B9B8-496F-B4B1-9E4359729F89}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A266FDFA-BE7C-4E3E-9BEA-EF18EF66540C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A266FDFA-BE7C-4E3E-9BEA-EF18EF66540C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A266FDFA-BE7C-4E3E-9BEA-EF18EF66540C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A266FDFA-BE7C-4E3E-9BEA-EF18EF66540C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -99,6 +112,8 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{516F0D1D-C4FE-4832-9E49-903A2C57D3F3} = {867D30F7-2AEC-48E7-B167-4919EE1B0985}
 		{48F56A6B-A285-4B40-9E96-044F7AA2C532} = {516F0D1D-C4FE-4832-9E49-903A2C57D3F3}
+		{FCF015C3-82E5-488D-8438-1410F6572F0B} = {867D30F7-2AEC-48E7-B167-4919EE1B0985}
+		{A266FDFA-BE7C-4E3E-9BEA-EF18EF66540C} = {FCF015C3-82E5-488D-8438-1410F6572F0B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6AB3C4FB-938A-42B8-8E9E-A53178C94301}
