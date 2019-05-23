@@ -16,14 +16,17 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
 {
     public class CentralPackageVersionsTests : MSBuildSdkTestBase
     {
-        [Fact]
-        public void CanDisableCentralPackageVersions()
+        [Theory]
+        [InlineData(".csproj")]
+        [InlineData(".fsproj")]
+        [InlineData(".vbproj")]
+        public void CanDisableCentralPackageVersions(string projectFileExtension)
         {
             WritePackagesProps();
 
             ProjectCreator.Templates
                 .SdkCsproj(
-                    path: Path.Combine(TestRootPath, "test.csproj"),
+                    path: Path.Combine(TestRootPath, $"test.{projectFileExtension}"),
                     projectCollection: new ProjectCollection(new Dictionary<string, string>
                     {
                         ["EnableCentralPackageVersions"] = "false",
@@ -34,7 +37,9 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                         .Import(Path.Combine(Environment.CurrentDirectory, @"Sdk\Sdk.targets")))
                 .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput)
                 .Project
-                .GetItems("PackageReference").ToDictionary(i => i.EvaluatedInclude, i => i.GetMetadataValue("Version"))
+                .GetItems("PackageReference")
+                    .Where(i => !i.EvaluatedInclude.Equals("FSharp.Core"))
+                    .ToDictionary(i => i.EvaluatedInclude, i => i.GetMetadataValue("Version"))
                 .ShouldBe(new Dictionary<string, string>
                 {
                     ["Foo"] = "10.0.0"
@@ -43,14 +48,17 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
             result.ShouldBeTrue(() => buildOutput.GetConsoleLog());
         }
 
-        [Fact]
-        public void CanDisableGlobalPackageReferences()
+        [Theory]
+        [InlineData(".csproj")]
+        [InlineData(".fsproj")]
+        [InlineData(".vbproj")]
+        public void CanDisableGlobalPackageReferences(string projectFileExtension)
         {
             WritePackagesProps();
 
             ProjectCreator.Templates
                 .SdkCsproj(
-                    path: Path.Combine(TestRootPath, "test.csproj"),
+                    path: Path.Combine(TestRootPath, $"test.{projectFileExtension}"),
                     projectCollection: new ProjectCollection(new Dictionary<string, string>
                     {
                         ["DisableImplicitFrameworkReferences"] = "true",
@@ -61,7 +69,9 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                         .Import(Path.Combine(Environment.CurrentDirectory, @"Sdk\Sdk.targets")))
                 .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput)
                 .Project
-                .GetItems("PackageReference").ToDictionary(i => i.EvaluatedInclude, i => i.GetMetadataValue("Version"))
+                .GetItems("PackageReference")
+                    .Where(i => !i.EvaluatedInclude.Equals("FSharp.Core"))
+                    .ToDictionary(i => i.EvaluatedInclude, i => i.GetMetadataValue("Version"))
                 .ShouldBe(
                     new Dictionary<string, string>
                     {
@@ -72,14 +82,17 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
             result.ShouldBeTrue(() => buildOutput.GetConsoleLog());
         }
 
-        [Fact]
-        public void CanOverridePackageVersion()
+        [Theory]
+        [InlineData(".csproj")]
+        [InlineData(".fsproj")]
+        [InlineData(".vbproj")]
+        public void CanOverridePackageVersion(string projectFileExtension)
         {
             WritePackagesProps();
 
             ProjectCreator.Templates
                 .SdkCsproj(
-                    path: Path.Combine(TestRootPath, "test.csproj"),
+                    path: Path.Combine(TestRootPath, $"test.{projectFileExtension}"),
                     projectCollection: new ProjectCollection(new Dictionary<string, string>
                     {
                         ["DisableImplicitFrameworkReferences"] = "true"
@@ -94,7 +107,9 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                         .Import(Path.Combine(Environment.CurrentDirectory, @"Sdk\Sdk.targets")))
                 .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput)
                 .Project
-                .GetItems("PackageReference").ToDictionary(i => i.EvaluatedInclude, i => i.GetMetadataValue("Version"))
+                .GetItems("PackageReference")
+                    .Where(i => !i.EvaluatedInclude.Equals("FSharp.Core"))
+                    .ToDictionary(i => i.EvaluatedInclude, i => i.GetMetadataValue("Version"))
                 .ShouldBe(
                     new Dictionary<string, string>
                     {
@@ -104,6 +119,73 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                     ignoreOrder: true);
 
             result.ShouldBeTrue(() => buildOutput.GetConsoleLog());
+        }
+
+        [Fact]
+        public void FSharpCorePackageReferenceCanBeDisabled()
+        {
+            WritePackagesProps();
+
+            ProjectCreator.Templates
+                .SdkCsproj(
+                    path: Path.Combine(TestRootPath, "test.fsproj"),
+                    projectCollection: new ProjectCollection(new Dictionary<string, string>
+                    {
+                        ["UpdateImplicitFSharpCoreReference"] = "false"
+                    }),
+                    targetFramework: "net46",
+                    projectCreator: creator => creator
+                        .Import(Path.Combine(Environment.CurrentDirectory, @"Sdk\Sdk.targets")))
+                .TryGetItems("PackageReference", out IReadOnlyCollection<ProjectItem> items);
+
+            items.Where(i => i.EvaluatedInclude.Equals("FSharp.Core"))
+                .ShouldHaveSingleItem()
+                .GetMetadataValue("IsImplicitlyDefined")
+                .ShouldBe(string.Empty);
+        }
+
+        [Fact]
+        public void FSharpCorePackageReferenceNoSystemValueTupleForNetStandardProjects()
+        {
+            WritePackagesProps();
+
+            ProjectCreator.Templates
+                .SdkCsproj(
+                    path: Path.Combine(TestRootPath, "test.fsproj"),
+                    projectCreator: creator => creator
+                        .Import(Path.Combine(Environment.CurrentDirectory, @"Sdk\Sdk.targets")))
+                .TryGetItems("PackageReference", out IReadOnlyCollection<ProjectItem> items);
+
+            items.Where(i => i.EvaluatedInclude.Equals("FSharp.Core"))
+                .ShouldHaveSingleItem()
+                .GetMetadataValue("IsImplicitlyDefined")
+                .ShouldBe("true");
+
+            items.Where(i => i.EvaluatedInclude.Equals("System.ValueTuple")).ShouldBeEmpty();
+        }
+
+        [Fact]
+        public void FSharpCorePackageReferenceUpdated()
+        {
+            WritePackagesProps();
+
+            ProjectCreator.Templates
+                .SdkCsproj(
+                    path: Path.Combine(TestRootPath, "test.fsproj"),
+                    targetFramework: "net46",
+                    projectCreator: creator => creator
+                        .Import(Path.Combine(Environment.CurrentDirectory, @"Sdk\Sdk.targets")))
+                .TryGetItems("PackageReference", out IReadOnlyCollection<ProjectItem> items);
+
+            items.Where(i => i.EvaluatedInclude.Equals("FSharp.Core"))
+                .ShouldHaveSingleItem()
+                .GetMetadataValue("IsImplicitlyDefined")
+                .ShouldBe("true");
+
+            items.Where(i => i.EvaluatedInclude.Equals("System.ValueTuple"))
+                .ShouldHaveSingleItem()
+                .GetMetadataValue("IsImplicitlyDefined")
+                .ShouldBe("true");
         }
 
         [Theory]
@@ -135,14 +217,17 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
             enableCentralPackageVersions.ShouldBe("false");
         }
 
-        [Fact]
-        public void LogErrorIfProjectSpecifiesGlobalPackageReference()
+        [Theory]
+        [InlineData(".csproj")]
+        [InlineData(".fsproj")]
+        [InlineData(".vbproj")]
+        public void LogErrorIfProjectSpecifiesGlobalPackageReference(string projectFileExtension)
         {
             ProjectCreator packagesProps = WritePackagesProps();
 
             ProjectCreator.Templates
                 .SdkCsproj(
-                    path: Path.Combine(TestRootPath, "test.csproj"),
+                    path: Path.Combine(TestRootPath, $"test.{projectFileExtension}"),
                     projectCreator: creator => creator
                         .ItemPackageReference("Foo")
                         .ItemPackageReference("Global1")
@@ -154,14 +239,17 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
             buildOutput.Errors.ShouldBe(new[] { $"The package reference \'Global1\' is already defined as a GlobalPackageReference in \'{packagesProps.FullPath}\'.  Individual projects do not need to include a PackageReference if a GlobalPackageReference is declared." });
         }
 
-        [Fact]
-        public void LogErrorIfProjectSpecifiesUnknownPackage()
+        [Theory]
+        [InlineData(".csproj")]
+        [InlineData(".fsproj")]
+        [InlineData(".vbproj")]
+        public void LogErrorIfProjectSpecifiesUnknownPackage(string projectFileExtension)
         {
             ProjectCreator packagesProps = WritePackagesProps();
 
             ProjectCreator.Templates
                 .SdkCsproj(
-                    path: Path.Combine(TestRootPath, "test.csproj"),
+                    path: Path.Combine(TestRootPath, $"test.{projectFileExtension}"),
                     projectCreator: creator => creator
                         .ItemPackageReference("Foo")
                         .ItemPackageReference("Baz")
@@ -173,14 +261,17 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
             buildOutput.Errors.ShouldBe(new[] { $"The package reference \'Baz\' must have a version defined in \'{packagesProps.FullPath}\'." });
         }
 
-        [Fact]
-        public void LogErrorIfProjectSpecifiesVersion()
+        [Theory]
+        [InlineData(".csproj")]
+        [InlineData(".fsproj")]
+        [InlineData(".vbproj")]
+        public void LogErrorIfProjectSpecifiesVersion(string projectFileExtension)
         {
             ProjectCreator packagesProps = WritePackagesProps();
 
             ProjectCreator.Templates
                 .SdkCsproj(
-                    path: Path.Combine(TestRootPath, "test.csproj"),
+                    path: Path.Combine(TestRootPath, $"test.{projectFileExtension}"),
                     projectCreator: creator => creator
                         .ItemPackageReference("Foo", "10.0.0")
                         .Import(Path.Combine(Environment.CurrentDirectory, @"Sdk\Sdk.targets")))
@@ -191,14 +282,17 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
             buildOutput.Errors.ShouldBe(new[] { $"The package reference \'Foo\' should not specify a version.  Please specify the version in \'{packagesProps.FullPath}\' or set VersionOverride to override the centrally defined version." });
         }
 
-        [Fact]
-        public void LogErrorIfProjectSpecifiesVersionAndVersionOverrideIsDisabled()
+        [Theory]
+        [InlineData(".csproj")]
+        [InlineData(".fsproj")]
+        [InlineData(".vbproj")]
+        public void LogErrorIfProjectSpecifiesVersionAndVersionOverrideIsDisabled(string projectFileExtension)
         {
             ProjectCreator packagesProps = WritePackagesProps();
 
             ProjectCreator.Templates
                 .SdkCsproj(
-                    path: Path.Combine(TestRootPath, "test.csproj"),
+                    path: Path.Combine(TestRootPath, $"test.{projectFileExtension}"),
                     projectCollection: new ProjectCollection(new Dictionary<string, string>
                     {
                         ["DisableImplicitFrameworkReferences"] = "true",
@@ -214,14 +308,17 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
             buildOutput.Errors.ShouldBe(new[] { $"The package reference \'Foo\' should not specify a version.  Please specify the version in \'{packagesProps.FullPath}\'." });
         }
 
-        [Fact]
-        public void PackageVersionsAreApplied()
+        [Theory]
+        [InlineData(".csproj")]
+        [InlineData(".fsproj")]
+        [InlineData(".vbproj")]
+        public void PackageVersionsAreApplied(string projectFileExtension)
         {
             WritePackagesProps();
 
             ProjectCreator.Templates
                 .SdkCsproj(
-                    path: Path.Combine(TestRootPath, "test.csproj"),
+                    path: Path.Combine(TestRootPath, $"test.{projectFileExtension}"),
                     projectCollection: new ProjectCollection(new Dictionary<string, string>
                     {
                         ["DisableImplicitFrameworkReferences"] = "true"
@@ -231,7 +328,9 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                         .ItemPackageReference("Bar")
                         .Import(Path.Combine(Environment.CurrentDirectory, @"Sdk\Sdk.targets")))
                 .Project
-                .GetItems("PackageReference").ToDictionary(i => i.EvaluatedInclude, i => i.GetMetadataValue("Version"))
+                .GetItems("PackageReference")
+                    .Where(i => !i.EvaluatedInclude.Equals("FSharp.Core"))
+                    .ToDictionary(i => i.EvaluatedInclude, i => i.GetMetadataValue("Version"))
                 .ShouldBe(new Dictionary<string, string>
                 {
                     { "Foo", "1.2.3" },
