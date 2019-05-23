@@ -57,6 +57,18 @@
 
   <ItemGroup Condition=" '$(EnableCentralPackageVersions)' != 'false' ">
     <!--
+      Workaround the issue where FSharp SDK adds implicit PackageReference items but doesn't mark them as such
+      https://github.com/microsoft/MSBuildSdks/issues/90
+    -->
+    <PackageReference Update="FSharp.Core"
+                      Condition="'$(MSBuildProjectExtension)' == '.fsproj' And '$(DisableImplicitFSharpCoreReference)' != 'true' And '$(UpdateImplicitFSharpCoreReference)' != 'false'"
+                      IsImplicitlyDefined="true" />
+
+    <PackageReference Update="System.ValueTuple"
+                      Condition="'$(MSBuildProjectExtension)' == '.fsproj' And '$(DisableImplicitSystemValueTupleReference)' != 'true' And '$(UpdateImplicitSystemValueTupleReference)' != 'false' And '$(TargetFrameworkIdentifier)' == '.NETFramework' And '$(_TargetFrameworkVersionWithoutV)' &gt;= '4.0' And '$(_TargetFrameworkVersionWithoutV)' &lt;= '4.7'"
+                      IsImplicitlyDefined="true" />
+
+    <!--
       Store a list of <PackageReference /> items that specified a Version so that an error can be displayed.
     -->
     <_PackageReferenceWithVersion Include="@(PackageReference->HasMetadata('Version'))" />
