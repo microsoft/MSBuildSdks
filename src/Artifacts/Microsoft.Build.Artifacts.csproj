@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net46;netcoreapp2.1</TargetFrameworks>
+    <TargetFrameworks>net46;net472;netcoreapp2.1</TargetFrameworks>
     <BuildOutputTargetFolder>build\</BuildOutputTargetFolder>
     <EnableDefaultNoneItems>true</EnableDefaultNoneItems>
     <PackageLicenseFile></PackageLicenseFile>
@@ -9,8 +9,13 @@
     <DevelopmentDependency>true</DevelopmentDependency>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" PrivateAssets="All" />
+  <ItemGroup Condition="'$(TargetFramework)' != 'net46'">
+    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" PrivateAssets="All"  />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net46'">
+    <PackageReference Include="Microsoft.Build.Framework;
+                               Microsoft.Build;
+                               Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" PrivateAssets="All" VersionOverride="15.9.20" />
   </ItemGroup>
 
   <ItemGroup>
