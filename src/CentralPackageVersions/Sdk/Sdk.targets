@@ -26,7 +26,7 @@
       * The project is a type that doesn't not support PackageReference in Visual Studio (like vcxproj, ccproj, or nuproj).
     -->
     <EnableCentralPackageVersions
-      Condition="!Exists('$(CentralPackagesFile)') Or Exists('$(MSBuildProjectDirectory)\packages.config') Or '$(MSBuildProjectExtension)' == '.vcxproj' Or '$(MSBuildProjectExtension)' == '.ccproj' Or '$(MSBuildProjectExtension)' == '.nuproj'">false</EnableCentralPackageVersions>
+      Condition="'$(EnableCentralPackageVersions)' == '' And (!Exists('$(CentralPackagesFile)') Or Exists('$(MSBuildProjectDirectory)\packages.config') Or '$(MSBuildProjectExtension)' == '.vcxproj' Or '$(MSBuildProjectExtension)' == '.ccproj' Or '$(MSBuildProjectExtension)' == '.nuproj')">false</EnableCentralPackageVersions>
 
     <!--
       Include this file and the Packages.props file (if necessary) in MSBuildAllProjects so that rebuilds happen if the Packages.props changes.

@@ -17,6 +17,36 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
     public class CentralPackageVersionsTests : MSBuildSdkTestBase
     {
         [Theory]
+        [InlineData(true, ".csproj")]
+        [InlineData(true, ".sfproj")]
+        [InlineData(false, ".ccproj")]
+        [InlineData(false, ".vcxproj")]
+        [InlineData(false, ".nuproj")]
+        public void CanBeExplicitlyEnabled(bool createPackagesConfig, string extension)
+        {
+            WritePackagesProps();
+
+            if (createPackagesConfig)
+            {
+                File.WriteAllText(Path.Combine(TestRootPath, "packages.config"), "<packages />");
+            }
+
+            ProjectCreator.Templates
+                .SdkCsproj(
+                    path: Path.Combine(TestRootPath, $"test{extension}"),
+                    projectCollection: new ProjectCollection(new Dictionary<string, string>
+                    {
+                        ["DisableImplicitFrameworkReferences"] = "true"
+                    }),
+                    projectCreator: creator => creator
+                        .Property("EnableCentralPackageVersions", "true")
+                        .Import(Path.Combine(Environment.CurrentDirectory, @"Sdk\Sdk.targets")))
+                .TryGetPropertyValue("EnableCentralPackageVersions", out string enableCentralPackageVersions);
+
+            enableCentralPackageVersions.ShouldBe("true");
+        }
+
+        [Theory]
         [InlineData(".csproj")]
         [InlineData(".fsproj")]
         [InlineData(".vbproj")]
