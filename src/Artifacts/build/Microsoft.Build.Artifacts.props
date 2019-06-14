@@ -9,6 +9,7 @@
           Condition=" '$(EnableArtifacts)' != 'false' And '$(CustomBeforeArtifactsProps)' != '' And Exists('$(CustomBeforeArtifactsProps)') " />
 
   <PropertyGroup>
+    <UsingMicrosoftArtifactsSdk>true</UsingMicrosoftArtifactsSdk>
     <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   
