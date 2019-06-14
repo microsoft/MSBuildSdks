@@ -56,7 +56,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
             ProjectCreator.Templates.ProjectWithArtifacts(
                     artifactsPath: artifactsPath)
                 .Property("DefaultArtifactsSource", customPath)
-                .TryGetItems("Artifacts", out IReadOnlyCollection<ProjectItem> artifactItems);
+                .TryGetItems("Artifact", out IReadOnlyCollection<ProjectItem> artifactItems);
 
             ProjectItem artifactItem = artifactItems.ShouldHaveSingleItem();
 
@@ -81,7 +81,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
             ProjectCreator.Templates.ProjectWithArtifacts(
                 outputPath: outputPath.FullName,
                 artifactsPath: artifactsPath.FullName)
-                .TryGetItems("Artifacts", out IReadOnlyCollection<ProjectItem> artifactItems)
+                .TryGetItems("Artifact", out IReadOnlyCollection<ProjectItem> artifactItems)
                 .TryBuild(out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeTrue(buildOutput.GetConsoleLog());
@@ -118,7 +118,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
             ProjectCreator.Templates.SdkProjectWithArtifacts(
                     outputPath: outputPath.FullName,
                     artifactsPath: artifactsPath.FullName)
-                .TryGetItems("Artifacts", out IReadOnlyCollection<ProjectItem> artifactItems)
+                .TryGetItems("Artifact", out IReadOnlyCollection<ProjectItem> artifactItems)
                 .TryBuild(out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeTrue(buildOutput.GetConsoleLog());

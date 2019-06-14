@@ -190,3 +190,7 @@ To exclude files, specify `FileExclude`
             DestinationFolder="$(ArtifactsPath)" />
 </ItemGroup>
 ```
+
+# Version 2.0 Breaking Changes
+
+In version 2.0, the `<Artifacts />` item was renamed to `<Artifact />`.  Please update any items when upgrading to this version.
