@@ -8,7 +8,7 @@
   <Import Project="$(CustomBeforeCentralPackageVersionsProps)" Condition=" '$(CustomBeforeCentralPackageVersionsProps)' != '' And Exists('$(CustomBeforeCentralPackageVersionsProps)') " />
 
   <PropertyGroup>
-    <MSBuildAllProjects>$(MSBuildThisFileFullPath);$(MSBuildAllProjects)</MSBuildAllProjects>
+    <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition=" '$(MicrosoftCommonPropsHasBeenImported)' != 'true' And Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props') "/>
