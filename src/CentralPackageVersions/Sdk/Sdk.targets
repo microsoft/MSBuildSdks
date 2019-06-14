@@ -31,8 +31,8 @@
     <!--
       Include this file and the Packages.props file (if necessary) in MSBuildAllProjects so that rebuilds happen if the Packages.props changes.
     -->
-    <MSBuildAllProjects>$(MSBuildThisFileFullPath);$(MSBuildAllProjects)</MSBuildAllProjects>
-    <MSBuildAllProjects Condition=" '$(EnableCentralPackageVersions)' != 'false' ">$(CentralPackagesFile);$(MSBuildAllProjects)</MSBuildAllProjects>
+    <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
+    <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current' And '$(EnableCentralPackageVersions)' != 'false'">$(CentralPackagesFile);$(MSBuildAllProjects)</MSBuildAllProjects>
   </PropertyGroup>
 
   <ItemDefinitionGroup Condition=" '$(EnableCentralPackageVersions)' != 'false' ">

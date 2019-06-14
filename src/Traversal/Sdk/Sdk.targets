@@ -32,7 +32,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
     <!--
       Set by Microsoft.Common.targets, some targets must be removed while others are left as standard extension mechanisms.
     -->

@@ -8,6 +8,7 @@
 
   <PropertyGroup>
     <UsingMicrosoftNoTargetsSdk>true</UsingMicrosoftNoTargetsSdk>
+    <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
   <Import Project="$(CustomBeforeNoTargetsProps)" Condition=" '$(CustomBeforeNoTargetsProps)' != '' And Exists('$(CustomBeforeNoTargetsProps)') " />
