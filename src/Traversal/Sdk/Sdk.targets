@@ -55,7 +55,7 @@
       Build
     </TestDependsOn>
 
-    <VSTestDependsOn>
+    <VSTestDependsOn Condition="'$(VSTestNoBuild)' != 'true'">
       Build
     </VSTestDependsOn>
 
