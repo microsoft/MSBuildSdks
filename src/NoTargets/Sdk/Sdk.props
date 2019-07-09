@@ -13,6 +13,12 @@
 
   <Import Project="$(CustomBeforeNoTargetsProps)" Condition=" '$(CustomBeforeNoTargetsProps)' != '' And Exists('$(CustomBeforeNoTargetsProps)') " />
 
+  <PropertyGroup>
+    <!-- Disable default Compile and EmbeddedResource items for NoTargets projects -->
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+  </PropertyGroup>
+
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" Condition=" '$(MicrosoftCommonPropsHasBeenImported)' != 'true' "/>
 
   <Import Project="$(CustomAfterNoTargetsProps)" Condition=" '$(CustomAfterNoTargetsProps)' != '' And Exists('$(CustomAfterNoTargetsProps)') " />
