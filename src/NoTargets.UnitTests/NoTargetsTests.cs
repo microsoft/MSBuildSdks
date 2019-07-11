@@ -39,6 +39,17 @@ namespace Microsoft.Build.NoTargets.UnitTests
         }
 
         [Fact]
+        public void IncludeBuildOutputIsFalseByDefault()
+        {
+            ProjectCreator.Templates.NoTargetsProject(
+                    path: GetTempFileWithExtension(".csproj"))
+                .Save()
+                .TryGetPropertyValue("IncludeBuildOutput", out string includeBuildOutput);
+
+            includeBuildOutput.ShouldBe("false");
+        }
+
+        [Fact]
         public void SimpleBuild()
         {
             ProjectCreator.Templates.NoTargetsProject(
