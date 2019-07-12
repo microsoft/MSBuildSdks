@@ -69,6 +69,17 @@
                       IsImplicitlyDefined="true" />
 
     <!--
+      Workaround the issue where Microsoft.AspNet.App and Microsoft.AspNet.All are not marked as implicitly defined
+    -->
+    <PackageReference Update="Microsoft.AspNetCore.App"
+                      Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true'"
+                      IsImplicitlyDefined="true" />
+
+    <PackageReference Update="Microsoft.AspNetCore.All"
+                      Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true'"
+                      IsImplicitlyDefined="true" />
+
+    <!--
       Store a list of <PackageReference /> items that specified a Version so that an error can be displayed.
     -->
     <_PackageReferenceWithVersion Include="@(PackageReference->HasMetadata('Version'))" />

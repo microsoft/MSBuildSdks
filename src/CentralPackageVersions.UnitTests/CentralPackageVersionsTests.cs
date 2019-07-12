@@ -338,6 +338,48 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
             buildOutput.Errors.ShouldBe(new[] { $"The package reference \'Foo\' should not specify a version.  Please specify the version in \'{packagesProps.FullPath}\'." });
         }
 
+        [Fact]
+        public void MicrosoftAspNetCoreAllUpdated()
+        {
+            WritePackagesProps();
+
+            ProjectCreator.Templates
+                .SdkCsproj(
+                    path: Path.Combine(TestRootPath, "test.csproj"),
+                    targetFramework: "netcoreapp2.0",
+                    sdk: "Microsoft.NET.Sdk.Web",
+                    projectCreator: creator => creator
+                        .ItemPackageReference("Microsoft.AspNetCore.All")
+                        .Import(Path.Combine(Environment.CurrentDirectory, @"Sdk\Sdk.targets")))
+                .TryGetItems("PackageReference", out IReadOnlyCollection<ProjectItem> items);
+
+            items.Where(i => i.EvaluatedInclude.Equals("Microsoft.AspNetCore.All"))
+                .ShouldHaveSingleItem()
+                .GetMetadataValue("IsImplicitlyDefined")
+                .ShouldBe("true");
+        }
+
+        [Fact]
+        public void MicrosoftAspNetCoreAppUpdated()
+        {
+            WritePackagesProps();
+
+            ProjectCreator.Templates
+                .SdkCsproj(
+                    path: Path.Combine(TestRootPath, "test.csproj"),
+                    targetFramework: "netcoreapp2.0",
+                    sdk: "Microsoft.NET.Sdk.Web",
+                    projectCreator: creator => creator
+                        .ItemPackageReference("Microsoft.AspNetCore.App")
+                        .Import(Path.Combine(Environment.CurrentDirectory, @"Sdk\Sdk.targets")))
+                .TryGetItems("PackageReference", out IReadOnlyCollection<ProjectItem> items);
+
+            items.Where(i => i.EvaluatedInclude.Equals("Microsoft.AspNetCore.App"))
+                .ShouldHaveSingleItem()
+                .GetMetadataValue("IsImplicitlyDefined")
+                .ShouldBe("true");
+        }
+
         [Theory]
         [InlineData(".csproj")]
         [InlineData(".fsproj")]
