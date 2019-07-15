@@ -31,17 +31,24 @@ Supports staging artifacts from build outputs.
 
 ## How can I use these SDKs?
 
-Start your project file with:
+When using an MSBuild Project SDK obtained via NuGet (such as the SDKs in this repo) a specific version **must** be specified.
+
+Either append the version to the package name:
 
 ```xml
-<Project Sdk="<package-name>/<version>">
+<Project Sdk="Microsoft.Build.Traversal/2.0.12">
   ...
 ```
 
-Where:
+Or omit the version from the SDK attribute and specify it in the version in `global.json`, which can be useful to synchronise versions across multiple projects in a solution:
 
-- `<package-name>` is the NuGet package name (e.g. `Microsoft.Build.Traversal`)
-- `<version>` is the NuGet package version (e.g. `2.0.12`)
+```json
+{
+  "msbuild-sdks": {
+    "Microsoft.Build.Traversal" : "2.0.12"
+  }
+}
+```
 
 Since MSBuild 15.6, SDKs are downloaded as NuGet packages automatically. Earlier versions of MSBuild 15 required SDKs to be installed. 
 
