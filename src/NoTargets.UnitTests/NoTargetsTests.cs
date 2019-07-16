@@ -15,6 +15,41 @@ namespace Microsoft.Build.NoTargets.UnitTests
     public class NoTargetsTests : MSBuildSdkTestBase
     {
         [Fact]
+        public void EnableDefaultCompileItemsIsFalse()
+        {
+            ProjectCreator.Templates.NoTargetsProject(
+                    path: GetTempFileWithExtension(".csproj"))
+                .Property("GenerateDependencyFile", "false")
+                .Save()
+                .TryGetPropertyValue("EnableDefaultCompileItems", out string enableDefaultCompileItems);
+
+            enableDefaultCompileItems.ShouldBe("false");
+        }
+
+        [Fact]
+        public void EnableDefaultEmbeddedResourceItemsIsFalse()
+        {
+            ProjectCreator.Templates.NoTargetsProject(
+                    path: GetTempFileWithExtension(".csproj"))
+                .Property("GenerateDependencyFile", "false")
+                .Save()
+                .TryGetPropertyValue("EnableDefaultEmbeddedResourceItems", out string enableDefaultEmbeddedResourceItems);
+
+            enableDefaultEmbeddedResourceItems.ShouldBe("false");
+        }
+
+        [Fact]
+        public void IncludeBuildOutputIsFalseByDefault()
+        {
+            ProjectCreator.Templates.NoTargetsProject(
+                    path: GetTempFileWithExtension(".csproj"))
+                .Save()
+                .TryGetPropertyValue("IncludeBuildOutput", out string includeBuildOutput);
+
+            includeBuildOutput.ShouldBe("false");
+        }
+
+        [Fact]
         public void SimpleBuild()
         {
             ProjectCreator.Templates.NoTargetsProject(

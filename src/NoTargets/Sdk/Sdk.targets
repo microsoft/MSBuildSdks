@@ -21,6 +21,11 @@
 
   <Import Project="$(CustomBeforeNoTargets)" Condition="'$(CustomBeforeNoTargets)' != '' and Exists('$(CustomBeforeNoTargets)')" />
 
+  <PropertyGroup>
+    <!-- Don't include build output in a package since NoTargets projects don't emit an assembly. -->
+    <IncludeBuildOutput Condition="'$(IncludeBuildOutput)' == ''">false</IncludeBuildOutput>
+  </PropertyGroup>
+
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" Condition=" '$(CommonTargetsPath)' == '' " />
 
   <ItemGroup>
@@ -43,6 +48,12 @@
       PostBuildEvent
     </CoreBuildDependsOn>
   </PropertyGroup>
+
+  <!--
+    The CopyFilesToOutputDirectory target is hard coded to depend on ComputeIntermediateSatelliteAssemblies.  NoTargets projects do no generate resource assemblies
+    so the target is replaced with a no-op
+  -->
+  <Target Name="ComputeIntermediateSatelliteAssemblies" />
 
   <!-- For CPS/VS support. See https://github.com/dotnet/project-system/blob/master/src/Microsoft.VisualStudio.ProjectSystem.Managed/ProjectSystem/DesignTimeTargets/Microsoft.Managed.DesignTime.targets#L60 -->
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed\Microsoft.Managed.DesignTime.targets" 
