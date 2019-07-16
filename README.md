@@ -29,7 +29,32 @@ Supports utility projects that do not compile an assembly.
 
 Supports staging artifacts from build outputs.
 
-## What Are MSBuild SDKS?
+## How can I use these SDKs?
+
+When using an MSBuild Project SDK obtained via NuGet (such as the SDKs in this repo) a specific version **must** be specified.
+
+Either append the version to the package name:
+
+```xml
+<Project Sdk="Microsoft.Build.Traversal/2.0.12">
+  ...
+```
+
+Or omit the version from the SDK attribute and specify it in the version in `global.json`, which can be useful to synchronise versions across multiple projects in a solution:
+
+```json
+{
+  "msbuild-sdks": {
+    "Microsoft.Build.Traversal" : "2.0.12"
+  }
+}
+```
+
+Since MSBuild 15.6, SDKs are downloaded as NuGet packages automatically. Earlier versions of MSBuild 15 required SDKs to be installed. 
+
+For more information, [read the documentation](https://docs.microsoft.com/visualstudio/msbuild/how-to-use-project-sdk).
+
+## What are MSBuild SDKS?
 MSBuild 15.0 introduced new project XML for .NET Core that we refer to as SDK-style.  These SDK-style projects looks like:
 
 ```xml
@@ -53,10 +78,6 @@ At evaluation time, MSBuild adds implicit imports at the top and bottom of the p
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>
 ```
-
-More documentation is available [here](https://docs.microsoft.com/visualstudio/msbuild/how-to-use-project-sdk).
-
-Older versions of MSBuild 15 required that SDKs be installed prior to using them.  In MSBuild 15.6 and above, the SDKs are downloaded as NuGet packages instead.
 
 # Contributing
 
