@@ -116,6 +116,33 @@ Use a custom file name for your project that defines package versions.
 </Project>
 ```
 
+## CentralPackageVersions and VCXPROJ Files
+The VCXPROJ project system in Visual Studio 2019 does not currently support using `PackageReference`.  However, NuGet supports it from command-line restores. This means that if you choose to use `PackageReference` in `.vcxproj` indirectly via CentralPAckageVersions you must be aware of the following:
+
+  1. You must restore from the command-line via `msbuild /t:restore` before loading projects in Visual Studio.
+  2. You must manage `PackageReference` items manually in a text editor as Visual Studio will not show you what package references you have.
+
+This can manifest in errors like the following when adding a .vcxproj to an existing repo using CentralPackageVersions:
+
+```
+Foo.vcxproj : error NU1604: Project dependency StyleCop.Analyzers does not contain an inclusive lower bound. Include a lower bound in the dependency version to ensure consistent restore results. [C:\Bar\Bar.sln]
+```
+
+`Microsoft.Build.CentralPackageVersions` is disabled by default for `.vcxproj` since its not fully supported to use `PackageReference`. This means you must manually enable it if you want to use it. You can do this in your `Directory.Build.props`:
+
+```
+  <!--
+      Manually enable Microsoft.Build.CentralPackageVersions for .vcxproj because using 
+      PackageReference is not officially supported
+  -->
+  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.vcxproj'">
+    <Platform Condition="'$(Platform)' == ''">x64</Platform>
+    <EnableCentralPackageVersions>true</EnableCentralPackageVersions>
+    <TargetFramework>native</TargetFramework>
+    <ResolveNuGetPackages>false</ResolveNuGetPackages>
+  </PropertyGroup>
+```
+
 ## Version 2.0 Breaking Changes
 
 In version 2.0 of the package, we have deprecated the `PackageVersion` item and instead are using `<PackageReference Update="Package" />`.  To migrate an existing code base to use the newer version, please do the following:
