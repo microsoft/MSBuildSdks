@@ -72,8 +72,11 @@
       ResolveReferences;
     </PackDependsOn>
 
-    <PublishDependsOn>
+    <PublishDependsOn Condition="'$(NoBuild)' != 'true'">
       Build;
+    </PublishDependsOn>
+
+    <PublishDependsOn Condition="'$(NoBuild)' == 'true'">
     </PublishDependsOn>
   </PropertyGroup>
 

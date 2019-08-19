@@ -105,6 +105,37 @@ namespace Microsoft.Build.Traversal.UnitTests
         }
 
         [Fact]
+        public void PublishRespectsNoBuild()
+        {
+            string[] projects = new[]
+            {
+                ProjectCreator.Create(path: GetTempFileWithExtension(".proj"))
+                    .Target("Build")
+                    .TaskMessage("02CA9347E8BB4C5E856BC0903780CC9B", MessageImportance.High)
+                    .Target("Publish")
+                    .TaskMessage("20B044FEEC3E435D90CE721012C6577E", MessageImportance.High)
+                    .Save(),
+            }.Select(i => i.FullPath).ToArray();
+
+            ProjectCreator
+                .Templates
+                .TraversalProject(
+                    projects,
+                    projectCollection: new ProjectCollection(new Dictionary<string, string>
+                    {
+                        ["NoBuild"] = "true"
+                    }),
+                    path: GetTempFile("dirs.proj"))
+                .Save()
+                .TryBuild("Publish", out bool result, out BuildOutput buildOutput);
+
+            result.ShouldBeTrue(customMessage: () => buildOutput.GetConsoleLog());
+
+            buildOutput.Messages.ShouldContain("20B044FEEC3E435D90CE721012C6577E", customMessage: () => buildOutput.GetConsoleLog());
+            buildOutput.Messages.ShouldNotContain("02CA9347E8BB4C5E856BC0903780CC9B", customMessage: () => buildOutput.GetConsoleLog());
+        }
+
+        [Fact]
         public void SkipsNonExistentTargets()
         {
             string[] projects = new[]
@@ -123,6 +154,30 @@ namespace Microsoft.Build.Traversal.UnitTests
                 .TryBuild("Clean", out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeTrue(customMessage: () => buildOutput.GetConsoleLog());
+        }
+
+        [Theory]
+        [InlineData("Build")]
+        [InlineData("Clean")]
+        [InlineData("Pack")]
+        [InlineData("Publish")]
+        [InlineData("Test")]
+        [InlineData("VSTest")]
+        public void StaticGraphProjectReferenceTargetsAreSetForEachTraversalTarget(string target)
+        {
+            ProjectCreator
+                .Templates
+                .TraversalProject(
+                    null,
+                    GetTempFile("dirs.proj"))
+                .Save().TryGetItems("ProjectReferenceTargets", "Targets", out var items);
+
+            items.Keys.ShouldContain(target);
+
+            items[target].ShouldBe(
+                target == "Build"
+                    ? ".default"
+                    : target);
         }
 
         [Theory]
@@ -163,6 +218,31 @@ namespace Microsoft.Build.Traversal.UnitTests
         }
 
         [Theory]
+        [InlineData("Build")]
+        [InlineData("Clean")]
+        [InlineData("Pack")]
+        [InlineData("Publish")]
+        [InlineData("Test")]
+        [InlineData("VSTest")]
+        public void TraversalTargetsShouldBeConditionedOnIsGraphBuild(string target)
+        {
+            var traversalTarget = ProjectCreator
+                .Templates
+                .TraversalProject(
+                    null,
+                    GetTempFile("dirs.proj"))
+                .Save()
+                .Project.Targets.Values.FirstOrDefault(t => t.Name.Equals(target, StringComparison.OrdinalIgnoreCase));
+
+            traversalTarget.ShouldNotBeNull();
+
+            traversalTarget.Condition
+                .Replace(" ", string.Empty)
+                .Replace('\"', '\'')
+                .ShouldContain("'$(IsGraphBuild)'!='true'");
+        }
+
+        [Theory]
         [InlineData(null)]
         [InlineData("Debug")]
         [InlineData("Release")]
@@ -195,55 +275,6 @@ namespace Microsoft.Build.Traversal.UnitTests
                 .TryBuild("Clean", out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeTrue(customMessage: () => buildOutput.GetConsoleLog());
-        }
-
-        [Theory]
-        [InlineData("Build")]
-        [InlineData("Clean")]
-        [InlineData("Pack")]
-        [InlineData("Publish")]
-        [InlineData("Test")]
-        [InlineData("VSTest")]
-        public void StaticGraphProjectReferenceTargetsAreSetForEachTraversalTarget(string target)
-        {
-            ProjectCreator
-                .Templates
-                .TraversalProject(
-                    null,
-                    GetTempFile("dirs.proj"))
-                .Save().TryGetItems("ProjectReferenceTargets", "Targets", out var items);
-
-            items.Keys.ShouldContain(target);
-
-            items[target].ShouldBe(
-                target == "Build"
-                    ? ".default"
-                    : target);
-        }
-
-        [Theory]
-        [InlineData("Build")]
-        [InlineData("Clean")]
-        [InlineData("Pack")]
-        [InlineData("Publish")]
-        [InlineData("Test")]
-        [InlineData("VSTest")]
-        public void TraversalTargetsShouldBeConditionedOnIsGraphBuild(string target)
-        {
-            var traversalTarget = ProjectCreator
-                .Templates
-                .TraversalProject(
-                    null,
-                    GetTempFile("dirs.proj"))
-                .Save()
-                .Project.Targets.Values.FirstOrDefault(t => t.Name.Equals(target, StringComparison.OrdinalIgnoreCase));
-
-            traversalTarget.ShouldNotBeNull();
-
-            traversalTarget.Condition
-                .Replace(" ", string.Empty)
-                .Replace('\"', '\'')
-                .ShouldContain("'$(IsGraphBuild)'!='true'");
         }
     }
 }
