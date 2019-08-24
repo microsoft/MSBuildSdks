@@ -4,14 +4,31 @@
  
 The `Microsoft.Build.NoTargets` MSBuild project SDK allows project tree owners the ability to define projects that do not compile an assembly.  This can be useful for utility projects that just copy files, build packages, or any other function where an assembly is not compiled.
 
+Currently the version of the `Microsoft.Build.NoTargets` Sdk must be specified. See the examples below. See [Nuget](https://www.nuget.org/packages/Microsoft.Build.NoTargets/) for the currently available versions.
+
+In order for the project file to be opened in Visual Studio a `TargetFramework` must be specified.
+
 ## Example
+This is a sample `HelloWorld.csproj` that just prints a message.
+
+```xml
+<Project Sdk="Microsoft.Build.NoTargets/1.0.80">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+  </PropertyGroup>
+
+  <Target Name="HelloWorld" AfterTargets="Build">
+    <Message Text="Hello World" Importance="High" />
+  </Target>
+</Project>
+```
 
 To have a project that just copies a file:
 ```xml
-<Project Sdk="Microsoft.Build.NoTargets">
+<Project Sdk="Microsoft.Build.NoTargets/1.0.80">
 
   <PropertyGroup>
-    <TargetFramework>net46</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -37,9 +54,9 @@ To have a project that just copies a file:
 Or a project that runs a tool:
 
 ```xml
-<Project Sdk="Microsoft.Build.NoTargets">
+<Project Sdk="Microsoft.Build.NoTargets/1.0.80">
   <PropertyGroup>
-    <TargetFramework>net46</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <MyTool>mytool.exe</MyTool>
   </PropertyGroup>
 
