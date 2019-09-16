@@ -7,6 +7,7 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities.ProjectCreation;
 using Shouldly;
 using System.Collections.Generic;
+using System.IO;
 using UnitTest.Common;
 using Xunit;
 
@@ -47,6 +48,34 @@ namespace Microsoft.Build.NoTargets.UnitTests
                 .TryGetPropertyValue("IncludeBuildOutput", out string includeBuildOutput);
 
             includeBuildOutput.ShouldBe("false");
+        }
+
+        [Fact]
+        public void ProjectsCanDependOnNoTargetsProjects()
+        {
+            ProjectCreator project1 = ProjectCreator.Templates.LegacyCsproj(
+                    path: Path.Combine(TestRootPath, "project1", "project1.csproj"))
+                .Save();
+
+            ProjectCreator project2 = ProjectCreator.Templates.NoTargetsProject(
+                    path: Path.Combine(TestRootPath, "project2", "project2.csproj"))
+                .Property("DesignTimeBuild", "true")
+                .Property("GenerateDependencyFile", "false")
+                .Target("_GetProjectReferenceTargetFrameworkProperties")
+                .ItemProjectReference(project1)
+                .Save();
+
+            ProjectCreator project3 = ProjectCreator.Templates.NoTargetsProject(
+                    path: Path.Combine(TestRootPath, "project3", "project3.csproj"))
+                .Property("DesignTimeBuild", "true")
+                .Property("GenerateDependencyFile", "false")
+                .ItemProjectReference(project2)
+                .Target("_GetProjectReferenceTargetFrameworkProperties")
+                .Save();
+
+            project3.TryBuild(out bool result, out BuildOutput buildOutput);
+
+            result.ShouldBeTrue(buildOutput.GetConsoleLog());
         }
 
         [Fact]

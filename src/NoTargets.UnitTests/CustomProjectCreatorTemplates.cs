@@ -15,6 +15,7 @@ namespace Microsoft.Build.NoTargets.UnitTests
             this ProjectCreatorTemplates templates,
             Action<ProjectCreator> customAction = null,
             string path = null,
+            string targetFramework = "netstandard2.0",
             string defaultTargets = null,
             string initialTargets = null,
             string sdk = null,
@@ -35,7 +36,7 @@ namespace Microsoft.Build.NoTargets.UnitTests
                     projectCollection,
                     projectFileOptions)
                 .Import(Path.Combine(currentDirectory, "Sdk", "Sdk.props"))
-                .Property("TargetFramework", "netstandard1.0")
+                .Property("TargetFramework", targetFramework)
                 .CustomAction(customAction)
                 .Import(Path.Combine(currentDirectory, "Sdk", "Sdk.targets"));
         }
