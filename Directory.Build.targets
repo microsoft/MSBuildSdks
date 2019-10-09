@@ -21,7 +21,7 @@
         copyright=$(Copyright);
         projecturl=$(PackageProjectUrl);
         licensefile=$(PackageLicenseFile);
-        iconurl=$(PackageIconUrl);
+        icon=$(PackageIconPath);
         tags=$(PackageTags);
         packagetype=MSBuildSdk
       </NuspecProperties>

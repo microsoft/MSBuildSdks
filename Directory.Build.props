@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-
   <PropertyGroup>
     <DefaultItemExcludes>*log</DefaultItemExcludes>
     <MSBuildTreatWarningsAsErrors>true</MSBuildTreatWarningsAsErrors>
     <LangVersion>Latest</LangVersion>
+  </PropertyGroup>
 
+  <PropertyGroup>
     <Authors>Microsoft</Authors>
     <Company>Microsoft</Company>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <PackageLicenseFile>$(MSBuildThisFileDirectory)LICENSE.txt</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/Microsoft/MSBuildSdks</PackageProjectUrl>
-    <PackageIconUrl>https://github.com/Microsoft/msbuild/raw/master/branding/MSBuild-NuGet-Icon.png</PackageIconUrl>
+    <PackageIconPath>$(MSBuildThisFileDirectory)branding\MSBuild-NuGet-Icon.png</PackageIconPath>
     <RepositoryUrl>https://github.com/Microsoft/MSBuildSdks.git</RepositoryUrl>
   </PropertyGroup>
-
 </Project>

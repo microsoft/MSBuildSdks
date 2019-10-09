@@ -7,6 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.Traversal",
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{DC479DC1-DD8C-4DBA-AA37-FC3D39F24266}"
 	ProjectSection(SolutionItems) = preProject
+		azure-pipelines.yml = azure-pipelines.yml
 		Directory.Build.props = Directory.Build.props
 		Directory.Build.rsp = Directory.Build.rsp
 		Directory.Build.targets = Directory.Build.targets
@@ -53,7 +54,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CentralPackageVersions", "C
 		samples\CentralPackageVersions\Packages.props = samples\CentralPackageVersions\Packages.props
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClassLibrary", "samples\CentralPackageVersions\src\ClassLibrary\ClassLibrary.csproj", "{A266FDFA-BE7C-4E3E-9BEA-EF18EF66540C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClassLibrary", "samples\CentralPackageVersions\src\ClassLibrary\ClassLibrary.csproj", "{A266FDFA-BE7C-4E3E-9BEA-EF18EF66540C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
