@@ -1,30 +1,56 @@
-pool:
-  name: Hosted VS2017
+resources:
+- repo: self
 
 variables:
+  BuildConfiguration: 'Debug'
+  BuildPlatform: 'AnyCPU'
+  DotNetCore3Version: '3.0.100'
   SignType: 'Test'
-  Configuration: 'Debug'
 
-steps:
-- task: MSBuild@1
-  displayName: 'Build dirs.proj'
-  inputs:
-    solution: dirs.proj
-    platform: 'AnyCPU'
-    configuration: '$(Configuration)'
-    msbuildArguments: '"/Property:ArtifactsPath=$(Build.StagingDirectory);SignType=$(SignType);PublicRelease=true" "/BinaryLogger:$(Build.StagingDirectory)\logs\build.binlog"'
+trigger:
+  batch: true
+  branches:
+    include:
+    - 'master'
+    - 'refs/tags/*'
+  paths:
+    exclude:
+    - '*.md'
+pr:
+  branches:
+    include:
+    - master
+  paths:
+    exclude:
+    - '*.md'
 
-- task: VSTest@2
-  displayName: 'Run Unit Tests'
-  inputs:
-    testAssemblyVer2: |
-     **\*Tests.dll
-     !**\obj\**
-    runInParallel: false
-
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifact: Logs'
-  inputs:
-    PathtoPublish: '$(Build.StagingDirectory)\logs'
-    ArtifactName: logs
-  condition: always()
+jobs:
+- job: BuildAndTest
+  displayName: 'Build and Test'
+  pool:
+    vmImage: windows-latest
+  steps:
+  - task: UseDotNet@2
+    displayName: 'Install .NET Core 3.0'
+    inputs:
+      version: '$(DotNetCore3Version)'
+  - task: MSBuild@1
+    displayName: 'Build dirs.proj'
+    inputs:
+      solution: dirs.proj
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      msbuildArguments: '"/Property:ArtifactsPath=$(Build.StagingDirectory);SignType=$(SignType);PublicRelease=true" "/BinaryLogger:$(Build.StagingDirectory)\logs\build.binlog"'
+  - task: VSTest@2
+    displayName: 'Run Unit Tests'
+    inputs:
+      testAssemblyVer2: |
+       **\*Tests.dll
+       !**\obj\**
+      runInParallel: false
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: Logs'
+    inputs:
+      PathtoPublish: '$(Build.StagingDirectory)\logs'
+      ArtifactName: logs
+    condition: always()
