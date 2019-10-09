@@ -44,7 +44,7 @@
         is not recommended.  You should only have "global" references to packages that are used for
         build.
       -->
-      <IncludeAssets>Analyzers;Build</IncludeAssets>
+      <IncludeAssets>Analyzers;Build;BuildMultitargeting;BuildTransitive</IncludeAssets>
       <!--
         Default global package references to have all assets private.  This is because global package
         references are generally stuff like versioning, signing, etc and should not flow to downstream
