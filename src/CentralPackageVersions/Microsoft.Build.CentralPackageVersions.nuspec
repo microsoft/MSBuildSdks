@@ -9,7 +9,7 @@
     <copyright>$copyright$</copyright>
     <projectUrl>$projecturl$</projectUrl>
     <license type="file">LICENSE.txt</license>
-    <iconUrl>$iconurl$</iconUrl>
+    <icon>images\MSBuild-NuGet-Icon.png</icon>
     <tags>$tags$</tags>
     <packageTypes>
       <packageType name="$packagetype$" />
@@ -18,5 +18,6 @@
   <files>
     <file src="Sdk\**" target="Sdk" />
     <file src="$licensefile$" target="" />
+    <file src="$icon$" target="images\" />
   </files>
 </package>

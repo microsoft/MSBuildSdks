@@ -1,12 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFrameworks>net46;net472;netcoreapp2.1</TargetFrameworks>
     <BuildOutputTargetFolder>build\</BuildOutputTargetFolder>
     <EnableDefaultNoneItems>true</EnableDefaultNoneItems>
     <PackageLicenseFile></PackageLicenseFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIcon>images\MSBuild-NuGet-Icon.png</PackageIcon>
     <DevelopmentDependency>true</DevelopmentDependency>
+    <NoWarn>NU5128</NoWarn>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' != 'net46'">
@@ -22,6 +23,6 @@
     <None Include="build\*" Pack="true" PackagePath="build\" />
     <None Include="buildCrossTargeting\*" Pack="true" PackagePath="buildCrossTargeting\" />
     <None Include="Sdk\*" Pack="true" PackagePath="Sdk\" />
+    <None Include="$(PackageIconPath)" Pack="true" PackagePath="images\"/>
   </ItemGroup>
-
 </Project>
