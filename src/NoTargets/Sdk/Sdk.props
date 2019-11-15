@@ -11,6 +11,13 @@
     <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- Copy logic to know if managed targets got imported: https://github.com/dotnet/sdk/blob/49002c14cf91ecd08e79d6184dbd4716c005b509/src/Tasks/Microsoft.NET.Build.Tasks/sdk/Sdk.targets#L25-L27 -->
+    <ManagedLanguageTargetsGotImported Condition="'$(MSBuildProjectExtension)' == '.csproj'">true</ManagedLanguageTargetsGotImported>
+    <ManagedLanguageTargetsGotImported Condition="'$(MSBuildProjectExtension)' == '.vbproj'">true</ManagedLanguageTargetsGotImported>
+    <ManagedLanguageTargetsGotImported Condition="'$(MSBuildProjectExtension)' == '.fsproj'">true</ManagedLanguageTargetsGotImported>
+  </PropertyGroup>
+
   <Import Project="$(CustomBeforeNoTargetsProps)" Condition=" '$(CustomBeforeNoTargetsProps)' != '' And Exists('$(CustomBeforeNoTargetsProps)') " />
 
   <PropertyGroup>

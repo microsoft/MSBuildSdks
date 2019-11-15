@@ -2,12 +2,16 @@
 //
 // Licensed under the MIT license.
 
+using System;
 using Microsoft.Build.Evaluation;
+using Microsoft.Build.Execution;
+using Microsoft.Build.Experimental.Graph;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities.ProjectCreation;
 using Shouldly;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnitTest.Common;
 using Xunit;
 
@@ -111,6 +115,105 @@ namespace Microsoft.Build.NoTargets.UnitTests
                 .TryGetPropertyValue("UsingMicrosoftNoTargetsSdk", out string propertyValue);
 
             propertyValue.ShouldBe("true");
+        }
+
+        [Theory]
+        [InlineData(".csproj")]
+        [InlineData(".proj")]
+        public void ProjectContainsStaticGraphImplementation(string projectExtension)
+        {
+            var noTargets = ProjectCreator.Templates.NoTargetsProject(
+                path: GetTempFileWithExtension(projectExtension),
+                projectCollection: new ProjectCollection(
+                    new Dictionary<string, string>
+                    {
+                        ["DesignTimeBuild"] = "true"
+                    }),
+                customAction: creator =>
+                {
+                    creator.Target("TakeAction", afterTargets: "Build")
+                        .TaskMessage("86F00AF59170450E9D687652D74A6394", MessageImportance.High);
+                })
+                .Property("GenerateDependencyFile", "false")
+                .Save();
+
+            var projectReferenceTargets = noTargets.Project.GetItems("ProjectReferenceTargets");
+
+            TargetProtocolShouldContainValuesForTarget("Build");
+            TargetProtocolShouldContainValuesForTarget("Clean");
+            TargetProtocolShouldContainValuesForTarget("Rebuild");
+            TargetProtocolShouldContainValuesForTarget("Publish");
+
+            void TargetProtocolShouldContainValuesForTarget(string target)
+            {
+                var buildTargets =
+                    projectReferenceTargets.Where(i => i.EvaluatedInclude.Equals(target, StringComparison.OrdinalIgnoreCase))
+                        .Select(i => i.GetMetadata("Targets")?.EvaluatedValue)
+                        .Where(t => !string.IsNullOrEmpty(t));
+
+                buildTargets.ShouldNotBeEmpty();
+            }
+        }
+
+        [Theory(Skip = "https://github.com/microsoft/MSBuildSdks/issues/138")]
+        [InlineData(".csproj")]
+        [InlineData(".proj")]
+        public void StaticGraphBuildsSucceed(string projectExtension)
+        {
+            using var collection = new ProjectCollection();
+
+            var sdkReference = ProjectCreator.Templates.SdkCsproj(
+                GetTempFileWithExtension(".csproj"),
+                projectCollection: collection).Save();
+
+            var legacyReference = ProjectCreator.Templates.LegacyCsproj(
+                GetTempFileWithExtension(".csproj"),
+                projectCollection: collection).Save();
+
+            var noTargets = ProjectCreator.Templates.NoTargetsProject(
+                path: GetTempFileWithExtension(projectExtension),
+                targetFramework: "net472",
+                projectCollection: collection,
+                customAction: creator =>
+                {
+                    creator.ItemProjectReference(sdkReference.Project, referenceOutputAssembly: false);
+                    creator.ItemProjectReference(legacyReference.Project, referenceOutputAssembly: false);
+                }).Save();
+
+            var root = ProjectCreator.Templates.SdkCsproj(
+                GetTempFileWithExtension(".csproj"),
+                projectCollection: collection,
+                targetFramework: "net472",
+                projectCreator: creator => { creator.ItemProjectReference(noTargets.Project, referenceOutputAssembly: false); }
+                ).Save();
+
+            root.TryBuild("Restore", out var result, out var buildOutput1);
+            result.ShouldBe(true);
+
+            using var buildManager = new BuildManager();
+
+            try
+            {
+                var buildOutput = BuildOutput.Create();
+                buildManager.BeginBuild(new BuildParameters
+                {
+                    Loggers = new[] { buildOutput },
+                    IsolateProjects = true
+                });
+
+                var graphResult = buildManager.BuildRequest(
+                    new GraphBuildRequestData(
+                        projectGraphEntryPoints: new[] { new ProjectGraphEntryPoint(root.FullPath) },
+                        targetsToBuild: new[] { "Build" }));
+
+                graphResult.OverallResult.ShouldBe(BuildResultCode.Success);
+                buildOutput.Succeeded.ShouldBe(true);
+            }
+            finally
+            {
+                buildManager.EndBuild();
+            }
+
         }
     }
 }

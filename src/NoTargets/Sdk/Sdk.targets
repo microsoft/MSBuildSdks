@@ -70,5 +70,11 @@
   <Target Name="GetTargetPathWithTargetPlatformMoniker" />
 
   <Import Project="$(CustomAfterNoTargets)" Condition="'$(CustomAfterNoTargets)' != '' and Exists('$(CustomAfterNoTargets)')" />
-  
+
+  <!-- 
+    Microsoft.Managed.Targets is imported by the managed language target files, but most of the msbuild tasks are actually in Microsoft.Common.Currentversion.targets.
+    So import it when the managed targets do not get imported.
+  -->
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Managed.targets" Condition="'$(ManagedLanguageTargetsGotImported)' != 'true'"/>
+
 </Project>
