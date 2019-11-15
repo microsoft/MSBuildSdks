@@ -78,11 +78,13 @@ namespace Microsoft.Build.NoTargets.UnitTests
             result.ShouldBeTrue(buildOutput.GetConsoleLog());
         }
 
-        [Fact]
-        public void SimpleBuild()
+        [Theory]
+        [InlineData(".csproj")]
+        [InlineData(".proj")]
+        public void SimpleBuild(string projectExtension)
         {
             ProjectCreator.Templates.NoTargetsProject(
-                path: GetTempFileWithExtension(".csproj"),
+                path: GetTempFileWithExtension(projectExtension),
                 projectCollection: new ProjectCollection(new Dictionary<string, string>
                 {
                     ["DesignTimeBuild"] = "true"
