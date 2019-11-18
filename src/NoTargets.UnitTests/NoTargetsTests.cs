@@ -2,13 +2,13 @@
 //
 // Licensed under the MIT license.
 
-using System;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Experimental.Graph;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities.ProjectCreation;
 using Shouldly;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -19,69 +19,6 @@ namespace Microsoft.Build.NoTargets.UnitTests
 {
     public class NoTargetsTests : MSBuildSdkTestBase
     {
-        [Fact]
-        public void EnableDefaultCompileItemsIsFalse()
-        {
-            ProjectCreator.Templates.NoTargetsProject(
-                    path: GetTempFileWithExtension(".csproj"))
-                .Property("GenerateDependencyFile", "false")
-                .Save()
-                .TryGetPropertyValue("EnableDefaultCompileItems", out string enableDefaultCompileItems);
-
-            enableDefaultCompileItems.ShouldBe("false");
-        }
-
-        [Fact]
-        public void EnableDefaultEmbeddedResourceItemsIsFalse()
-        {
-            ProjectCreator.Templates.NoTargetsProject(
-                    path: GetTempFileWithExtension(".csproj"))
-                .Property("GenerateDependencyFile", "false")
-                .Save()
-                .TryGetPropertyValue("EnableDefaultEmbeddedResourceItems", out string enableDefaultEmbeddedResourceItems);
-
-            enableDefaultEmbeddedResourceItems.ShouldBe("false");
-        }
-
-        [Fact]
-        public void IncludeBuildOutputIsFalseByDefault()
-        {
-            ProjectCreator.Templates.NoTargetsProject(
-                    path: GetTempFileWithExtension(".csproj"))
-                .Save()
-                .TryGetPropertyValue("IncludeBuildOutput", out string includeBuildOutput);
-
-            includeBuildOutput.ShouldBe("false");
-        }
-
-        [Fact]
-        public void ProjectsCanDependOnNoTargetsProjects()
-        {
-            ProjectCreator project1 = ProjectCreator.Templates.LegacyCsproj(
-                    path: Path.Combine(TestRootPath, "project1", "project1.csproj"))
-                .Save();
-
-            ProjectCreator project2 = ProjectCreator.Templates.NoTargetsProject(
-                    path: Path.Combine(TestRootPath, "project2", "project2.csproj"))
-                .Property("DesignTimeBuild", "true")
-                .Property("GenerateDependencyFile", "false")
-                .Target("_GetProjectReferenceTargetFrameworkProperties")
-                .ItemProjectReference(project1)
-                .Save();
-
-            ProjectCreator project3 = ProjectCreator.Templates.NoTargetsProject(
-                    path: Path.Combine(TestRootPath, "project3", "project3.csproj"))
-                .Property("DesignTimeBuild", "true")
-                .Property("GenerateDependencyFile", "false")
-                .ItemProjectReference(project2)
-                .Target("_GetProjectReferenceTargetFrameworkProperties")
-                .Save();
-
-            project3.TryBuild(out bool result, out BuildOutput buildOutput);
-
-            result.ShouldBeTrue(buildOutput.GetConsoleLog());
-        }
-
         [Theory]
         [InlineData(".csproj")]
         [InlineData(".proj")]
@@ -89,10 +26,11 @@ namespace Microsoft.Build.NoTargets.UnitTests
         {
             ProjectCreator.Templates.NoTargetsProject(
                 path: GetTempFileWithExtension(projectExtension),
-                projectCollection: new ProjectCollection(new Dictionary<string, string>
-                {
-                    ["DesignTimeBuild"] = "true"
-                }),
+                projectCollection: new ProjectCollection(
+                    new Dictionary<string, string>
+                    {
+                        ["DesignTimeBuild"] = "true"
+                    }),
                 customAction: creator =>
                 {
                     creator.Target("TakeAction", afterTargets: "Build")
@@ -100,21 +38,11 @@ namespace Microsoft.Build.NoTargets.UnitTests
                 })
                 .Property("GenerateDependencyFile", "false")
                 .Save()
-                .TryBuild("Build", out bool result, out BuildOutput buildOutput);
+                .TryBuild("Build", out var result, out var buildOutput);
 
             result.ShouldBeTrue(() => buildOutput.GetConsoleLog());
 
             buildOutput.Messages.High.ShouldContain("86F00AF59170450E9D687652D74A6394");
-        }
-
-        [Fact]
-        public void UsingMicrosoftNoTargetsSdkValueSet()
-        {
-            ProjectCreator.Templates.NoTargetsProject(
-                path: GetTempFileWithExtension(".csproj"))
-                .TryGetPropertyValue("UsingMicrosoftNoTargetsSdk", out string propertyValue);
-
-            propertyValue.ShouldBe("true");
         }
 
         [Theory]
@@ -184,8 +112,7 @@ namespace Microsoft.Build.NoTargets.UnitTests
                 GetTempFileWithExtension(".csproj"),
                 projectCollection: collection,
                 targetFramework: "net472",
-                projectCreator: creator => { creator.ItemProjectReference(noTargets.Project, referenceOutputAssembly: false); }
-                ).Save();
+                projectCreator: creator => { creator.ItemProjectReference(noTargets.Project, referenceOutputAssembly: false); }).Save();
 
             root.TryBuild("Restore", out var result, out var buildOutput1);
             result.ShouldBe(true);
@@ -195,16 +122,17 @@ namespace Microsoft.Build.NoTargets.UnitTests
             try
             {
                 var buildOutput = BuildOutput.Create();
-                buildManager.BeginBuild(new BuildParameters
-                {
-                    Loggers = new[] { buildOutput },
-                    IsolateProjects = true
-                });
+                buildManager.BeginBuild(
+                    new BuildParameters
+                    {
+                        Loggers = new[] { buildOutput },
+                        IsolateProjects = true
+                    });
 
                 var graphResult = buildManager.BuildRequest(
                     new GraphBuildRequestData(
-                        projectGraphEntryPoints: new[] { new ProjectGraphEntryPoint(root.FullPath) },
-                        targetsToBuild: new[] { "Build" }));
+                        new[] { new ProjectGraphEntryPoint(root.FullPath) },
+                        new[] { "Build" }));
 
                 graphResult.OverallResult.ShouldBe(BuildResultCode.Success);
                 buildOutput.Succeeded.ShouldBe(true);
@@ -213,7 +141,79 @@ namespace Microsoft.Build.NoTargets.UnitTests
             {
                 buildManager.EndBuild();
             }
+        }
 
+        [Fact]
+        public void EnableDefaultCompileItemsIsFalse()
+        {
+            ProjectCreator.Templates.NoTargetsProject(
+                path: GetTempFileWithExtension(".csproj"))
+                .Property("GenerateDependencyFile", "false")
+                .Save()
+                .TryGetPropertyValue("EnableDefaultCompileItems", out var enableDefaultCompileItems);
+
+            enableDefaultCompileItems.ShouldBe("false");
+        }
+
+        [Fact]
+        public void EnableDefaultEmbeddedResourceItemsIsFalse()
+        {
+            ProjectCreator.Templates.NoTargetsProject(
+                path: GetTempFileWithExtension(".csproj"))
+                .Property("GenerateDependencyFile", "false")
+                .Save()
+                .TryGetPropertyValue("EnableDefaultEmbeddedResourceItems", out var enableDefaultEmbeddedResourceItems);
+
+            enableDefaultEmbeddedResourceItems.ShouldBe("false");
+        }
+
+        [Fact]
+        public void IncludeBuildOutputIsFalseByDefault()
+        {
+            ProjectCreator.Templates.NoTargetsProject(
+                path: GetTempFileWithExtension(".csproj"))
+                .Save()
+                .TryGetPropertyValue("IncludeBuildOutput", out var includeBuildOutput);
+
+            includeBuildOutput.ShouldBe("false");
+        }
+
+        [Fact]
+        public void ProjectsCanDependOnNoTargetsProjects()
+        {
+            var project1 = ProjectCreator.Templates.LegacyCsproj(
+                Path.Combine(TestRootPath, "project1", "project1.csproj"))
+                .Save();
+
+            var project2 = ProjectCreator.Templates.NoTargetsProject(
+                path: Path.Combine(TestRootPath, "project2", "project2.csproj"))
+                .Property("DesignTimeBuild", "true")
+                .Property("GenerateDependencyFile", "false")
+                .Target("_GetProjectReferenceTargetFrameworkProperties")
+                .ItemProjectReference(project1)
+                .Save();
+
+            var project3 = ProjectCreator.Templates.NoTargetsProject(
+                path: Path.Combine(TestRootPath, "project3", "project3.csproj"))
+                .Property("DesignTimeBuild", "true")
+                .Property("GenerateDependencyFile", "false")
+                .ItemProjectReference(project2)
+                .Target("_GetProjectReferenceTargetFrameworkProperties")
+                .Save();
+
+            project3.TryBuild(out var result, out var buildOutput);
+
+            result.ShouldBeTrue(buildOutput.GetConsoleLog());
+        }
+
+        [Fact]
+        public void UsingMicrosoftNoTargetsSdkValueSet()
+        {
+            ProjectCreator.Templates.NoTargetsProject(
+                path: GetTempFileWithExtension(".csproj"))
+                .TryGetPropertyValue("UsingMicrosoftNoTargetsSdk", out var propertyValue);
+
+            propertyValue.ShouldBe("true");
         }
     }
 }
