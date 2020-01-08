@@ -51,7 +51,7 @@ Or a project that runs a tool:
 
 ## Extensibility
 
-Setting the following properties control how Traversal works.
+Setting the following properties control how NoTargets works.
 
 | Property                            | Description |
 |-------------------------------------|-------------|
