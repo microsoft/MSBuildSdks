@@ -21,7 +21,7 @@
 
   <ItemGroup>
     <None Include="build\*" Pack="true" PackagePath="build\" />
-    <None Include="buildCrossTargeting\*" Pack="true" PackagePath="buildCrossTargeting\" />
+    <None Include="buildMultiTargeting\*" Pack="true" PackagePath="buildMultiTargeting\" />
     <None Include="Sdk\*" Pack="true" PackagePath="Sdk\" />
     <None Include="$(PackageIconPath)" Pack="true" PackagePath="images\"/>
   </ItemGroup>

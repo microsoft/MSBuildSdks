@@ -25,8 +25,8 @@
     <None Include="..\Artifacts\build\**"
           Link="build\%(Filename)%(Extension)"
           CopyToOutputDirectory="PreserveNewest" />
-    <None Include="..\Artifacts\buildCrossTargeting\**"
-          Link="buildCrossTargeting\%(Filename)%(Extension)"
+    <None Include="..\Artifacts\buildMultiTargeting\**"
+          Link="buildMultiTargeting\%(Filename)%(Extension)"
           CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\Artifacts\Sdk\**"
           Link="Sdk\%(Filename)%(Extension)"
