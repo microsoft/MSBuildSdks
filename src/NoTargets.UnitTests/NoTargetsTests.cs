@@ -4,8 +4,8 @@
 
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
-using Microsoft.Build.Experimental.Graph;
 using Microsoft.Build.Framework;
+using Microsoft.Build.Graph;
 using Microsoft.Build.Utilities.ProjectCreation;
 using Shouldly;
 using System;
@@ -19,30 +19,39 @@ namespace Microsoft.Build.NoTargets.UnitTests
 {
     public class NoTargetsTests : MSBuildSdkTestBase
     {
-        [Theory]
-        [InlineData(".csproj")]
-        [InlineData(".proj")]
-        public void SimpleBuild(string projectExtension)
+        [Fact]
+        public void EnableDefaultCompileItemsIsFalse()
         {
             ProjectCreator.Templates.NoTargetsProject(
-                path: GetTempFileWithExtension(projectExtension),
-                projectCollection: new ProjectCollection(
-                    new Dictionary<string, string>
-                    {
-                        ["DesignTimeBuild"] = "true"
-                    }),
-                customAction: creator =>
-                {
-                    creator.Target("TakeAction", afterTargets: "Build")
-                        .TaskMessage("86F00AF59170450E9D687652D74A6394", MessageImportance.High);
-                })
+                path: GetTempFileWithExtension(".csproj"))
                 .Property("GenerateDependencyFile", "false")
                 .Save()
-                .TryBuild("Build", out var result, out var buildOutput);
+                .TryGetPropertyValue("EnableDefaultCompileItems", out var enableDefaultCompileItems);
 
-            result.ShouldBeTrue(() => buildOutput.GetConsoleLog());
+            enableDefaultCompileItems.ShouldBe("false");
+        }
 
-            buildOutput.Messages.High.ShouldContain("86F00AF59170450E9D687652D74A6394");
+        [Fact]
+        public void EnableDefaultEmbeddedResourceItemsIsFalse()
+        {
+            ProjectCreator.Templates.NoTargetsProject(
+                path: GetTempFileWithExtension(".csproj"))
+                .Property("GenerateDependencyFile", "false")
+                .Save()
+                .TryGetPropertyValue("EnableDefaultEmbeddedResourceItems", out var enableDefaultEmbeddedResourceItems);
+
+            enableDefaultEmbeddedResourceItems.ShouldBe("false");
+        }
+
+        [Fact]
+        public void IncludeBuildOutputIsFalseByDefault()
+        {
+            ProjectCreator.Templates.NoTargetsProject(
+                path: GetTempFileWithExtension(".csproj"))
+                .Save()
+                .TryGetPropertyValue("IncludeBuildOutput", out var includeBuildOutput);
+
+            includeBuildOutput.ShouldBe("false");
         }
 
         [Theory]
@@ -83,6 +92,60 @@ namespace Microsoft.Build.NoTargets.UnitTests
             }
         }
 
+        [Fact]
+        public void ProjectsCanDependOnNoTargetsProjects()
+        {
+            var project1 = ProjectCreator.Templates.LegacyCsproj(
+                Path.Combine(TestRootPath, "project1", "project1.csproj"))
+                .Save();
+
+            var project2 = ProjectCreator.Templates.NoTargetsProject(
+                path: Path.Combine(TestRootPath, "project2", "project2.csproj"))
+                .Property("DesignTimeBuild", "true")
+                .Property("GenerateDependencyFile", "false")
+                .Target("_GetProjectReferenceTargetFrameworkProperties")
+                .ItemProjectReference(project1)
+                .Save();
+
+            var project3 = ProjectCreator.Templates.NoTargetsProject(
+                path: Path.Combine(TestRootPath, "project3", "project3.csproj"))
+                .Property("DesignTimeBuild", "true")
+                .Property("GenerateDependencyFile", "false")
+                .ItemProjectReference(project2)
+                .Target("_GetProjectReferenceTargetFrameworkProperties")
+                .Save();
+
+            project3.TryBuild(out var result, out var buildOutput);
+
+            result.ShouldBeTrue(buildOutput.GetConsoleLog());
+        }
+
+        [Theory]
+        [InlineData(".csproj")]
+        [InlineData(".proj")]
+        public void SimpleBuild(string projectExtension)
+        {
+            ProjectCreator.Templates.NoTargetsProject(
+                path: GetTempFileWithExtension(projectExtension),
+                projectCollection: new ProjectCollection(
+                    new Dictionary<string, string>
+                    {
+                        ["DesignTimeBuild"] = "true"
+                    }),
+                customAction: creator =>
+                {
+                    creator.Target("TakeAction", afterTargets: "Build")
+                        .TaskMessage("86F00AF59170450E9D687652D74A6394", MessageImportance.High);
+                })
+                .Property("GenerateDependencyFile", "false")
+                .Save()
+                .TryBuild("Build", out var result, out var buildOutput);
+
+            result.ShouldBeTrue(() => buildOutput.GetConsoleLog());
+
+            buildOutput.Messages.High.ShouldContain("86F00AF59170450E9D687652D74A6394");
+        }
+
         [Theory(Skip = "https://github.com/microsoft/MSBuildSdks/issues/138")]
         [InlineData(".csproj")]
         [InlineData(".proj")]
@@ -115,7 +178,8 @@ namespace Microsoft.Build.NoTargets.UnitTests
                 projectCreator: creator => { creator.ItemProjectReference(noTargets.Project, referenceOutputAssembly: false); }).Save();
 
             root.TryBuild("Restore", out var result, out var buildOutput1);
-            result.ShouldBe(true);
+
+            result.ShouldBeTrue(buildOutput1.GetConsoleLog());
 
             using var buildManager = new BuildManager();
 
@@ -141,69 +205,6 @@ namespace Microsoft.Build.NoTargets.UnitTests
             {
                 buildManager.EndBuild();
             }
-        }
-
-        [Fact]
-        public void EnableDefaultCompileItemsIsFalse()
-        {
-            ProjectCreator.Templates.NoTargetsProject(
-                path: GetTempFileWithExtension(".csproj"))
-                .Property("GenerateDependencyFile", "false")
-                .Save()
-                .TryGetPropertyValue("EnableDefaultCompileItems", out var enableDefaultCompileItems);
-
-            enableDefaultCompileItems.ShouldBe("false");
-        }
-
-        [Fact]
-        public void EnableDefaultEmbeddedResourceItemsIsFalse()
-        {
-            ProjectCreator.Templates.NoTargetsProject(
-                path: GetTempFileWithExtension(".csproj"))
-                .Property("GenerateDependencyFile", "false")
-                .Save()
-                .TryGetPropertyValue("EnableDefaultEmbeddedResourceItems", out var enableDefaultEmbeddedResourceItems);
-
-            enableDefaultEmbeddedResourceItems.ShouldBe("false");
-        }
-
-        [Fact]
-        public void IncludeBuildOutputIsFalseByDefault()
-        {
-            ProjectCreator.Templates.NoTargetsProject(
-                path: GetTempFileWithExtension(".csproj"))
-                .Save()
-                .TryGetPropertyValue("IncludeBuildOutput", out var includeBuildOutput);
-
-            includeBuildOutput.ShouldBe("false");
-        }
-
-        [Fact]
-        public void ProjectsCanDependOnNoTargetsProjects()
-        {
-            var project1 = ProjectCreator.Templates.LegacyCsproj(
-                Path.Combine(TestRootPath, "project1", "project1.csproj"))
-                .Save();
-
-            var project2 = ProjectCreator.Templates.NoTargetsProject(
-                path: Path.Combine(TestRootPath, "project2", "project2.csproj"))
-                .Property("DesignTimeBuild", "true")
-                .Property("GenerateDependencyFile", "false")
-                .Target("_GetProjectReferenceTargetFrameworkProperties")
-                .ItemProjectReference(project1)
-                .Save();
-
-            var project3 = ProjectCreator.Templates.NoTargetsProject(
-                path: Path.Combine(TestRootPath, "project3", "project3.csproj"))
-                .Property("DesignTimeBuild", "true")
-                .Property("GenerateDependencyFile", "false")
-                .ItemProjectReference(project2)
-                .Target("_GetProjectReferenceTargetFrameworkProperties")
-                .Save();
-
-            project3.TryBuild(out var result, out var buildOutput);
-
-            result.ShouldBeTrue(buildOutput.GetConsoleLog());
         }
 
         [Fact]

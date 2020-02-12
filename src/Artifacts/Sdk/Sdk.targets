@@ -8,5 +8,6 @@
   <PropertyGroup>
     <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
-  <Import Project="..\build\Microsoft.Build.Artifacts.targets" />
+
+  <Import Project="$(MSBuildThisFileDirectory)..\build\Microsoft.Build.Artifacts.targets" />
 </Project>

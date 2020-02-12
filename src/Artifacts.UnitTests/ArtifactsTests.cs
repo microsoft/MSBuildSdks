@@ -102,6 +102,34 @@ namespace Microsoft.Build.Artifacts.UnitTests
         }
 
         [Fact]
+        public void MultiTargetingProject()
+        {
+            FileInfo projectPath = new FileInfo(Path.Combine(TestRootPath, "ProjectA", "ProjectA.csproj"));
+            DirectoryInfo artifactsPath = new DirectoryInfo(Path.Combine(TestRootPath, "artifacts"));
+
+            Project outerProject = ProjectCreator.Templates
+                .MultiTargetingProjectWithArtifacts(
+                    new[] { "net46", "net472" },
+                    path: projectPath.FullName,
+                    artifactsPath: artifactsPath)
+                .TryGetItems("Artifact", out IReadOnlyCollection<ProjectItem> artifactItemsOuterBuild)
+                .TryGetProject(out Project innerProject1, out BuildOutput innerBuildOutput1, globalProperties: new Dictionary<string, string> { ["TargetFramework"] = "net46" })
+                .TryGetProject(out Project innerProject2, out BuildOutput innerBuildOutput2, globalProperties: new Dictionary<string, string> { ["TargetFramework"] = "net472" });
+
+            ICollection<ProjectItem> artifactItemsInnerBuild1 = innerProject1.GetItems("Artifact");
+            ICollection<ProjectItem> artifactItemsInnerBuild2 = innerProject2.GetItems("Artifact");
+
+            ProjectItem artifactItem = artifactItemsOuterBuild.ShouldHaveSingleItem();
+
+            artifactItem.EvaluatedInclude.ShouldBe(outerProject.GetPropertyValue("OutputPath"));
+            artifactItem.GetMetadataValue("DestinationFolder").ShouldBe(artifactsPath.FullName);
+            artifactItem.GetMetadataValue("*exe *dll *exe.config *nupkg");
+
+            artifactItemsInnerBuild1.ShouldBeEmpty();
+            artifactItemsInnerBuild2.ShouldBeEmpty();
+        }
+
+        [Fact]
         public void UsingSdkLogic()
         {
             DirectoryInfo outputPath = CreateFiles(
