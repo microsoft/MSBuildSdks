@@ -5,17 +5,39 @@
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Utilities.ProjectCreation;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Microsoft.Build.Artifacts.UnitTests
 {
     internal static class CustomProjectCreatorTemplates
     {
+        private static readonly string ArtifactsTaskAssembly = Path.Combine(Environment.CurrentDirectory, "Microsoft.Build.Artifacts.dll");
         private static readonly string CurrentDirectory = Environment.CurrentDirectory;
-        private static readonly string ArtifactsTaskAssembly = Path.Combine(CurrentDirectory, "Microsoft.Build.Artifacts.dll");
+
+        public static ProjectCreator MultiTargetingProjectWithArtifacts(
+            this ProjectCreatorTemplates templates,
+            IEnumerable<string> targetFrameworks,
+            DirectoryInfo artifactsPath = null,
+            Action<ProjectCreator> customAction = null,
+            string path = null)
+        {
+            return ProjectCreator.Templates
+                .SdkCsproj(
+                    targetFrameworks: targetFrameworks,
+                    path: path,
+                    projectCreator: creator => creator
+                        .Property("ArtifactsTaskAssembly", ArtifactsTaskAssembly)
+                        .Import(Path.Combine(CurrentDirectory, "build", "Microsoft.Build.Artifacts.props"), condition: "'$(TargetFramework)' != ''")
+                        .Import(Path.Combine(CurrentDirectory, "buildMultiTargeting", "Microsoft.Build.Artifacts.props"), condition: "'$(TargetFramework)' == ''")
+                        .Property("ArtifactsPath", artifactsPath.FullName)
+                        .CustomAction(customAction)
+                        .Import(Path.Combine(CurrentDirectory, "build", "Microsoft.Build.Artifacts.targets"), condition: "'$(TargetFramework)' != ''")
+                        .Import(Path.Combine(CurrentDirectory, "buildMultiTargeting", "Microsoft.Build.Artifacts.targets"), condition: "'$(TargetFramework)' == ''"));
+        }
 
         public static ProjectCreator ProjectWithArtifacts(
-            this ProjectCreatorTemplates templates,
+                    this ProjectCreatorTemplates templates,
             string outputPath = null,
             string artifactsPath = null,
             Action<ProjectCreator> customAction = null,

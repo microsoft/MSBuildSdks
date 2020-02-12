@@ -6,13 +6,14 @@
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(CustomBeforeArtifactsProps)"
-          Condition=" '$(EnableArtifacts)' != 'false' And '$(CustomBeforeArtifactsProps)' != '' And Exists('$(CustomBeforeArtifactsProps)') " />
+          Condition="'$(CustomBeforeArtifactsProps)' != '' And Exists('$(CustomBeforeArtifactsProps)') " />
 
   <PropertyGroup>
-    <UsingMicrosoftArtifactsSdk>true</UsingMicrosoftArtifactsSdk>
     <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.Build.Artifacts.Common.props" />
   
   <Import Project="$(CustomAfterArtifactsProps)"
-          Condition=" '$(EnableArtifacts)' != 'false' And '$(CustomAfterArtifactsProps)' != '' And Exists('$(CustomAfterArtifactsProps)') " />
+          Condition="'$(CustomAfterArtifactsProps)' != '' And Exists('$(CustomAfterArtifactsProps)') " />
 </Project>

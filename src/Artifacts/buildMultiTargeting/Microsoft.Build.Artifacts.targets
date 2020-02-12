@@ -5,8 +5,26 @@
   Licensed under the MIT license.
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(CustomBeforeArtifactsTargets)"
+          Condition="'$(CustomBeforeArtifactsTargets)' != '' And Exists('$(CustomBeforeArtifactsTargets)')" />
+
   <PropertyGroup>
     <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
-  <Import Project="..\build\Microsoft.Build.Artifacts.targets" />
+
+  <ItemGroup Condition="'$(EnableDefaultArtifacts)' != 'false' And '$(ArtifactsPath)' != '' And '$([MSBuild]::ValueOrDefault($(DefaultArtifactsSource), $(OutputPath)))' != ''">
+    <!--
+      By default copy the contents of $(DefaultArtifactsSource) (default is $(OutputPath)) to $(ArtifactsPath) unless:
+       * EnableDefaultArtifacts is 'false'
+       * $(ArtifactsPath) is not specified
+    -->
+    <Artifact Include="$([MSBuild]::ValueOrDefault($(DefaultArtifactsSource), $(OutputPath)))"
+              DestinationFolder="$(ArtifactsPath)"
+              FileMatch="$([MSBuild]::ValueOrDefault($(DefaultArtifactsFileMatch), '*exe *dll *exe.config *nupkg'))" />
+  </ItemGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)..\build\Microsoft.Build.Artifacts.Common.targets" />
+
+  <Import Project="$(CustomAfterArtifactsTargets)"
+          Condition="'$(CustomAfterArtifactsTargets)' != '' And Exists('$(CustomAfterArtifactsTargets)')" />
 </Project>

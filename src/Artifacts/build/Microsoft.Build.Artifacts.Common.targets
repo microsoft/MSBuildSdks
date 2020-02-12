@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (c) Microsoft Corporation. All rights reserved.
+
+  Licensed under the MIT license.
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
+
+    <!--
+      Copy artifacts after Pack if GeneratePackageOnBuild is true
+    -->
+    <CopyArtifactsAfterTargets Condition="'$(CopyArtifactsAfterTargets)' == '' And '$(GeneratePackageOnBuild)' == 'true'">Pack</CopyArtifactsAfterTargets>
+  </PropertyGroup>
+
+
+  <UsingTask TaskName="Robocopy"
+             AssemblyFile="$([MSBuild]::ValueOrDefault('$(ArtifactsTaskAssembly)', '$(MSBuildThisFileDirectory)net46\Microsoft.Build.Artifacts.dll'))"
+             Condition="'$(MSBuildRuntimeType)' != 'Core'" />
+  <UsingTask TaskName="Robocopy"
+             AssemblyFile="$([MSBuild]::ValueOrDefault('$(ArtifactsTaskAssembly)', '$(MSBuildThisFileDirectory)netcoreapp2.1\Microsoft.Build.Artifacts.dll'))"
+             Condition="'$(MSBuildRuntimeType)' == 'Core'" />
+
+  <ItemDefinitionGroup>
+    <Robocopy>
+      <Visible>false</Visible>
+      <VerifyExists>true</VerifyExists>
+    </Robocopy>
+    <Artifact>
+      <Visible>false</Visible>
+      <VerifyExists>true</VerifyExists>
+    </Artifact>
+  </ItemDefinitionGroup>
+
+  <Target Name="CopyArtifacts"
+          Condition="'$(EnableArtifacts)' != 'false'"
+          AfterTargets="$([MSBuild]::ValueOrDefault($(CopyArtifactsAfterTargets), 'AfterBuild'))"
+          DependsOnTargets="$(CopyArtifactsDependsOn)">
+    <Robocopy
+      RetryCount="$([MSBuild]::ValueOrDefault($(ArtifactsCopyRetryCount), $(CopyRetryCount)))"
+      RetryWait="$([MSBuild]::ValueOrDefault($(ArtifactsCopyRetryDelayMilliseconds), $(CopyRetryDelayMilliseconds)))"
+      ShowDiagnosticTrace="$(ArtifactsShowDiagnostics)"
+      ShowErrorOnRetry="$([MSBuild]::ValueOrDefault($(ArtifactsShowErrorOnRetry), 'true'))"
+      Sources="@(Artifact)"
+      Condition="@(Artifact->Count()) > 0" />
+  </Target>
+
+  <Target Name="RobocopyFiles"
+          Condition="'$(EnableArtifacts)' != 'false'"
+          AfterTargets="$([MSBuild]::ValueOrDefault($(RobocopyFilesAfterTargets), 'AfterBuild'))"
+          DependsOnTargets="$(RobocopyFilesDependsOn)">
+    <Robocopy
+      RetryCount="$([MSBuild]::ValueOrDefault($(RobocopyRetryCount), $(CopyRetryCount)))"
+      RetryWait="$([MSBuild]::ValueOrDefault($(RobocopyRetryWait), $(CopyRetryDelayMilliseconds)))"
+      ShowDiagnosticTrace="$(RobocopyShowDiagnosticTrace)"
+      ShowErrorOnRetry="$([MSBuild]::ValueOrDefault($(RobocopyShowErrorOnRetry), 'true'))"
+      Sources="@(Robocopy)"
+      Condition="@(Robocopy->Count()) > 0"/>
+  </Target>
+</Project>
