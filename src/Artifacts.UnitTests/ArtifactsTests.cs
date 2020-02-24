@@ -101,8 +101,11 @@ namespace Microsoft.Build.Artifacts.UnitTests
                 }.Select(i => Path.Combine(artifactsPath.FullName, i)));
         }
 
-        [Fact]
-        public void MultiTargetingProject()
+        [Theory]
+        [InlineData(null)]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void MultiTargetingProject(bool? generatePackageOnBuild)
         {
             FileInfo projectPath = new FileInfo(Path.Combine(TestRootPath, "ProjectA", "ProjectA.csproj"));
             DirectoryInfo artifactsPath = new DirectoryInfo(Path.Combine(TestRootPath, "artifacts"));
@@ -112,9 +115,10 @@ namespace Microsoft.Build.Artifacts.UnitTests
                     new[] { "net46", "net472" },
                     path: projectPath.FullName,
                     artifactsPath: artifactsPath)
+                .Property("GeneratePackageOnBuild", generatePackageOnBuild.HasValue ? generatePackageOnBuild.ToString() : string.Empty)
                 .TryGetItems("Artifact", out IReadOnlyCollection<ProjectItem> artifactItemsOuterBuild)
-                .TryGetProject(out Project innerProject1, out BuildOutput innerBuildOutput1, globalProperties: new Dictionary<string, string> { ["TargetFramework"] = "net46" })
-                .TryGetProject(out Project innerProject2, out BuildOutput innerBuildOutput2, globalProperties: new Dictionary<string, string> { ["TargetFramework"] = "net472" });
+                .TryGetProject(out Project innerProject1, out _, globalProperties: new Dictionary<string, string> { ["TargetFramework"] = "net46" })
+                .TryGetProject(out Project innerProject2, out _, globalProperties: new Dictionary<string, string> { ["TargetFramework"] = "net472" });
 
             ICollection<ProjectItem> artifactItemsInnerBuild1 = innerProject1.GetItems("Artifact");
             ICollection<ProjectItem> artifactItemsInnerBuild2 = innerProject2.GetItems("Artifact");
@@ -127,6 +131,15 @@ namespace Microsoft.Build.Artifacts.UnitTests
 
             artifactItemsInnerBuild1.ShouldBeEmpty();
             artifactItemsInnerBuild2.ShouldBeEmpty();
+
+            if (generatePackageOnBuild.HasValue && generatePackageOnBuild.Value)
+            {
+                outerProject.GetPropertyValue("CopyArtifactsAfterTargets").ShouldBe("_PackAsBuildAfterTarget");
+            }
+            else
+            {
+                outerProject.GetPropertyValue("CopyArtifactsAfterTargets").ShouldBe("Build");
+            }
         }
 
         [Fact]

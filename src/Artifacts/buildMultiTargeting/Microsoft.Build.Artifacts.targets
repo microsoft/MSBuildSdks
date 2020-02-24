@@ -10,6 +10,16 @@
 
   <PropertyGroup>
     <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
+
+    <!--
+      Copy artifacts after Pack if GeneratePackageOnBuild is true
+    -->
+    <CopyArtifactsAfterTargets Condition="'$(CopyArtifactsAfterTargets)' == '' And '$(GeneratePackageOnBuild)' == 'true'">_PackAsBuildAfterTarget</CopyArtifactsAfterTargets>
+
+    <!--
+      Copy artifacts after Build since there is no AfterBuild target in multi-targeting projects.
+    -->
+    <CopyArtifactsAfterTargets Condition="'$(CopyArtifactsAfterTargets)' == ''">Build</CopyArtifactsAfterTargets>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(EnableDefaultArtifacts)' != 'false' And '$(ArtifactsPath)' != '' And '$([MSBuild]::ValueOrDefault($(DefaultArtifactsSource), $(OutputPath)))' != ''">
