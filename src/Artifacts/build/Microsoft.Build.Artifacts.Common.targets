@@ -7,11 +7,6 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
-
-    <!--
-      Copy artifacts after Pack if GeneratePackageOnBuild is true
-    -->
-    <CopyArtifactsAfterTargets Condition="'$(CopyArtifactsAfterTargets)' == '' And '$(GeneratePackageOnBuild)' == 'true'">Pack</CopyArtifactsAfterTargets>
   </PropertyGroup>
 
 
