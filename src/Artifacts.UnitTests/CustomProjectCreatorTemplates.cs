@@ -40,6 +40,8 @@ namespace Microsoft.Build.Artifacts.UnitTests
                     this ProjectCreatorTemplates templates,
             string outputPath = null,
             string artifactsPath = null,
+            string targetFramework = "net472",
+            bool? appendTargetFrameworkToOutputPath = true,
             Action<ProjectCreator> customAction = null,
             string path = null,
             string defaultTargets = null,
@@ -61,7 +63,10 @@ namespace Microsoft.Build.Artifacts.UnitTests
                     projectFileOptions)
                 .Property("ArtifactsTaskAssembly", ArtifactsTaskAssembly)
                 .Import(Path.Combine(CurrentDirectory, "build", "Microsoft.Build.Artifacts.props"))
-                .Property("OutputPath", outputPath)
+                .Property("TargetFramework", targetFramework)
+                .Property("OutputPath", outputPath == null ? null : $"{outputPath.TrimEnd('\\')}\\")
+                .Property("AppendTargetFrameworkToOutputPath", appendTargetFrameworkToOutputPath.HasValue ? appendTargetFrameworkToOutputPath.ToString() : null)
+                .Property("OutputPath", "$(OutputPath)$(TargetFramework.ToLowerInvariant())\\", condition: "'$(AppendTargetFrameworkToOutputPath)' == 'true'")
                 .Property("ArtifactsPath", artifactsPath)
                 .CustomAction(customAction)
                 .Target("Build")
@@ -73,6 +78,8 @@ namespace Microsoft.Build.Artifacts.UnitTests
             this ProjectCreatorTemplates templates,
             string outputPath = null,
             string artifactsPath = null,
+            string targetFramework = "net472",
+            bool? appendTargetFrameworkToOutputPath = true,
             Action<ProjectCreator> customAction = null,
             string path = null,
             string defaultTargets = null,
@@ -94,7 +101,10 @@ namespace Microsoft.Build.Artifacts.UnitTests
                     projectFileOptions)
                 .Property("ArtifactsTaskAssembly", ArtifactsTaskAssembly)
                 .Import(Path.Combine(CurrentDirectory, "Sdk", "Sdk.props"))
-                .Property("OutputPath", outputPath)
+                .Property("TargetFramework", targetFramework)
+                .Property("OutputPath", $"{outputPath.TrimEnd('\\')}\\")
+                .Property("AppendTargetFrameworkToOutputPath", appendTargetFrameworkToOutputPath.HasValue ? appendTargetFrameworkToOutputPath.ToString() : null)
+                .Property("OutputPath", "$(OutputPath)$(TargetFramework.ToLowerInvariant())\\", condition: "'$(AppendTargetFrameworkToOutputPath)' == 'true'")
                 .Property("ArtifactsPath", artifactsPath)
                 .CustomAction(customAction)
                 .Target("Build")
