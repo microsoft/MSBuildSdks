@@ -83,3 +83,28 @@ Set some properties during build.
   </PropertyGroup>
 </Project>
 ```
+
+The following properties control the invocation of the to traversed projects.
+
+| Property                            | Description |
+|-------------------------------------|-------------|
+| `CleanInParallel` | BuildInParallel setting for the Clean target. |
+| `CleanContinueOnError` | ContinueOnError setting for the Clean target. |
+| `TestInParallel` | BuildInParallel setting for the Test and VSTest target. |
+| `TestContinueOnError` | ContinueOnError setting for the Test and VSTest target. |
+| `PackInParallel` | BuildInParallel setting for the Pack target. |
+| `PackContinueOnError` | ContinueOnError setting for the Pack target. |
+| `PublishInParallel` | BuildInParallel setting for the Publish target. |
+| `PublishContinueOnError` | ContinueOnError setting for the Publish target. |
+
+**Example**
+
+Change the `BuildInParallel` setting for the Test target.
+
+```xml
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <TestInParallel>true</TestInParallel>
+  </PropertyGroup>
+</Project>
+```
