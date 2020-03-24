@@ -101,21 +101,6 @@
     -->
     <ProjectReference Remove="$(MSBuildProjectFullPath)" />
   </ItemGroup>
-  
-  <!-- Fine grained control of BuildInParallel and ContinueOnError. -->
-  <PropertyGroup>
-    <CleanInParallel Condition="'$(CleanInParallel)' == ''">$(BuildInParallel)</CleanInParallel>
-    <CleanContinueOnError Condition="'$(CleanContinueOnError)' == ''">$(ContinueOnError)</CleanContinueOnError>
-
-    <TestInParallel Condition="'$(TestInParallel)' == ''">$(BuildInParallel)</TestInParallel>
-    <TestContinueOnError Condition="'$(TestContinueOnError)' == ''">$(ContinueOnError)</TestContinueOnError>
-
-    <PackInParallel Condition="'$(PackInParallel)' == ''">$(BuildInParallel)</PackInParallel>
-    <PackContinueOnError Condition="'$(PackContinueOnError)' == ''">$(ContinueOnError)</PackContinueOnError>
-
-    <PublishInParallel Condition="'$(PublishInParallel)' == ''">$(BuildInParallel)</PublishInParallel>
-    <PublishContinueOnError Condition="'$(PublishContinueOnError)' == ''">$(ContinueOnError)</PublishContinueOnError>
-  </PropertyGroup>
 
   <Target Name="PrepareForBuild"
           DependsOnTargets="$(PrepareForBuildDependsOn)" />
@@ -128,9 +113,6 @@
              SkipNonexistentProjects="$(SkipNonexistentProjects)"
              SkipNonexistentTargets="$(SkipNonexistentTargets)"
              ContinueOnError="$(ContinueOnError)" />
-    
-    <!-- If we ErrorAndContinue we need to propagate the error. -->
-    <Error Condition="'$(ContinueOnError)' == 'ErrorAndContinue' and '$(MSBuildLastTaskResult)' == 'false'" />
   </Target>
 
   <Target Name="Clean"
@@ -138,13 +120,10 @@
           Condition=" '$(IsGraphBuild)' != 'true' ">
     <MSBuild Projects="@(ProjectReference)"
              Targets="Clean"
-             BuildInParallel="$(CleanInParallel)"
+             BuildInParallel="$([MSBuild]::ValueOrDefault('$(CleanInParallel)', '$(BuildInParallel)')"
              SkipNonexistentProjects="$(SkipNonexistentProjects)"
              SkipNonexistentTargets="$(SkipNonexistentTargets)"
-             ContinueOnError="$(CleanContinueOnError)" />
-
-    <!-- If we ErrorAndContinue we need to propagate the error. -->
-    <Error Condition="'$(CleanContinueOnError)' == 'ErrorAndContinue' and '$(MSBuildLastTaskResult)' == 'false'" />
+             ContinueOnError="$([MSBuild]::ValueOrDefault('$(CleanContinueOnError)', '$(ContinueOnError)')" />
   </Target>
 
   <Target Name="Test"
@@ -152,13 +131,10 @@
           Condition=" '$(IsGraphBuild)' != 'true' ">
     <MSBuild Projects="@(ProjectReference)"
              Targets="Test"
-             BuildInParallel="$(TestInParallel)"
+             BuildInParallel="$([MSBuild]::ValueOrDefault('$(TestInParallel)', '$(BuildInParallel)')"
              SkipNonexistentProjects="$(SkipNonexistentProjects)"
              SkipNonexistentTargets="$(SkipNonexistentTargets)"
-             ContinueOnError="$(TestContinueOnError)" />
-
-    <!-- If we ErrorAndContinue we need to propagate the error. -->
-    <Error Condition="'$(TestContinueOnError)' == 'ErrorAndContinue' and '$(MSBuildLastTaskResult)' == 'false'" />
+             ContinueOnError="$([MSBuild]::ValueOrDefault('$(TestContinueOnError)', '$(ContinueOnError)')" />
   </Target>
 
   <Target Name="VSTest"
@@ -166,13 +142,10 @@
           Condition=" '$(IsGraphBuild)' != 'true' ">
     <MSBuild Projects="@(ProjectReference)"
              Targets="VSTest"
-             BuildInParallel="$(TestInParallel)"
+             BuildInParallel="$([MSBuild]::ValueOrDefault('$(TestInParallel)', '$(BuildInParallel)')"
              SkipNonexistentProjects="$(SkipNonexistentProjects)"
              SkipNonexistentTargets="$(SkipNonexistentTargets)"
-             ContinueOnError="$(TestContinueOnError)" />
-
-    <!-- If we ErrorAndContinue we need to propagate the error. -->
-    <Error Condition="'$(TestContinueOnError)' == 'ErrorAndContinue' and '$(MSBuildLastTaskResult)' == 'false'" />
+             ContinueOnError="$([MSBuild]::ValueOrDefault('$(TestContinueOnError)', '$(ContinueOnError)')" />
   </Target>
 
   <Target Name="Pack"
@@ -180,13 +153,10 @@
           Condition=" '$(IsGraphBuild)' != 'true' ">
     <MSBuild Projects="@(ProjectReference)"
              Targets="Pack"
-             BuildInParallel="$(PackInParallel)"
+             BuildInParallel="$([MSBuild]::ValueOrDefault('$(PackInParallel)', '$(BuildInParallel)')"
              SkipNonexistentProjects="$(SkipNonexistentProjects)"
              SkipNonexistentTargets="$(SkipNonexistentTargets)"
-             ContinueOnError="$(PackContinueOnError)" />
-
-    <!-- If we ErrorAndContinue we need to propagate the error. -->
-    <Error Condition="'$(PackContinueOnError)' == 'ErrorAndContinue' and '$(MSBuildLastTaskResult)' == 'false'" />
+             ContinueOnError="$([MSBuild]::ValueOrDefault('$(PackContinueOnError)', '$(ContinueOnError)')" />
   </Target>
 
   <Target Name="Publish"
@@ -195,13 +165,10 @@
     <MSBuild Projects="@(ProjectReference)"
              Properties="$(TraversalPublishGlobalProperties)"
              Targets="Publish"
-             BuildInParallel="$(PublishInParallel)"
+             BuildInParallel="$([MSBuild]::ValueOrDefault('$(PublishInParallel)', '$(BuildInParallel)')"
              SkipNonexistentProjects="$(SkipNonexistentProjects)"
              SkipNonexistentTargets="$(SkipNonexistentTargets)"
-             ContinueOnError="$(PublishContinueOnError)" />
-
-    <!-- If we ErrorAndContinue we need to propagate the error. -->
-    <Error Condition="'$(PublishContinueOnError)' == 'ErrorAndContinue' and '$(MSBuildLastTaskResult)' == 'false'" />
+             ContinueOnError="$([MSBuild]::ValueOrDefault('$(PublishContinueOnError)', '$(ContinueOnError)')" />
   </Target>
 
   <!--
