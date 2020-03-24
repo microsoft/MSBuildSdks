@@ -104,7 +104,7 @@
 
   <PropertyGroup>
     <BuildInParallel Condition="'$(BuildInParallel)' == ''">true</BuildInParallel>
-    <ContinueOnErrorCondition="'$(ContinueOnError)' == ''">false</ContinueOnError>
+    <ContinueOnError Condition="'$(ContinueOnError)' == ''">false</ContinueOnError>
   </PropertyGroup>
 
   <Target Name="PrepareForBuild"
