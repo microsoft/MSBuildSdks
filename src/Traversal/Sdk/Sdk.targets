@@ -127,8 +127,8 @@
     <MSBuild Projects="@(ProjectReference)"
              Targets="Clean"
              Condition="'%(ProjectReference.Clean)' != 'false'"
-             BuildInParallel="$([MSBuild]::ValueOrDefault('%(Project.CleanInParallel)',
-                               $([MSBuild]::ValueOrDefault('%(Project.BuildInParallel)',
+             BuildInParallel="$([MSBuild]::ValueOrDefault('%(ProjectReference.CleanInParallel)',
+                               $([MSBuild]::ValueOrDefault('%(ProjectReference.BuildInParallel)',
                                 $([MSBuild]::ValueOrDefault('$(CleanInParallel)', '$(BuildInParallel)'))
                                 ))
                                ))"
@@ -143,8 +143,8 @@
     <MSBuild Projects="@(ProjectReference)"
              Targets="Test"
              Condition="'%(ProjectReference.Test)' != 'false'"
-             BuildInParallel="$([MSBuild]::ValueOrDefault('%(Project.TestInParallel)',
-                               $([MSBuild]::ValueOrDefault('%(Project.BuildInParallel)',
+             BuildInParallel="$([MSBuild]::ValueOrDefault('%(ProjectReference.TestInParallel)',
+                               $([MSBuild]::ValueOrDefault('%(ProjectReference.BuildInParallel)',
                                 $([MSBuild]::ValueOrDefault('$(TestInParallel)', '$(BuildInParallel)'))
                                 ))
                                ))"
@@ -159,8 +159,8 @@
     <MSBuild Projects="@(ProjectReference)"
              Targets="VSTest"
              Condition="'%(ProjectReference.Test)' != 'false'"
-             BuildInParallel="$([MSBuild]::ValueOrDefault('%(Project.TestInParallel)',
-                               $([MSBuild]::ValueOrDefault('%(Project.BuildInParallel)',
+             BuildInParallel="$([MSBuild]::ValueOrDefault('%(ProjectReference.TestInParallel)',
+                               $([MSBuild]::ValueOrDefault('%(ProjectReference.BuildInParallel)',
                                 $([MSBuild]::ValueOrDefault('$(TestInParallel)', '$(BuildInParallel)'))
                                 ))
                                ))"
@@ -175,8 +175,8 @@
     <MSBuild Projects="@(ProjectReference)"
              Targets="Pack"
              Condition="'%(ProjectReference.Pack)' != 'false'"
-             BuildInParallel="$([MSBuild]::ValueOrDefault('%(Project.PackInParallel)',
-                               $([MSBuild]::ValueOrDefault('%(Project.BuildInParallel)',
+             BuildInParallel="$([MSBuild]::ValueOrDefault('%(ProjectReference.PackInParallel)',
+                               $([MSBuild]::ValueOrDefault('%(ProjectReference.BuildInParallel)',
                                 $([MSBuild]::ValueOrDefault('$(PackInParallel)', '$(BuildInParallel)'))
                                 ))
                                ))"
@@ -192,8 +192,8 @@
              Properties="$(TraversalPublishGlobalProperties)"
              Targets="Publish"
              Condition="'%(ProjectReference.Publish)' != 'false'"
-             BuildInParallel="$([MSBuild]::ValueOrDefault('%(Project.PublishInParallel)',
-                               $([MSBuild]::ValueOrDefault('%(Project.BuildInParallel)',
+             BuildInParallel="$([MSBuild]::ValueOrDefault('%(ProjectReference.PublishInParallel)',
+                               $([MSBuild]::ValueOrDefault('%(ProjectReference.BuildInParallel)',
                                 $([MSBuild]::ValueOrDefault('$(PublishInParallel)', '$(BuildInParallel)'))
                                 ))
                                ))"
