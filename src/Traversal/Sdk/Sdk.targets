@@ -114,7 +114,8 @@
           DependsOnTargets="$(BuildDependsOn)"
           Condition=" '$(IsGraphBuild)' != 'true' " >
     <MSBuild Projects="@(ProjectReference)"
-             BuildInParallel="$(BuildInParallel)"
+             Condition="'%(ProjectReference.Build)' != 'false'"
+             BuildInParallel="$([MSBuild]::ValueOrDefault('%(ProjectReference.BuildInParallel)', '$(BuildInParallel)'))"
              SkipNonexistentProjects="$(SkipNonexistentProjects)"
              SkipNonexistentTargets="$(SkipNonexistentTargets)"
              ContinueOnError="$(ContinueOnError)" />
@@ -125,7 +126,12 @@
           Condition=" '$(IsGraphBuild)' != 'true' ">
     <MSBuild Projects="@(ProjectReference)"
              Targets="Clean"
-             BuildInParallel="$([MSBuild]::ValueOrDefault('$(CleanInParallel)', '$(BuildInParallel)'))"
+             Condition="'%(ProjectReference.Clean)' != 'false'"
+             BuildInParallel="$([MSBuild]::ValueOrDefault('%(ProjectReference.CleanInParallel)',
+                               $([MSBuild]::ValueOrDefault('%(ProjectReference.BuildInParallel)',
+                                $([MSBuild]::ValueOrDefault('$(CleanInParallel)', '$(BuildInParallel)'))
+                                ))
+                               ))"
              SkipNonexistentProjects="$(SkipNonexistentProjects)"
              SkipNonexistentTargets="$(SkipNonexistentTargets)"
              ContinueOnError="$([MSBuild]::ValueOrDefault('$(CleanContinueOnError)', '$(ContinueOnError)'))" />
@@ -136,7 +142,12 @@
           Condition=" '$(IsGraphBuild)' != 'true' ">
     <MSBuild Projects="@(ProjectReference)"
              Targets="Test"
-             BuildInParallel="$([MSBuild]::ValueOrDefault('$(TestInParallel)', '$(BuildInParallel)'))"
+             Condition="'%(ProjectReference.Test)' != 'false'"
+             BuildInParallel="$([MSBuild]::ValueOrDefault('%(ProjectReference.TestInParallel)',
+                               $([MSBuild]::ValueOrDefault('%(ProjectReference.BuildInParallel)',
+                                $([MSBuild]::ValueOrDefault('$(TestInParallel)', '$(BuildInParallel)'))
+                                ))
+                               ))"
              SkipNonexistentProjects="$(SkipNonexistentProjects)"
              SkipNonexistentTargets="$(SkipNonexistentTargets)"
              ContinueOnError="$([MSBuild]::ValueOrDefault('$(TestContinueOnError)', '$(ContinueOnError)'))" />
@@ -147,7 +158,12 @@
           Condition=" '$(IsGraphBuild)' != 'true' ">
     <MSBuild Projects="@(ProjectReference)"
              Targets="VSTest"
-             BuildInParallel="$([MSBuild]::ValueOrDefault('$(TestInParallel)', '$(BuildInParallel)'))"
+             Condition="'%(ProjectReference.Test)' != 'false'"
+             BuildInParallel="$([MSBuild]::ValueOrDefault('%(ProjectReference.TestInParallel)',
+                               $([MSBuild]::ValueOrDefault('%(ProjectReference.BuildInParallel)',
+                                $([MSBuild]::ValueOrDefault('$(TestInParallel)', '$(BuildInParallel)'))
+                                ))
+                               ))"
              SkipNonexistentProjects="$(SkipNonexistentProjects)"
              SkipNonexistentTargets="$(SkipNonexistentTargets)"
              ContinueOnError="$([MSBuild]::ValueOrDefault('$(TestContinueOnError)', '$(ContinueOnError)'))" />
@@ -158,7 +174,12 @@
           Condition=" '$(IsGraphBuild)' != 'true' ">
     <MSBuild Projects="@(ProjectReference)"
              Targets="Pack"
-             BuildInParallel="$([MSBuild]::ValueOrDefault('$(PackInParallel)', '$(BuildInParallel)'))"
+             Condition="'%(ProjectReference.Pack)' != 'false'"
+             BuildInParallel="$([MSBuild]::ValueOrDefault('%(ProjectReference.PackInParallel)',
+                               $([MSBuild]::ValueOrDefault('%(ProjectReference.BuildInParallel)',
+                                $([MSBuild]::ValueOrDefault('$(PackInParallel)', '$(BuildInParallel)'))
+                                ))
+                               ))"
              SkipNonexistentProjects="$(SkipNonexistentProjects)"
              SkipNonexistentTargets="$(SkipNonexistentTargets)"
              ContinueOnError="$([MSBuild]::ValueOrDefault('$(PackContinueOnError)', '$(ContinueOnError)'))" />
@@ -170,7 +191,12 @@
     <MSBuild Projects="@(ProjectReference)"
              Properties="$(TraversalPublishGlobalProperties)"
              Targets="Publish"
-             BuildInParallel="$([MSBuild]::ValueOrDefault('$(PublishInParallel)', '$(BuildInParallel)'))"
+             Condition="'%(ProjectReference.Publish)' != 'false'"
+             BuildInParallel="$([MSBuild]::ValueOrDefault('%(ProjectReference.PublishInParallel)',
+                               $([MSBuild]::ValueOrDefault('%(ProjectReference.BuildInParallel)',
+                                $([MSBuild]::ValueOrDefault('$(PublishInParallel)', '$(BuildInParallel)'))
+                                ))
+                               ))"
              SkipNonexistentProjects="$(SkipNonexistentProjects)"
              SkipNonexistentTargets="$(SkipNonexistentTargets)"
              ContinueOnError="$([MSBuild]::ValueOrDefault('$(PublishContinueOnError)', '$(ContinueOnError)'))" />

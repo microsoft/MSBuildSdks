@@ -108,3 +108,23 @@ Change the `BuildInParallel` setting for the Test target.
   </PropertyGroup>
 </Project>
 ```
+
+The following attributes can be set to false to exclude ProjectReferences for a specific target:
+- Build
+- Clean
+- Test
+- Pack
+- Publish
+
+
+**Example**
+
+Add the `Test` attribute to the `ProjectReference` to exclude it when invoking the Test target.
+
+```xml
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <PackageReference Include="ProjectA.csproj" Test="false" />
+  </ItemGroup>
+</Project>
+```
