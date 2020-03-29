@@ -124,7 +124,7 @@ Add the `Test` attribute to the `ProjectReference` to exclude it when invoking t
 ```xml
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <PackageReference Include="ProjectA.csproj" Test="false" />
+    <ProjectReference Include="ProjectA.csproj" Test="false" />
   </ItemGroup>
 </Project>
 ```
