@@ -89,9 +89,9 @@
     <ProjectFile Remove="@(ProjectFile)" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(TraversalGlobalProperties)' != ''">
     <ProjectReference Update="@(ProjectReference)"
-                      AdditionalProperties="$(TraversalGlobalProperties)" />
+                      AdditionalProperties="%(AdditionalProperties);$(TraversalGlobalProperties)" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TraversalRemoveCurrentProject)' != 'false' ">
