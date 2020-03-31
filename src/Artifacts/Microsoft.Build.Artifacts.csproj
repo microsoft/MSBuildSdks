@@ -36,8 +36,10 @@
   <ItemGroup>
     <FilesToSign Include="$(TargetPath)" Authenticode="Microsoft400" StrongName="StrongName" />
   </ItemGroup>
+  <Target Name="SignNuGetPackage" />
   <Target Name="CopyArtifacts"
           AfterTargets="Pack"
+          DependsOnTargets="SignNuGetPackage"
           Condition="'$(IsInnerBuild)' != 'true'">
     <!-- 
       Workaround for https://github.com/NuGet/Home/issues/6754 
