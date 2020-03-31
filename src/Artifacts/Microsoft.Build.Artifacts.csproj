@@ -4,6 +4,7 @@
     <BuildOutputTargetFolder>build\</BuildOutputTargetFolder>
     <EnableDefaultNoneItems>true</EnableDefaultNoneItems>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Description>Build logic for staging artifacts from build outputs.</Description>
     <PackageLicenseFile></PackageLicenseFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>images\MSBuild-NuGet-Icon.png</PackageIcon>
