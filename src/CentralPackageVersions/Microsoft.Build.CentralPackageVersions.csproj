@@ -4,5 +4,6 @@
     <Description>Provides the ability to centrally manage your NuGet package versions when using PackageReference.</Description>
     <PackageTags>MSBuild MSBuildSdk</PackageTags>
     <ArtifactsPath>$(BaseArtifactsPath)\$(MSBuildProjectName)\</ArtifactsPath>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 </Project>

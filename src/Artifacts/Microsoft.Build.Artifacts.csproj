@@ -3,6 +3,7 @@
     <TargetFrameworks>net46;net472;netcoreapp2.1</TargetFrameworks>
     <BuildOutputTargetFolder>build\</BuildOutputTargetFolder>
     <EnableDefaultNoneItems>true</EnableDefaultNoneItems>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageLicenseFile></PackageLicenseFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>images\MSBuild-NuGet-Icon.png</PackageIcon>
@@ -35,7 +36,7 @@
     <FilesToSign Include="$(TargetPath)" Authenticode="Microsoft400" StrongName="StrongName" />
   </ItemGroup>
   <Target Name="CopyArtifacts"
-          AfterTargets="_PackAsBuildAfterTarget"
+          AfterTargets="Pack"
           Condition="'$(IsInnerBuild)' != 'true'">
     <!-- 
       Workaround for https://github.com/NuGet/Home/issues/6754 

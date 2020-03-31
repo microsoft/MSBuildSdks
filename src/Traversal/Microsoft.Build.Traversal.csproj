@@ -4,5 +4,6 @@
     <Description>Provides MSBuild traversal logic.</Description>
     <PackageTags>MSBuild MSBuildSdk traversal dirs</PackageTags>
     <ArtifactsPath>$(BaseArtifactsPath)$(MSBuildProjectName)\</ArtifactsPath>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 </Project>
