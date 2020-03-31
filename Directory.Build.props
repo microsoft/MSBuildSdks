@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project>
   <PropertyGroup>
     <DefaultItemExcludes>*log</DefaultItemExcludes>
     <MSBuildTreatWarningsAsErrors>true</MSBuildTreatWarningsAsErrors>
     <LangVersion>Latest</LangVersion>
+    <BaseArtifactsPath>$(MSBuildThisFileDirectory)artifacts\</BaseArtifactsPath>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -14,5 +14,12 @@
     <PackageProjectUrl>https://github.com/Microsoft/MSBuildSdks</PackageProjectUrl>
     <PackageIconPath>$(MSBuildThisFileDirectory)branding\MSBuild-NuGet-Icon.png</PackageIconPath>
     <RepositoryUrl>https://github.com/Microsoft/MSBuildSdks.git</RepositoryUrl>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(SignType)' != ''">
+    <DefineConstants>$(DefineConstants);SIGNTYPE_$(SignType.ToUpperInvariant())</DefineConstants>
+    <DelaySign>true</DelaySign>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)MicrosoftCorporation.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 </Project>
