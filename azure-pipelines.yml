@@ -39,9 +39,8 @@ jobs:
       version: '$(DotNetCoreVersion)'
 
   - task: MSBuild@1
-    displayName: 'Build dirs.proj'
+    displayName: 'Build Solution'
     inputs:
-      solution: dirs.proj
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       msbuildArguments: '$(BinaryLoggerArgs)'
