@@ -13,7 +13,7 @@ namespace Microsoft.Build.Traversal.UnitTests
     {
         public static ProjectCreator TraversalProject(
             this ProjectCreatorTemplates templates,
-            string[] projectReferences,
+            string[] projectReferences = null,
             string path = null,
             string defaultTargets = null,
             string initialTargets = null,
@@ -21,7 +21,8 @@ namespace Microsoft.Build.Traversal.UnitTests
             string toolsVersion = null,
             string treatAsLocalProperty = null,
             ProjectCollection projectCollection = null,
-            NewProjectFileOptions? projectFileOptions = NewProjectFileOptions.None)
+            NewProjectFileOptions? projectFileOptions = NewProjectFileOptions.None,
+            Action<ProjectCreator> customAction = null)
         {
             string currentDirectory = Environment.CurrentDirectory;
 
@@ -39,6 +40,7 @@ namespace Microsoft.Build.Traversal.UnitTests
                 {
                     i.ItemProjectReference(projectReference);
                 })
+                .CustomAction(customAction)
                 .Import(Path.Combine(currentDirectory, "Sdk", "Sdk.targets"));
         }
     }

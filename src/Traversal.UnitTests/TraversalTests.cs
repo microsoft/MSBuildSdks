@@ -181,6 +181,31 @@ namespace Microsoft.Build.Traversal.UnitTests
         }
 
         [Theory]
+        [InlineData("Property1=Value1", null, "Property1=Value1")]
+        [InlineData("Property1=Value1", "Property2=Value2", "Property1=Value1;Property2=Value2")]
+        public void TraversalGlobalPropertiesPreserveAdditionalProperties(string additionalProperties, string traversalGlobalProperties, string expected)
+        {
+            ProjectCreator
+                .Templates
+                .TraversalProject(
+                    path: GetTempFile("dirs.proj"),
+                    customAction: creator =>
+                    {
+                        creator
+                            .Property("TraversalGlobalProperties", traversalGlobalProperties)
+                            .ItemProjectReference("one.csproj", metadata: new Dictionary<string, string>
+                            {
+                                ["AdditionalProperties"] = additionalProperties
+                            });
+                    })
+                .TryGetItems("ProjectReference", out IReadOnlyCollection<ProjectItem> items);
+
+            ProjectItem item = items.ShouldHaveSingleItem();
+
+            item.GetMetadataValue("AdditionalProperties").ShouldBe(expected);
+        }
+
+        [Theory]
         [InlineData("Build")]
         [InlineData("Clean")]
         [InlineData("Pack")]
