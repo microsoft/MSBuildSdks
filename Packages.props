@@ -9,7 +9,6 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <PackageReference Update="MicroBuild.Core" Version="0.3.0" />
     <PackageReference Update="Microsoft.Build" Version="16.5.0" />
     <PackageReference Update="Microsoft.Build.Framework" Version="16.5.0" />
     <PackageReference Update="Microsoft.Build.Utilities.Core" Version="16.5.0" />
@@ -21,7 +20,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="3.1.74" Condition=" '$(EnableGitVersioning)' != 'false' " />
+    <GlobalPackageReference Include="Microsoft.Build.Artifacts" Version="2.0.20" Condition="'$(EnableArtifacts)' != 'false'" />
+    <GlobalPackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" Version="0.4.1" Condition="'$(EnableMicroBuild)' != 'false'" />
+    <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="3.1.74" Condition="'$(EnableGitVersioning)' != 'false'" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(EnableStyleCop)' != 'false' ">

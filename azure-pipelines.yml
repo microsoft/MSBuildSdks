@@ -2,9 +2,11 @@ resources:
 - repo: self
 
 variables:
+  ArtifactsDirectoryName: 'artifacts'
+  BinaryLoggerArgs: '"/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
   BuildConfiguration: 'Debug'
-  BuildPlatform: 'AnyCPU'
-  DotNetCore3Version: '3.1.100'
+  BuildPlatform: 'Any CPU'
+  DotNetCoreVersion: '3.1.200'
   SignType: 'Test'
 
 trigger:
@@ -12,14 +14,15 @@ trigger:
   branches:
     include:
     - 'master'
-    - 'refs/tags/*'
+    - 'rel/*'
   paths:
     exclude:
     - '*.md'
 pr:
   branches:
     include:
-    - master
+    - 'master'
+    - 'rel/*'
   paths:
     exclude:
     - '*.md'
@@ -31,16 +34,18 @@ jobs:
     vmImage: windows-latest
   steps:
   - task: UseDotNet@2
-    displayName: 'Install .NET Core 3.1'
+    displayName: 'Install .NET Core $(DotNetCoreVersion)'
     inputs:
-      version: '$(DotNetCore3Version)'
+      version: '$(DotNetCoreVersion)'
+
   - task: MSBuild@1
     displayName: 'Build dirs.proj'
     inputs:
       solution: dirs.proj
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
-      msbuildArguments: '"/Property:ArtifactsPath=$(Build.StagingDirectory);SignType=$(SignType);PublicRelease=true" "/BinaryLogger:$(Build.StagingDirectory)\logs\build.binlog"'
+      msbuildArguments: '$(BinaryLoggerArgs)'
+
   - task: VSTest@2
     displayName: 'Run Unit Tests'
     inputs:
@@ -48,9 +53,10 @@ jobs:
        **\*Tests.dll
        !**\obj\**
       runInParallel: false
+
   - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifact: Logs'
+    displayName: 'Publish Artifacts'
     inputs:
-      PathtoPublish: '$(Build.StagingDirectory)\logs'
-      ArtifactName: logs
+      PathtoPublish: '$(ArtifactsDirectoryName)'
+      ArtifactName: $(ArtifactsDirectoryName)
     condition: always()

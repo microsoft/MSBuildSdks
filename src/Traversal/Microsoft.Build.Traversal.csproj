@@ -1,9 +1,8 @@
 ﻿<Project Sdk="Microsoft.Build.NoTargets">
-
   <PropertyGroup>
     <TargetFramework>netstandard1.1</TargetFramework>
     <Description>Provides MSBuild traversal logic.</Description>
     <PackageTags>MSBuild MSBuildSdk traversal dirs</PackageTags>
+    <ArtifactsPath>$(BaseArtifactsPath)$(MSBuildProjectName)\</ArtifactsPath>
   </PropertyGroup>
-
 </Project>

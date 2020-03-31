@@ -8,21 +8,46 @@
     <PackageIcon>images\MSBuild-NuGet-Icon.png</PackageIcon>
     <DevelopmentDependency>true</DevelopmentDependency>
     <NoWarn>NU5128</NoWarn>
+    <EnableArtifacts>false</EnableArtifacts>
+    <ArtifactsPath>$(BaseArtifactsPath)$(MSBuildProjectName)\</ArtifactsPath>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
-
   <ItemGroup Condition="'$(TargetFramework)' != 'net46'">
-    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" PrivateAssets="All"  />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'net46'">
-    <PackageReference Include="Microsoft.Build.Framework;
-                               Microsoft.Build;
-                               Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" PrivateAssets="All" VersionOverride="15.9.20" />
+    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="Runtime" PrivateAssets="All" VersionOverride="15.9.20" />
+    <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" PrivateAssets="All" VersionOverride="15.9.20" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" PrivateAssets="All" VersionOverride="15.9.20" />
   </ItemGroup>
-
   <ItemGroup>
     <None Include="build\*" Pack="true" PackagePath="build\" />
     <None Include="buildMultiTargeting\*" Pack="true" PackagePath="buildMultiTargeting\" />
     <None Include="Sdk\*" Pack="true" PackagePath="Sdk\" />
-    <None Include="$(PackageIconPath)" Pack="true" PackagePath="images\"/>
+    <None Include="$(PackageIconPath)" Pack="true" PackagePath="images\" />
   </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Build.Artifacts.UnitTests" />
+  </ItemGroup>
+  <ItemGroup>
+    <FilesToSign Include="$(TargetPath)" Authenticode="Microsoft400" StrongName="StrongName" />
+  </ItemGroup>
+  <Target Name="CopyArtifacts"
+          AfterTargets="_PackAsBuildAfterTarget"
+          Condition="'$(IsInnerBuild)' != 'true'">
+    <!-- 
+      Workaround for https://github.com/NuGet/Home/issues/6754 
+      Only needed because SlnGen the project depends on SlnGen the package
+    -->
+    <ItemGroup>
+      <Artifact Include="$(OutputPath)\**" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(Artifact)"
+          DestinationFiles="@(Artifact->'$(ArtifactsPath)%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
+          OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)" />
+  </Target>
 </Project>
