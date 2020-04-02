@@ -28,6 +28,11 @@
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" Condition=" '$(CommonTargetsPath)' == '' " />
 
+  <PropertyGroup>
+    <!-- Don't emit a reference assembly -->
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+  </PropertyGroup>
+
   <ItemGroup>
     <IntermediateAssembly Remove="@(IntermediateAssembly)" />
     <IntermediateRefAssembly Remove="@(IntermediateRefAssembly)" />
