@@ -4,16 +4,7 @@
     <MSBuildTreatWarningsAsErrors>true</MSBuildTreatWarningsAsErrors>
     <LangVersion>Latest</LangVersion>
     <BaseArtifactsPath>$(MSBuildThisFileDirectory)artifacts\</BaseArtifactsPath>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <Authors>Microsoft</Authors>
-    <Company>Microsoft</Company>
-    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
-    <PackageLicenseFile>$(MSBuildThisFileDirectory)LICENSE.txt</PackageLicenseFile>
-    <PackageProjectUrl>https://github.com/Microsoft/MSBuildSdks</PackageProjectUrl>
-    <PackageIconPath>$(MSBuildThisFileDirectory)branding\MSBuild-NuGet-Icon.png</PackageIconPath>
-    <RepositoryUrl>https://github.com/Microsoft/MSBuildSdks.git</RepositoryUrl>
+    <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(SignType)' != ''">
