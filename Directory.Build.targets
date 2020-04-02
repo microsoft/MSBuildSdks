@@ -1,29 +1,40 @@
 <Project>
-  <PropertyGroup>
-    <NuspecFile Condition=" Exists('$(MSBuildProjectDirectory)\$(MSBuildProjectName).nuspec') ">$(MSBuildProjectDirectory)\$(MSBuildProjectName).nuspec</NuspecFile>
+  <Sdk Name="Microsoft.Build.CentralPackageVersions" />
 
+  <PropertyGroup>
     <!-- Full symbols so that unit test assertions have more info -->
     <DebugType Condition=" '$(Configuration)' == 'Debug' ">Full</DebugType>
-
-    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);SetNuSpecProperties</GenerateNuspecDependsOn>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
   </PropertyGroup>
 
-  <Target Name="SetNuSpecProperties" Condition=" Exists('$(NuspecFile)') ">
-    <PropertyGroup>
-      <NuspecProperties>
-        id=$(PackageId);
-        description=$(PackageDescription);
-        version=$(PackageVersion);
-        authors=$(Authors);
-        copyright=$(Copyright);
-        projecturl=$(PackageProjectUrl);
-        licensefile=$(PackageLicenseFile);
-        icon=$(PackageIconPath);
-        tags=$(PackageTags);
-        packagetype=MSBuildSdk
-      </NuspecProperties>
-    </PropertyGroup>
-  </Target>
+  <PropertyGroup>
+    <Authors>Microsoft</Authors>
+    <Company>Microsoft</Company>
+    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageLicensePath>$(MSBuildThisFileDirectory)$(PackageLicenseFile)</PackageLicensePath>
+    <PackageProjectUrl>https://github.com/Microsoft/MSBuildSdks</PackageProjectUrl>
+    <PackageIcon>MSBuild-NuGet-Icon.png</PackageIcon>
+    <PackageIconPath>$(MSBuildThisFileDirectory)branding\$(PackageIcon)</PackageIconPath>
+    <RepositoryUrl>https://github.com/Microsoft/MSBuildSdks.git</RepositoryUrl>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IsPackable)' == 'true'">
+    <None Include="Sdk\**"
+          Pack="true"
+          PackagePath="Sdk\" />
+    <None Include="README.md" />
+    <None Include="version.json" />
+    <None Include="$(PackageLicensePath)"
+          Pack="true"
+          PackagePath="$(PackageLicenseFile)"
+          Visible="false" />
+
+    <None Include="$(PackageIconPath)"
+          Pack="true"
+          PackagePath="\"
+          Visible="false" />
+  </ItemGroup>
 
   <Target Name="AddInternalsVisibleToAssemblyAttribute"
           BeforeTargets="BeforeCompile"
@@ -35,6 +46,4 @@
       </AssemblyAttribute>
     </ItemGroup>
   </Target>
-
-  <Import Project="Sdk.targets" Sdk="Microsoft.Build.CentralPackageVersions" />
 </Project>

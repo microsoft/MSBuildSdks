@@ -1,9 +1,10 @@
 ﻿<Project Sdk="Microsoft.Build.NoTargets">
   <PropertyGroup>
-    <TargetFramework>netstandard1.1</TargetFramework>
+    <TargetFramework>net472</TargetFramework>
     <Description>Provides targets for projects that do not compile an assembly.</Description>
     <PackageTags>MSBuild MSBuildSdk notargets notarget</PackageTags>
     <ArtifactsPath>$(BaseArtifactsPath)$(MSBuildProjectName)\</ArtifactsPath>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageType>MSBuildSdk</PackageType>
   </PropertyGroup>
 </Project>

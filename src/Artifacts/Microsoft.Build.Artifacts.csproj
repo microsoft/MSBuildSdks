@@ -2,14 +2,9 @@
   <PropertyGroup>
     <TargetFrameworks>net46;net472;netcoreapp2.1</TargetFrameworks>
     <BuildOutputTargetFolder>build\</BuildOutputTargetFolder>
-    <EnableDefaultNoneItems>true</EnableDefaultNoneItems>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>Build logic for staging artifacts from build outputs.</Description>
-    <PackageLicenseFile></PackageLicenseFile>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageIcon>images\MSBuild-NuGet-Icon.png</PackageIcon>
     <DevelopmentDependency>true</DevelopmentDependency>
-    <NoWarn>NU5128</NoWarn>
     <EnableArtifacts>false</EnableArtifacts>
     <ArtifactsPath>$(BaseArtifactsPath)$(MSBuildProjectName)\</ArtifactsPath>
     <IncludeSymbols>true</IncludeSymbols>
@@ -27,8 +22,6 @@
   <ItemGroup>
     <None Include="build\*" Pack="true" PackagePath="build\" />
     <None Include="buildMultiTargeting\*" Pack="true" PackagePath="buildMultiTargeting\" />
-    <None Include="Sdk\*" Pack="true" PackagePath="Sdk\" />
-    <None Include="$(PackageIconPath)" Pack="true" PackagePath="images\" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.Build.Artifacts.UnitTests" />
