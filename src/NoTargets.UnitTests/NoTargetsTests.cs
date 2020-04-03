@@ -54,6 +54,18 @@ namespace Microsoft.Build.NoTargets.UnitTests
             includeBuildOutput.ShouldBe("false");
         }
 
+        [Fact]
+        public void ProduceReferenceAssemblyIsFalse()
+        {
+            ProjectCreator.Templates.NoTargetsProject(
+                    path: GetTempFileWithExtension(".csproj"))
+                .Property("ProduceReferenceAssembly", "true")
+                .Save()
+                .TryGetPropertyValue("IncludeBuildOutput", out var produceReferenceAssembly);
+
+            produceReferenceAssembly.ShouldBe("false");
+        }
+
         [Theory]
         [InlineData(".csproj")]
         [InlineData(".proj")]
