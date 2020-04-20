@@ -6,6 +6,7 @@ using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Graph;
+using Microsoft.Build.Logging;
 using Microsoft.Build.Utilities.ProjectCreation;
 using Shouldly;
 using System;
@@ -217,6 +218,40 @@ namespace Microsoft.Build.NoTargets.UnitTests
             {
                 buildManager.EndBuild();
             }
+        }
+
+        [Theory]
+        [InlineData(".csproj", "Build")]
+        [InlineData(".csproj", "Compile")]
+        [InlineData(".csproj", "CoreCompile")]
+        [InlineData(".msbuildproj", "Build")]
+        [InlineData(".msbuildproj", "Compile")]
+        [InlineData(".msbuildproj", "CoreCompile")]
+        public void SupportedTargetsExecute(string extension, string target)
+        {
+            Dictionary<string, string> globalProperties = new Dictionary<string, string>
+            {
+                ["DesignTimeBuild"] = bool.TrueString
+            };
+
+            bool result;
+            BuildOutput buildOutput;
+
+            using (ProjectCollection projectCollection = new ProjectCollection(globalProperties))
+            {
+                ProjectCreator.Create()
+                    .Target("EnableIntermediateOutputPathMismatchWarning")
+                    .Save(Path.Combine(TestRootPath, "Directory.Build.targets"));
+
+                ProjectCreator.Templates.NoTargetsProject(
+                        path: GetTempFileWithExtension(extension),
+                        projectCollection: projectCollection)
+                    .Property("GenerateDependencyFile", "false")
+                    .Save()
+                    .TryBuild(target, out result, out buildOutput);
+            }
+
+            result.ShouldBeTrue(() => buildOutput.GetConsoleLog());
         }
 
         [Fact]
