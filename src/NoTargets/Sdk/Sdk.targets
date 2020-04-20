@@ -82,4 +82,10 @@
   -->
   <Import Project="$(MSBuildToolsPath)\Microsoft.Managed.targets" Condition="'$(MSBuildAssemblyVersion)' >= '16.0' And '$(ManagedLanguageTargetsGotImported)' != 'true'" />
 
+  <!-- Override stock CoreCompile target to do nothing but keep extensibility points -->
+  <Target Name="CoreCompile"
+          DependsOnTargets="$(CoreCompileDependsOn)">
+    <CallTarget Targets="$(TargetsTriggeredByCompilation)" Condition="'$(TargetsTriggeredByCompilation)' != ''" />
+  </Target>
+
 </Project>
