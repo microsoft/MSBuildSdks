@@ -1,5 +1,5 @@
 <Project>
-  <Sdk Name="Microsoft.Build.CentralPackageVersions" />
+  <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.52" />
 
   <PropertyGroup>
     <!-- Full symbols so that unit test assertions have more info -->
