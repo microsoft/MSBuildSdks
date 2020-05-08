@@ -9,6 +9,7 @@ using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Build.Execution;
 using UnitTest.Common;
 using Xunit;
 
@@ -170,7 +171,7 @@ namespace Microsoft.Build.Traversal.UnitTests
                 .TraversalProject(
                     null,
                     GetTempFile("dirs.proj"))
-                .Save().TryGetItems("ProjectReferenceTargets", "Targets", out var items);
+                .Save().TryGetItems("ProjectReferenceTargets", "Targets", out IReadOnlyDictionary<string, string> items);
 
             items.Keys.ShouldContain(target);
 
@@ -251,7 +252,7 @@ namespace Microsoft.Build.Traversal.UnitTests
         [InlineData("VSTest")]
         public void TraversalTargetsShouldBeConditionedOnIsGraphBuild(string target)
         {
-            var traversalTarget = ProjectCreator
+            ProjectTargetInstance traversalTarget = ProjectCreator
                 .Templates
                 .TraversalProject(
                     null,
