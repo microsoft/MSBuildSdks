@@ -65,7 +65,7 @@ namespace UnitTest.Common
 
         protected string GetTempFileWithExtension(string extension = null)
         {
-            return Path.Combine(TestRootPath, $"{Path.GetRandomFileName()}{extension ?? String.Empty}");
+            return Path.Combine(TestRootPath, $"{Path.GetRandomFileName()}{extension ?? string.Empty}");
         }
     }
 }

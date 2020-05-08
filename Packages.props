@@ -1,13 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-
-  <ItemDefinitionGroup>
-    <PackageReference>
-      <!-- Do not share compile-time dependencies tranitively.  This requires that all projects reference all packages -->
-      <PrivateAssets>Compile</PrivateAssets>
-    </PackageReference>
-  </ItemDefinitionGroup>
-
+<Project>
   <ItemGroup>
     <PackageReference Update="Microsoft.Build" Version="16.5.0" />
     <PackageReference Update="Microsoft.Build.Framework" Version="16.5.0" />
@@ -30,5 +21,4 @@
     <Compile Include="..\GlobalSuppressions.cs" Visible="False" />
     <AdditionalFiles Include="..\..\stylecop.json" Visible="False" />
   </ItemGroup>
-
 </Project>

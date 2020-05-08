@@ -279,7 +279,7 @@ namespace Microsoft.Build.Traversal.UnitTests
                 ["DesignTimeBuild"] = "true"
             };
 
-            if (!String.IsNullOrWhiteSpace(configuration))
+            if (!string.IsNullOrWhiteSpace(configuration))
             {
                 globalProperties.Add("Configuration", configuration);
             }

@@ -50,7 +50,7 @@ namespace UnitTest.Common
                 return value;
             }
 
-            return String.Empty;
+            return string.Empty;
         }
 
         public string GetMetadataValueEscaped(string metadataName)
