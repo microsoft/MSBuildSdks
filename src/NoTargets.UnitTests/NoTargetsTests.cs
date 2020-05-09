@@ -182,7 +182,7 @@ namespace Microsoft.Build.NoTargets.UnitTests
                 }).Save();
 
             ProjectCreator project = ProjectCreator.Templates.SdkCsproj(
-                    Path.Combine(TestRootPath, "main", "main.csproj"),
+                    Path.Combine(TestRootPath, "main", $"main{projectExtension}"),
                     targetFramework: "net472",
                     projectCreator: creator =>
                     {
