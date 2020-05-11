@@ -3,6 +3,7 @@
 // Licensed under the MIT license.
 
 using Microsoft.Build.Evaluation;
+using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities.ProjectCreation;
 using Shouldly;
@@ -170,7 +171,7 @@ namespace Microsoft.Build.Traversal.UnitTests
                 .TraversalProject(
                     null,
                     GetTempFile("dirs.proj"))
-                .Save().TryGetItems("ProjectReferenceTargets", "Targets", out var items);
+                .Save().TryGetItems("ProjectReferenceTargets", "Targets", out IReadOnlyDictionary<string, string> items);
 
             items.Keys.ShouldContain(target);
 
@@ -251,7 +252,7 @@ namespace Microsoft.Build.Traversal.UnitTests
         [InlineData("VSTest")]
         public void TraversalTargetsShouldBeConditionedOnIsGraphBuild(string target)
         {
-            var traversalTarget = ProjectCreator
+            ProjectTargetInstance traversalTarget = ProjectCreator
                 .Templates
                 .TraversalProject(
                     null,

@@ -5,6 +5,7 @@
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Utilities.ProjectCreation;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Microsoft.Build.NoTargets.UnitTests
@@ -22,6 +23,7 @@ namespace Microsoft.Build.NoTargets.UnitTests
             string toolsVersion = null,
             string treatAsLocalProperty = null,
             ProjectCollection projectCollection = null,
+            IDictionary<string, string> globalProperties = null,
             NewProjectFileOptions? projectFileOptions = NewProjectFileOptions.None)
         {
             string currentDirectory = Environment.CurrentDirectory;
@@ -34,7 +36,8 @@ namespace Microsoft.Build.NoTargets.UnitTests
                     toolsVersion,
                     treatAsLocalProperty,
                     projectCollection,
-                    projectFileOptions)
+                    projectFileOptions,
+                    globalProperties)
                 .Import(Path.Combine(currentDirectory, "Sdk", "Sdk.props"))
                 .Property("TargetFramework", targetFramework)
                 .CustomAction(customAction)
