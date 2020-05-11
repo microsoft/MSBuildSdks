@@ -34,7 +34,8 @@
     -->
     <Artifact Include="$(DefaultArtifactsSource)"
                DestinationFolder="$(ArtifactsPath)"
-               FileMatch="$([MSBuild]::ValueOrDefault($(DefaultArtifactsFileMatch), '*exe *dll *exe.config *nupkg'))" />
+               FileMatch="$([MSBuild]::ValueOrDefault($(DefaultArtifactsFileMatch), '*exe *dll *exe.config *nupkg'))"
+               DirExclude="ref" />
   </ItemGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.Build.Artifacts.Common.targets" />

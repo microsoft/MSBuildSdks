@@ -78,6 +78,10 @@ namespace Microsoft.Build.Artifacts.UnitTests
                 "bar.pdb",
                 "bar.cs");
 
+            CreateFiles(
+                Path.Combine(baseOutputPath.FullName, "net472", "ref"),
+                "bar.dll");
+
             DirectoryInfo artifactsPath = new DirectoryInfo(Path.Combine(TestRootPath, "artifacts"));
 
             ProjectCreator.Templates.ProjectWithArtifacts(
