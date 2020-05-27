@@ -59,6 +59,8 @@ In some cases, you may need to override the version for a particular project.  T
 </Project>
 ```
 
+A `PackageReference` does not have to have a corresponding central version if it has a `VersionOverride`. If you want to require a central version for each `PackageReference` in your code base, set `DisableVersionOverridesWithoutCentralVersions` to `true`.
+
 ## Global Package References
 Some packages should be referenced by all projects in your tree and are development dependencies only.  This includes packages that do versioning, extend your build, or do any other function that is needed repository-wide.  Global package references are added to the `PackageReference` item group with the following metadata:
 
