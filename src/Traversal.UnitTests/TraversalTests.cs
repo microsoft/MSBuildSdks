@@ -302,5 +302,48 @@ namespace Microsoft.Build.Traversal.UnitTests
 
             result.ShouldBeTrue(customMessage: () => buildOutput.GetConsoleLog());
         }
+
+        [Fact]
+        public void CollectsProjectReferenceBuildTargetOutputs()
+        {
+            string[] projects = new[]
+            {
+                GetSkeletonCSProjWithTargetOutputs("A"),
+                GetSkeletonCSProjWithTargetOutputs("B")
+            }.Select(i => i.FullPath).ToArray();
+
+            var subTraversalProject = ProjectCreator
+                .Templates
+                .TraversalProject(projects, path: GetTempFile("dirs.proj"))
+                .Save();
+
+            ProjectCreator
+                .Create(path: GetTempFile("root.proj"))
+                .Target("BuildTraversalProject")
+                .Task(
+                    "MSBuild",
+                    parameters: new Dictionary<string, string>
+                    {
+                        ["Projects"] = subTraversalProject.FullPath,
+                        ["Targets"] = "Build"
+                    })
+                .TaskOutputItem("TargetOutputs", "CollectedOutputs")
+                .TaskMessage("%(CollectedOutputs.Identity)", MessageImportance.High)
+                .Save()
+                .TryBuild("BuildTraversalProject", out bool result, out BuildOutput buildOutput);
+
+            buildOutput.Messages.High.Count.ShouldBe(2, customMessage: () => buildOutput.GetConsoleLog());
+            buildOutput.Messages.High.ShouldContain("A.dll", customMessage: () => buildOutput.GetConsoleLog());
+            buildOutput.Messages.High.ShouldContain("B.dll", customMessage: () => buildOutput.GetConsoleLog());
+
+            ProjectCreator GetSkeletonCSProjWithTargetOutputs(string projectName)
+            {
+                return ProjectCreator.Templates.SdkCsproj(path: GetTempFile($"{projectName}.csproj"), sdk: string.Empty)
+                                    .Target("Build", returns: "@(TestReturnItem)")
+                                    .TargetItemGroup()
+                                    .TargetItemInclude("TestReturnItem", "$(MSBuildThisFileName).dll")
+                                    .Save();
+            }
+        }
     }
 }

@@ -112,13 +112,16 @@
 
   <Target Name="Build"
           DependsOnTargets="$(BuildDependsOn)"
-          Condition=" '$(IsGraphBuild)' != 'true' " >
+          Condition=" '$(IsGraphBuild)' != 'true' "
+          Returns="@(CollectedBuildOutput)">
     <MSBuild Projects="@(ProjectReference)"
              Condition="'%(ProjectReference.Build)' != 'false'"
              BuildInParallel="$([MSBuild]::ValueOrDefault('%(ProjectReference.BuildInParallel)', '$(BuildInParallel)'))"
              SkipNonexistentProjects="$(SkipNonexistentProjects)"
              SkipNonexistentTargets="$(SkipNonexistentTargets)"
-             ContinueOnError="$(ContinueOnError)" />
+             ContinueOnError="$(ContinueOnError)">
+      <Output TaskParameter="TargetOutputs" ItemName="CollectedBuildOutput" />
+    </MSBuild>
   </Target>
 
   <Target Name="Clean"
