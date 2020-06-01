@@ -6,7 +6,7 @@ variables:
   BinaryLoggerArgs: '"/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
   BuildConfiguration: 'Debug'
   BuildPlatform: 'Any CPU'
-  DotNetCoreVersion: '3.1.200'
+  DotNetCoreVersion: '3.1.300'
   SignType: 'Test'
 
 trigger:

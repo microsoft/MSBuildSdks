@@ -7,7 +7,7 @@
     <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(SignType)' != ''">
+  <PropertyGroup Condition="'$(SignType)' == 'Real'">
     <DefineConstants>$(DefineConstants);SIGNTYPE_$(SignType.ToUpperInvariant())</DefineConstants>
     <DelaySign>true</DelaySign>
     <SignAssembly>true</SignAssembly>
