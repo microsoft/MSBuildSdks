@@ -7,7 +7,6 @@ variables:
   BuildConfiguration: 'Debug'
   BuildPlatform: 'Any CPU'
   DotNetCoreVersion: '3.1.300'
-  SignType: 'Test'
 
 trigger:
   batch: true
