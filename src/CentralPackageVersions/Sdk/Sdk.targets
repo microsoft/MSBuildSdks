@@ -28,8 +28,6 @@
     <EnableCentralPackageVersions
       Condition="'$(EnableCentralPackageVersions)' == '' And (!Exists('$(CentralPackagesFile)') Or Exists('$(MSBuildProjectDirectory)\packages.config') Or '$(MSBuildProjectExtension)' == '.vcxproj' Or '$(MSBuildProjectExtension)' == '.ccproj' Or '$(MSBuildProjectExtension)' == '.nuproj')">false</EnableCentralPackageVersions>
 
-    <EnablePackageVersionOverrideWithoutCentralVersion Condition="'$(EnablePackageVersionOverrideWithoutCentralVersion)' == '' And '$(EnableCentralPackageVersions)' != 'false'">true</EnablePackageVersionOverrideWithoutCentralVersion>
-
     <!--
       Include this file and the Packages.props file (if necessary) in MSBuildAllProjects so that rebuilds happen if the Packages.props changes.
     -->
