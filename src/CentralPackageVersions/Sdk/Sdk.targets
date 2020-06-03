@@ -28,6 +28,8 @@
     <EnableCentralPackageVersions
       Condition="'$(EnableCentralPackageVersions)' == '' And (!Exists('$(CentralPackagesFile)') Or Exists('$(MSBuildProjectDirectory)\packages.config') Or '$(MSBuildProjectExtension)' == '.vcxproj' Or '$(MSBuildProjectExtension)' == '.ccproj' Or '$(MSBuildProjectExtension)' == '.nuproj')">false</EnableCentralPackageVersions>
 
+    <EnablePackageVersionOverrideWithoutCentralVersion Condition="'$(EnablePackageVersionOverrideWithoutCentralVersion)' == '' And '$(EnableCentralPackageVersions)' != 'false'">true</EnablePackageVersionOverrideWithoutCentralVersion>
+
     <!--
       Include this file and the Packages.props file (if necessary) in MSBuildAllProjects so that rebuilds happen if the Packages.props changes.
     -->
@@ -109,7 +111,7 @@
     -->
     <_PackageReferenceWithVersionOverrideButNoCentralVersion Include="@(PackageReference->HasMetadata('VersionOverride')->ClearMetadata())"
                                                              Exclude="@(PackageReference->HasMetadata('Version'))"
-                                                             Condition=" '$(EnablePackageVersionOverride)' != 'false' And '$(DisableVersionOverridesWithoutCentralVersions)' == 'true' " />
+                                                             Condition=" '$(EnablePackageVersionOverride)' != 'false' And '$(EnablePackageVersionOverrideWithoutCentralVersion)' == 'false' " />
 
     <!--
       Get a list of <PackageReference /> items that specify the VersionOverride metadata and copy the value

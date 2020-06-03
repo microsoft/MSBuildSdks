@@ -424,7 +424,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                     path: Path.Combine(TestRootPath, $"test.{projectFileExtension}"),
                     projectCollection: new ProjectCollection(new Dictionary<string, string>
                     {
-                        // DisableVersionOverridesWithoutCentralVersions not set to true
+                        // EnablePackageVersionOverrideWithoutCentralVersion is true by default
                         ["DisableImplicitFrameworkReferences"] = "true"
                     }),
                     projectCreator: creator => creator
@@ -454,7 +454,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                     projectCollection: new ProjectCollection(new Dictionary<string, string>
                     {
                         ["DisableImplicitFrameworkReferences"] = "true",
-                        ["DisableVersionOverridesWithoutCentralVersions"] = "true"
+                        ["EnablePackageVersionOverrideWithoutCentralVersion"] = "false"
                     }),
                     projectCreator: creator => creator
                         .ItemPackageReference(
