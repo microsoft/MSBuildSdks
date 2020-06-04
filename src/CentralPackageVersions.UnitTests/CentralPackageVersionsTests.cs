@@ -411,6 +411,66 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                 });
         }
 
+        [Theory]
+        [InlineData(".csproj")]
+        [InlineData(".fsproj")]
+        [InlineData(".vbproj")]
+        public void VersionOverridesWithoutCentralVersionsAreAllowed(string projectFileExtension)
+        {
+            ProjectCreator packagesProps = WritePackagesProps();
+
+            ProjectCreator.Templates
+                .SdkCsproj(
+                    path: Path.Combine(TestRootPath, $"test.{projectFileExtension}"),
+                    projectCollection: new ProjectCollection(new Dictionary<string, string>
+                    {
+                        // EnablePackageVersionOverrideWithoutCentralVersion is true by default
+                        ["DisableImplicitFrameworkReferences"] = "true"
+                    }),
+                    projectCreator: creator => creator
+                        .ItemPackageReference(
+                            "Orphan",
+                            metadata: new Dictionary<string, string>
+                            {
+                                ["VersionOverride"] = "1.0.0"
+                            })
+                        .Import(Path.Combine(Environment.CurrentDirectory, @"Sdk\Sdk.targets")))
+                .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput);
+
+            result.ShouldBeTrue(() => buildOutput.GetConsoleLog());
+        }
+
+        [Theory]
+        [InlineData(".csproj")]
+        [InlineData(".fsproj")]
+        [InlineData(".vbproj")]
+        public void VersionOverridesWithoutCentralVersionsCanBeDisabled(string projectFileExtension)
+        {
+            ProjectCreator packagesProps = WritePackagesProps();
+
+            ProjectCreator.Templates
+                .SdkCsproj(
+                    path: Path.Combine(TestRootPath, $"test.{projectFileExtension}"),
+                    projectCollection: new ProjectCollection(new Dictionary<string, string>
+                    {
+                        ["DisableImplicitFrameworkReferences"] = "true",
+                        ["EnablePackageVersionOverrideWithoutCentralVersion"] = "false"
+                    }),
+                    projectCreator: creator => creator
+                        .ItemPackageReference(
+                            "Orphan",
+                            metadata: new Dictionary<string, string>
+                            {
+                                ["VersionOverride"] = "1.0.0"
+                            })
+                        .Import(Path.Combine(Environment.CurrentDirectory, @"Sdk\Sdk.targets")))
+                .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput);
+
+            result.ShouldBeFalse(() => buildOutput.GetConsoleLog());
+
+            buildOutput.Errors.ShouldBe(new[] { $"The package reference \'Orphan\' must have a version defined in \'{packagesProps.FullPath}\'." });
+        }
+
         private ProjectCreator WritePackagesProps()
         {
             return ProjectCreator.Templates

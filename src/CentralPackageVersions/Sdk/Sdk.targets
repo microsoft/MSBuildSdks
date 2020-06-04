@@ -102,6 +102,16 @@
                       Condition=" '$(EnableGlobalPackageReferences)' != 'false' " />
 
     <!--
+      Get a list of <PackageReference /> items that specify a VersionOverride but not a Version; that is,
+      there's no entry for them in the central package management file.
+
+      Clear the metadata to save some memory.
+    -->
+    <_PackageReferenceWithVersionOverrideButNoCentralVersion Include="@(PackageReference->HasMetadata('VersionOverride')->ClearMetadata())"
+                                                             Exclude="@(PackageReference->HasMetadata('Version'))"
+                                                             Condition=" '$(EnablePackageVersionOverride)' != 'false' And '$(EnablePackageVersionOverrideWithoutCentralVersion)' == 'false' " />
+
+    <!--
       Get a list of <PackageReference /> items that specify the VersionOverride metadata and copy the value
       to the Version metadata.  All other metadata is also copied.
       
@@ -165,11 +175,19 @@
       File="$(MSBuildProjectFullPath) "/>
 
     <!--
-      Generate an error if any explicit PackageReference did not have Version specified in the central package management file.
+      Generate an error if any explicit PackageReference did not have Version specified in the central package management file or a VersionOverride.
     -->
     <Error
       Text="The package reference '%(PackageReference.Identity)' must have a version defined in '$(CentralPackagesFile)'."
       Condition=" '%(PackageReference.IsImplicitlyDefined)' != 'true' And '%(PackageReference.Version)' == '' "
+      File="$(MSBuildProjectFullPath)" />
+
+    <!--
+      Generate an error if any explicit PackageReference had a VersionOverride but did not have Version specified in the central package management file.
+    -->
+    <Error
+      Text="The package reference '%(_PackageReferenceWithVersionOverrideButNoCentralVersion.Identity)' must have a version defined in '$(CentralPackagesFile)'."
+      Condition=" @(_PackageReferenceWithVersionOverrideButNoCentralVersion->Count()) > 0 "
       File="$(MSBuildProjectFullPath)" />
   </Target>
 
