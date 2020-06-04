@@ -7,10 +7,10 @@
     <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(SignType)' == 'Real'">
-    <DefineConstants>$(DefineConstants);SIGNTYPE_$(SignType.ToUpperInvariant())</DefineConstants>
-    <DelaySign>true</DelaySign>
+  <PropertyGroup>
     <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)MicrosoftCorporation.snk</AssemblyOriginatorKeyFile>
+    <DelaySign Condition="'$(SignType)' != ''">true</DelaySign>
+    <AssemblyOriginatorKeyFile Condition="'$(SignType)' == 'Real'">$(MSBuildThisFileDirectory)MicrosoftCorporation.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile Condition="'$(AssemblyOriginatorKeyFile)' == ''">$(MSBuildThisFileDirectory)Test.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 </Project>
