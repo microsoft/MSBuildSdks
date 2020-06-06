@@ -114,11 +114,23 @@
           DependsOnTargets="$(BuildDependsOn)"
           Condition=" '$(IsGraphBuild)' != 'true' "
           Returns="@(CollectedBuildOutput)">
+
+    <ItemGroup>
+      <_buildInParallel Remove="@(_buildInParallel)" />
+      <_buildInParallel Include="$([MSBuild]::ValueOrDefault('%(ProjectReference.BuildInParallel)', '$(BuildInParallel)'))" />
+    </ItemGroup>
+
+    <PropertyGroup Condition="'$(StopOnFirstFailure)' == '' or '$(StopOnFirstFailure)' == 'true'">
+      <StopOnFirstFailure>false</StopOnFirstFailure>
+      <StopOnFirstFailure Condition="!@(_buildInParallel->AnyHaveMetadataValue('Identity', 'true'))">true</StopOnFirstFailure>
+    </PropertyGroup>
+
     <MSBuild Projects="@(ProjectReference)"
              Condition="'%(ProjectReference.Build)' != 'false'"
              BuildInParallel="$([MSBuild]::ValueOrDefault('%(ProjectReference.BuildInParallel)', '$(BuildInParallel)'))"
              SkipNonexistentProjects="$(SkipNonexistentProjects)"
              SkipNonexistentTargets="$(SkipNonexistentTargets)"
+             StopOnFirstFailure="$(StopOnFirstFailure)"
              ContinueOnError="$(ContinueOnError)">
       <Output TaskParameter="TargetOutputs" ItemName="CollectedBuildOutput" />
     </MSBuild>
@@ -127,6 +139,21 @@
   <Target Name="Clean"
           DependsOnTargets="$(CleanDependsOn)"
           Condition=" '$(IsGraphBuild)' != 'true' ">
+    
+    <ItemGroup>
+      <_buildInParallel Remove="@(_buildInParallel)" />
+      <_buildInParallel Include="$([MSBuild]::ValueOrDefault('%(ProjectReference.CleanInParallel)',
+                                  $([MSBuild]::ValueOrDefault('%(ProjectReference.BuildInParallel)',
+                                    $([MSBuild]::ValueOrDefault('$(CleanInParallel)', '$(BuildInParallel)'))
+                                    ))
+                                  ))" />
+    </ItemGroup>
+
+    <PropertyGroup Condition="'$(StopOnFirstFailure)' == '' or '$(StopOnFirstFailure)' == 'true'">
+      <StopOnFirstFailure>false</StopOnFirstFailure>
+      <StopOnFirstFailure Condition="!@(_buildInParallel->AnyHaveMetadataValue('Identity', 'true'))">true</StopOnFirstFailure>
+    </PropertyGroup>
+
     <MSBuild Projects="@(ProjectReference)"
              Targets="Clean"
              Condition="'%(ProjectReference.Clean)' != 'false'"
@@ -137,12 +164,28 @@
                                ))"
              SkipNonexistentProjects="$(SkipNonexistentProjects)"
              SkipNonexistentTargets="$(SkipNonexistentTargets)"
+             StopOnFirstFailure="$(StopOnFirstFailure)"
              ContinueOnError="$([MSBuild]::ValueOrDefault('$(CleanContinueOnError)', '$(ContinueOnError)'))" />
   </Target>
 
   <Target Name="Test"
           DependsOnTargets="$(TestDependsOn)"
           Condition=" '$(IsGraphBuild)' != 'true' ">
+
+    <ItemGroup>
+      <_buildInParallel Remove="@(_buildInParallel)" />
+      <_buildInParallel Include="$([MSBuild]::ValueOrDefault('%(ProjectReference.TestInParallel)',
+                                  $([MSBuild]::ValueOrDefault('%(ProjectReference.BuildInParallel)',
+                                    $([MSBuild]::ValueOrDefault('$(TestInParallel)', '$(BuildInParallel)'))
+                                    ))
+                                  ))" />
+    </ItemGroup>
+
+    <PropertyGroup Condition="'$(StopOnFirstFailure)' == '' or '$(StopOnFirstFailure)' == 'true'">
+      <StopOnFirstFailure>false</StopOnFirstFailure>
+      <StopOnFirstFailure Condition="!@(_buildInParallel->AnyHaveMetadataValue('Identity', 'true'))">true</StopOnFirstFailure>
+    </PropertyGroup>
+
     <MSBuild Projects="@(ProjectReference)"
              Targets="Test"
              Condition="'%(ProjectReference.Test)' != 'false'"
@@ -153,12 +196,28 @@
                                ))"
              SkipNonexistentProjects="$(SkipNonexistentProjects)"
              SkipNonexistentTargets="$(SkipNonexistentTargets)"
+             StopOnFirstFailure="$(StopOnFirstFailure)"
              ContinueOnError="$([MSBuild]::ValueOrDefault('$(TestContinueOnError)', '$(ContinueOnError)'))" />
   </Target>
 
   <Target Name="VSTest"
           DependsOnTargets="$(VSTestDependsOn)"
           Condition=" '$(IsGraphBuild)' != 'true' ">
+
+    <ItemGroup>
+      <_buildInParallel Remove="@(_buildInParallel)" />
+      <_buildInParallel Include="$([MSBuild]::ValueOrDefault('%(ProjectReference.TestInParallel)',
+                                  $([MSBuild]::ValueOrDefault('%(ProjectReference.BuildInParallel)',
+                                    $([MSBuild]::ValueOrDefault('$(TestInParallel)', '$(BuildInParallel)'))
+                                    ))
+                                  ))" />
+    </ItemGroup>
+
+    <PropertyGroup Condition="'$(StopOnFirstFailure)' == '' or '$(StopOnFirstFailure)' == 'true'">
+      <StopOnFirstFailure>false</StopOnFirstFailure>
+      <StopOnFirstFailure Condition="!@(_buildInParallel->AnyHaveMetadataValue('Identity', 'true'))">true</StopOnFirstFailure>
+    </PropertyGroup>
+
     <MSBuild Projects="@(ProjectReference)"
              Targets="VSTest"
              Condition="'%(ProjectReference.Test)' != 'false'"
@@ -169,12 +228,28 @@
                                ))"
              SkipNonexistentProjects="$(SkipNonexistentProjects)"
              SkipNonexistentTargets="$(SkipNonexistentTargets)"
+             StopOnFirstFailure="$(StopOnFirstFailure)"
              ContinueOnError="$([MSBuild]::ValueOrDefault('$(TestContinueOnError)', '$(ContinueOnError)'))" />
   </Target>
 
   <Target Name="Pack"
           DependsOnTargets="$(PackDependsOn)"
           Condition=" '$(IsGraphBuild)' != 'true' ">
+    
+    <ItemGroup>
+      <_buildInParallel Remove="@(_buildInParallel)" />
+      <_buildInParallel Include="$([MSBuild]::ValueOrDefault('%(ProjectReference.PackInParallel)',
+                                  $([MSBuild]::ValueOrDefault('%(ProjectReference.BuildInParallel)',
+                                    $([MSBuild]::ValueOrDefault('$(PackInParallel)', '$(BuildInParallel)'))
+                                    ))
+                                  ))" />
+    </ItemGroup>
+
+    <PropertyGroup Condition="'$(StopOnFirstFailure)' == '' or '$(StopOnFirstFailure)' == 'true'">
+      <StopOnFirstFailure>false</StopOnFirstFailure>
+      <StopOnFirstFailure Condition="!@(_buildInParallel->AnyHaveMetadataValue('Identity', 'true'))">true</StopOnFirstFailure>
+    </PropertyGroup>
+
     <MSBuild Projects="@(ProjectReference)"
              Targets="Pack"
              Condition="'%(ProjectReference.Pack)' != 'false'"
@@ -185,12 +260,28 @@
                                ))"
              SkipNonexistentProjects="$(SkipNonexistentProjects)"
              SkipNonexistentTargets="$(SkipNonexistentTargets)"
+             StopOnFirstFailure="$(StopOnFirstFailure)"
              ContinueOnError="$([MSBuild]::ValueOrDefault('$(PackContinueOnError)', '$(ContinueOnError)'))" />
   </Target>
 
   <Target Name="Publish"
           DependsOnTargets="$(PublishDependsOn)"
           Condition=" '$(IsGraphBuild)' != 'true' ">
+
+    <ItemGroup>
+      <_buildInParallel Remove="@(_buildInParallel)" />
+      <_buildInParallel Include="$([MSBuild]::ValueOrDefault('%(ProjectReference.PublishInParallel)',
+                                  $([MSBuild]::ValueOrDefault('%(ProjectReference.BuildInParallel)',
+                                    $([MSBuild]::ValueOrDefault('$(PublishInParallel)', '$(BuildInParallel)'))
+                                    ))
+                                  ))" />
+    </ItemGroup>
+
+    <PropertyGroup Condition="'$(StopOnFirstFailure)' == '' or '$(StopOnFirstFailure)' == 'true'">
+      <StopOnFirstFailure>false</StopOnFirstFailure>
+      <StopOnFirstFailure Condition="!@(_buildInParallel->AnyHaveMetadataValue('Identity', 'true'))">true</StopOnFirstFailure>
+    </PropertyGroup>
+
     <MSBuild Projects="@(ProjectReference)"
              Properties="$(TraversalPublishGlobalProperties)"
              Targets="Publish"
@@ -202,6 +293,7 @@
                                ))"
              SkipNonexistentProjects="$(SkipNonexistentProjects)"
              SkipNonexistentTargets="$(SkipNonexistentTargets)"
+             StopOnFirstFailure="$(StopOnFirstFailure)"
              ContinueOnError="$([MSBuild]::ValueOrDefault('$(PublishContinueOnError)', '$(ContinueOnError)'))" />
   </Target>
 
