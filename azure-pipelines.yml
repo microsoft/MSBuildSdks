@@ -6,7 +6,6 @@ variables:
   BinaryLoggerArgs: '"/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
   BuildConfiguration: 'Debug'
   BuildPlatform: 'Any CPU'
-  DotNetCoreVersion: '3.1.300'
 
 trigger:
   batch: true
@@ -33,9 +32,9 @@ jobs:
     vmImage: windows-latest
   steps:
   - task: UseDotNet@2
-    displayName: 'Install .NET Core $(DotNetCoreVersion)'
+    displayName: 'Install .NET Core from globa.json'
     inputs:
-      version: '$(DotNetCoreVersion)'
+      useGlobalJson: true
 
   - task: MSBuild@1
     displayName: 'Build Solution'
