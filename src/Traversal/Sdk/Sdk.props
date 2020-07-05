@@ -8,6 +8,7 @@
 
   <PropertyGroup>
     <UsingMicrosoftTraversalSdk>true</UsingMicrosoftTraversalSdk>
+    <CustomAfterMicrosoftCommonCrossTargetingTargets>$(CustomAfterMicrosoftCommonCrossTargetingTargets);$(MSBuildThisFileDirectory)CapturedBuildOutputCrossTargetingTargets.targets</CustomAfterMicrosoftCommonCrossTargetingTargets>
   </PropertyGroup>
 
   <Import Project="$(CustomBeforeTraversalProps)" Condition=" '$(CustomBeforeTraversalProps)' != '' And Exists('$(CustomBeforeTraversalProps)') " />
