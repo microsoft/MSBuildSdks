@@ -1,0 +1,6 @@
+<!-- Overriding the common Build target to capture inner outputs: https://github.com/microsoft/msbuild/issues/2148. -->
+<Project>
+  <Target Name="Build" 
+          DependsOnTargets="_SetBuildInnerTarget;DispatchToInnerBuilds" 
+          Returns="@(InnerOutput)" />
+</Project>
