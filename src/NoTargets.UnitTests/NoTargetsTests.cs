@@ -20,6 +20,25 @@ namespace Microsoft.Build.NoTargets.UnitTests
     public class NoTargetsTests : MSBuildSdkTestBase
     {
         [Fact]
+        public void DoNotReferenceOutputAssemblies()
+        {
+            ProjectCreator projectA = ProjectCreator.Templates.SdkCsproj(
+                    path: Path.Combine(TestRootPath, "ProjectA", "ProjectA.csproj"),
+                    targetFramework: "netcoreapp2.1")
+                .Save();
+
+            ProjectCreator noTargetsProject = ProjectCreator.Templates.NoTargetsProject(
+                    path: Path.Combine(TestRootPath, "NoTargets", "NoTargets.csproj"),
+                    targetFramework: "net45")
+                .ItemProjectReference(projectA)
+                .Save();
+
+            noTargetsProject.TryRestore(out bool result, out BuildOutput buildOutput);
+
+            result.ShouldBeTrue(buildOutput.GetConsoleLog());
+        }
+
+        [Fact]
         public void EnableDefaultCompileItemsIsFalse()
         {
             ProjectCreator.Templates.NoTargetsProject(

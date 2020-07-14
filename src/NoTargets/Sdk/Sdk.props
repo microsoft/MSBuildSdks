@@ -24,7 +24,23 @@
     <!-- Disable default Compile and EmbeddedResource items for NoTargets projects -->
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+
+    <!--
+      NuGet should always restore Traversal projects with "PackageReference" style restore.  Setting this property will cause the right thing to happen even if there aren't any PackageReference items in the project.
+    -->
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
+
+  <ItemDefinitionGroup Condition=" '$(NoTargetsDoNotReferenceOutputAssemblies)' != 'false' ">
+    <ProjectReference>
+      <!--
+        Setting ReferenceOutputAssembly skips target framework cross-project validation in NuGet.  Since NoTargets projects don't define runtime
+        constraints like a target framework, there's no point in checking the compatibilty of project references.
+      -->
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+    </ProjectReference>
+  </ItemDefinitionGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" Condition=" '$(MicrosoftCommonPropsHasBeenImported)' != 'true' "/>
 
