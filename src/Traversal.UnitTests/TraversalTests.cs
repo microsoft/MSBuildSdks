@@ -303,8 +303,11 @@ namespace Microsoft.Build.Traversal.UnitTests
             result.ShouldBeTrue(customMessage: () => buildOutput.GetConsoleLog());
         }
 
-        [Fact]
-        public void CollectsProjectReferenceBuildTargetOutputs()
+        [Theory]
+        [InlineData(null)]
+        [InlineData("Build")]
+        [InlineData("Rebuild")]
+        public void CollectsProjectReferenceBuildTargetOutputs(string target)
         {
             string[] projects = new[]
             {
@@ -325,7 +328,7 @@ namespace Microsoft.Build.Traversal.UnitTests
                     parameters: new Dictionary<string, string>
                     {
                         ["Projects"] = subTraversalProject.FullPath,
-                        ["Targets"] = "Build"
+                        ["Targets"] = target
                     })
                 .TaskOutputItem("TargetOutputs", "CollectedOutputs")
                 .TaskMessage("%(CollectedOutputs.Identity)", MessageImportance.High)
@@ -342,6 +345,7 @@ namespace Microsoft.Build.Traversal.UnitTests
                                     .Target("Build", returns: "@(TestReturnItem)")
                                     .TargetItemGroup()
                                     .TargetItemInclude("TestReturnItem", "$(MSBuildThisFileName).dll")
+                                    .Target("Clean")
                                     .Save();
             }
         }

@@ -143,6 +143,8 @@
              ContinueOnError="$([MSBuild]::ValueOrDefault('$(CleanContinueOnError)', '$(ContinueOnError)'))" />
   </Target>
 
+  <Target Name="Rebuild" DependsOnTargets="$(RebuildDependsOn)" Returns="@(CollectedBuildOutput)" />
+
   <Target Name="Test"
           DependsOnTargets="$(TestDependsOn)"
           Condition=" '$(IsGraphBuild)' != 'true' ">
