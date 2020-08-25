@@ -18,6 +18,15 @@
     <OutputPath Condition=" '$(Configuration)' != '' And '$(Platform)' != '' ">bin\$(Configuration)\$(Platform)\</OutputPath>
   </PropertyGroup>
 
+  <!--
+    TargetFrameworks is used to convey that a project targets multiple frameworks.  Traversal does not support multi-targeting
+    but having this property set to a value can confuse NuGet leading to errors.  Setting the property to empty fixes an issue
+    where a user unknowningly sets it, breaking restore.  See also: https://github.com/microsoft/MSBuildSdks/issues/196
+  -->
+  <PropertyGroup>
+    <TargetFrameworks></TargetFrameworks>
+  </PropertyGroup>
+
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition=" Exists('$(MSBuildToolsPath)\Microsoft.Common.targets') " />
 
   <ItemGroup>

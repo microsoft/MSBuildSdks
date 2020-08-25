@@ -9,6 +9,7 @@ using Microsoft.Build.Utilities.ProjectCreation;
 using Shouldly;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnitTest.Common;
 using Xunit;
@@ -17,6 +18,53 @@ namespace Microsoft.Build.Traversal.UnitTests
 {
     public class TraversalTests : MSBuildSdkTestBase
     {
+        [Theory]
+        [InlineData(null)]
+        [InlineData("Build")]
+        [InlineData("Rebuild")]
+        public void CollectsProjectReferenceBuildTargetOutputs(string target)
+        {
+            string[] projects = new[]
+            {
+                GetSkeletonCSProjWithTargetOutputs("A"),
+                GetSkeletonCSProjWithTargetOutputs("B")
+            }.Select(i => i.FullPath).ToArray();
+
+            var subTraversalProject = ProjectCreator
+                .Templates
+                .TraversalProject(projects, path: GetTempFile("dirs.proj"))
+                .Save();
+
+            ProjectCreator
+                .Create(path: GetTempFile("root.proj"))
+                .Target("BuildTraversalProject")
+                .Task(
+                    "MSBuild",
+                    parameters: new Dictionary<string, string>
+                    {
+                        ["Projects"] = subTraversalProject.FullPath,
+                        ["Targets"] = target
+                    })
+                .TaskOutputItem("TargetOutputs", "CollectedOutputs")
+                .TaskMessage("%(CollectedOutputs.Identity)", MessageImportance.High)
+                .Save()
+                .TryBuild("BuildTraversalProject", out bool result, out BuildOutput buildOutput);
+
+            buildOutput.Messages.High.Count.ShouldBe(2, customMessage: () => buildOutput.GetConsoleLog());
+            buildOutput.Messages.High.ShouldContain("A.dll", customMessage: () => buildOutput.GetConsoleLog());
+            buildOutput.Messages.High.ShouldContain("B.dll", customMessage: () => buildOutput.GetConsoleLog());
+
+            ProjectCreator GetSkeletonCSProjWithTargetOutputs(string projectName)
+            {
+                return ProjectCreator.Templates.SdkCsproj(path: GetTempFile($"{projectName}.csproj"), sdk: string.Empty)
+                                    .Target("Build", returns: "@(TestReturnItem)")
+                                    .TargetItemGroup()
+                                    .TargetItemInclude("TestReturnItem", "$(MSBuildThisFileName).dll")
+                                    .Target("Clean")
+                                    .Save();
+            }
+        }
+
         [Theory]
         [InlineData("dirs.proj")]
         [InlineData("Dirs.proj")]
@@ -181,6 +229,29 @@ namespace Microsoft.Build.Traversal.UnitTests
                     : target);
         }
 
+        [Fact]
+        public void TargetFrameworksDoesNotBreakRestore()
+        {
+            string[] projects = new[]
+            {
+                ProjectCreator.Templates.SdkCsproj(
+                        path: Path.Combine(TestRootPath, "ProjectA", "ProjectA.csproj"),
+                        targetFramework: "net46")
+                    .Save(),
+            }.Select(i => i.FullPath).ToArray();
+
+            ProjectCreator
+                .Templates
+                .TraversalProject(
+                    projects,
+                    path: GetTempFile("dirs.proj"),
+                    customAction: creator => creator.Property("TargetFrameworks", "net45;net46"))
+                .Save()
+                .TryBuild("Restore", out bool result, out BuildOutput buildOutput);
+
+            result.ShouldBeTrue(customMessage: () => buildOutput.GetConsoleLog());
+        }
+
         [Theory]
         [InlineData("Property1=Value1", null, "Property1=Value1")]
         [InlineData("Property1=Value1", "Property2=Value2", "Property1=Value1;Property2=Value2")]
@@ -301,53 +372,6 @@ namespace Microsoft.Build.Traversal.UnitTests
                 .TryBuild("Clean", out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeTrue(customMessage: () => buildOutput.GetConsoleLog());
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("Build")]
-        [InlineData("Rebuild")]
-        public void CollectsProjectReferenceBuildTargetOutputs(string target)
-        {
-            string[] projects = new[]
-            {
-                GetSkeletonCSProjWithTargetOutputs("A"),
-                GetSkeletonCSProjWithTargetOutputs("B")
-            }.Select(i => i.FullPath).ToArray();
-
-            var subTraversalProject = ProjectCreator
-                .Templates
-                .TraversalProject(projects, path: GetTempFile("dirs.proj"))
-                .Save();
-
-            ProjectCreator
-                .Create(path: GetTempFile("root.proj"))
-                .Target("BuildTraversalProject")
-                .Task(
-                    "MSBuild",
-                    parameters: new Dictionary<string, string>
-                    {
-                        ["Projects"] = subTraversalProject.FullPath,
-                        ["Targets"] = target
-                    })
-                .TaskOutputItem("TargetOutputs", "CollectedOutputs")
-                .TaskMessage("%(CollectedOutputs.Identity)", MessageImportance.High)
-                .Save()
-                .TryBuild("BuildTraversalProject", out bool result, out BuildOutput buildOutput);
-
-            buildOutput.Messages.High.Count.ShouldBe(2, customMessage: () => buildOutput.GetConsoleLog());
-            buildOutput.Messages.High.ShouldContain("A.dll", customMessage: () => buildOutput.GetConsoleLog());
-            buildOutput.Messages.High.ShouldContain("B.dll", customMessage: () => buildOutput.GetConsoleLog());
-
-            ProjectCreator GetSkeletonCSProjWithTargetOutputs(string projectName)
-            {
-                return ProjectCreator.Templates.SdkCsproj(path: GetTempFile($"{projectName}.csproj"), sdk: string.Empty)
-                                    .Target("Build", returns: "@(TestReturnItem)")
-                                    .TargetItemGroup()
-                                    .TargetItemInclude("TestReturnItem", "$(MSBuildThisFileName).dll")
-                                    .Target("Clean")
-                                    .Save();
-            }
         }
     }
 }
