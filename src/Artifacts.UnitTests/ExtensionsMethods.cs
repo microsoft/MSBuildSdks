@@ -18,7 +18,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
                 new Dictionary<string, string>
                 {
                     { "DestinationFolder", destinationFolder },
-                    { "FileMatch", fileMatch }
+                    { "FileMatch", fileMatch },
                 },
                 condition);
         }
@@ -32,7 +32,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
                 new Dictionary<string, string>
                 {
                     { "DestinationFolder", destinationFolder },
-                    { "FileMatch", fileMatch }
+                    { "FileMatch", fileMatch },
                 },
                 condition);
         }

@@ -5,12 +5,6 @@
     <LangVersion>Latest</LangVersion>
     <BaseArtifactsPath>$(MSBuildThisFileDirectory)artifacts\</BaseArtifactsPath>
     <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
-    <DelaySign Condition="'$(SignType)' != ''">true</DelaySign>
-    <AssemblyOriginatorKeyFile Condition="'$(SignType)' == 'Real'">$(MSBuildThisFileDirectory)MicrosoftCorporation.snk</AssemblyOriginatorKeyFile>
-    <AssemblyOriginatorKeyFile Condition="'$(AssemblyOriginatorKeyFile)' == ''">$(MSBuildThisFileDirectory)Test.snk</AssemblyOriginatorKeyFile>
+    <NoWarn>$(NoWarn);NU5128;SA0001</NoWarn>
   </PropertyGroup>
 </Project>

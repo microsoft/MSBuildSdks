@@ -160,7 +160,7 @@ namespace Microsoft.Build.NoTargets.UnitTests
                 projectCollection: new ProjectCollection(
                     new Dictionary<string, string>
                     {
-                        ["DesignTimeBuild"] = "true"
+                        ["DesignTimeBuild"] = "true",
                     }),
                 customAction: creator =>
                 {
@@ -251,7 +251,7 @@ namespace Microsoft.Build.NoTargets.UnitTests
         {
             Dictionary<string, string> globalProperties = new Dictionary<string, string>
             {
-                ["DesignTimeBuild"] = bool.TrueString
+                ["DesignTimeBuild"] = bool.TrueString,
             };
 
             bool result;

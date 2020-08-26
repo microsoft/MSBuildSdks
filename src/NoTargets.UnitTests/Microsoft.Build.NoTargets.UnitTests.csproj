@@ -1,10 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" />
@@ -14,17 +12,12 @@
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\NoTargets\Microsoft.Build.NoTargets.csproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
+    <ProjectReference Include="..\NoTargets\Microsoft.Build.NoTargets.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\UnitTest.Common\UnitTest.Common.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <None Include="..\NoTargets\Sdk\Sdk.props" Link="Sdk\Sdk.props" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\NoTargets\Sdk\Sdk.targets" Link="Sdk\Sdk.targets" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
-
 </Project>

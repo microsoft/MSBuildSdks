@@ -36,7 +36,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                     path: Path.Combine(TestRootPath, $"test{extension}"),
                     projectCollection: new ProjectCollection(new Dictionary<string, string>
                     {
-                        ["DisableImplicitFrameworkReferences"] = "true"
+                        ["DisableImplicitFrameworkReferences"] = "true",
                     }),
                     projectCreator: creator => creator
                         .Property("EnableCentralPackageVersions", "true")
@@ -60,7 +60,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                     projectCollection: new ProjectCollection(new Dictionary<string, string>
                     {
                         ["EnableCentralPackageVersions"] = "false",
-                        ["DisableImplicitFrameworkReferences"] = "true"
+                        ["DisableImplicitFrameworkReferences"] = "true",
                     }),
                     projectCreator: creator => creator
                         .ItemPackageReference("Foo", "10.0.0")
@@ -72,7 +72,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                     .ToDictionary(i => i.EvaluatedInclude, i => i.GetMetadataValue("Version"))
                 .ShouldBe(new Dictionary<string, string>
                 {
-                    ["Foo"] = "10.0.0"
+                    ["Foo"] = "10.0.0",
                 });
 
             result.ShouldBeTrue(() => buildOutput.GetConsoleLog());
@@ -92,7 +92,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                     projectCollection: new ProjectCollection(new Dictionary<string, string>
                     {
                         ["DisableImplicitFrameworkReferences"] = "true",
-                        ["EnableGlobalPackageReferences"] = "false"
+                        ["EnableGlobalPackageReferences"] = "false",
                     }),
                     projectCreator: creator => creator
                         .ItemPackageReference("Foo")
@@ -105,7 +105,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                 .ShouldBe(
                     new Dictionary<string, string>
                     {
-                        ["Foo"] = "1.2.3"
+                        ["Foo"] = "1.2.3",
                     },
                     ignoreOrder: true);
 
@@ -125,14 +125,14 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                     path: Path.Combine(TestRootPath, $"test.{projectFileExtension}"),
                     projectCollection: new ProjectCollection(new Dictionary<string, string>
                     {
-                        ["DisableImplicitFrameworkReferences"] = "true"
+                        ["DisableImplicitFrameworkReferences"] = "true",
                     }),
                     projectCreator: creator => creator
                         .ItemPackageReference(
                             "Foo",
                             metadata: new Dictionary<string, string>
                             {
-                                ["VersionOverride"] = "9.0.1"
+                                ["VersionOverride"] = "9.0.1",
                             })
                         .Import(Path.Combine(Environment.CurrentDirectory, @"Sdk\Sdk.targets")))
                 .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput)
@@ -144,7 +144,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                     new Dictionary<string, string>
                     {
                         ["Foo"] = "9.0.1",
-                        ["Global1"] = "1.0.0"
+                        ["Global1"] = "1.0.0",
                     },
                     ignoreOrder: true);
 
@@ -161,7 +161,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                     path: Path.Combine(TestRootPath, "test.fsproj"),
                     projectCollection: new ProjectCollection(new Dictionary<string, string>
                     {
-                        ["UpdateImplicitFSharpCoreReference"] = "false"
+                        ["UpdateImplicitFSharpCoreReference"] = "false",
                     }),
                     targetFramework: "net46",
                     projectCreator: creator => creator
@@ -238,7 +238,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                     path: Path.Combine(TestRootPath, $"test{extension}"),
                     projectCollection: new ProjectCollection(new Dictionary<string, string>
                     {
-                        ["DisableImplicitFrameworkReferences"] = "true"
+                        ["DisableImplicitFrameworkReferences"] = "true",
                     }),
                     projectCreator: creator => creator
                         .Import(Path.Combine(Environment.CurrentDirectory, @"Sdk\Sdk.targets")))
@@ -326,7 +326,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                     projectCollection: new ProjectCollection(new Dictionary<string, string>
                     {
                         ["DisableImplicitFrameworkReferences"] = "true",
-                        ["EnablePackageVersionOverride"] = "false"
+                        ["EnablePackageVersionOverride"] = "false",
                     }),
                     projectCreator: creator => creator
                         .ItemPackageReference("Foo", "10.0.0")
@@ -393,7 +393,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                     path: Path.Combine(TestRootPath, $"test.{projectFileExtension}"),
                     projectCollection: new ProjectCollection(new Dictionary<string, string>
                     {
-                        ["DisableImplicitFrameworkReferences"] = "true"
+                        ["DisableImplicitFrameworkReferences"] = "true",
                     }),
                     projectCreator: creator => creator
                         .ItemPackageReference("Foo")
@@ -407,7 +407,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                 {
                     { "Foo", "1.2.3" },
                     { "Bar", "4.5.6" },
-                    { "Global1", "1.0.0" }
+                    { "Global1", "1.0.0" },
                 });
         }
 
@@ -425,14 +425,14 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                     projectCollection: new ProjectCollection(new Dictionary<string, string>
                     {
                         // EnablePackageVersionOverrideWithoutCentralVersion is true by default
-                        ["DisableImplicitFrameworkReferences"] = "true"
+                        ["DisableImplicitFrameworkReferences"] = "true",
                     }),
                     projectCreator: creator => creator
                         .ItemPackageReference(
                             "Orphan",
                             metadata: new Dictionary<string, string>
                             {
-                                ["VersionOverride"] = "1.0.0"
+                                ["VersionOverride"] = "1.0.0",
                             })
                         .Import(Path.Combine(Environment.CurrentDirectory, @"Sdk\Sdk.targets")))
                 .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput);
@@ -454,14 +454,14 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                     projectCollection: new ProjectCollection(new Dictionary<string, string>
                     {
                         ["DisableImplicitFrameworkReferences"] = "true",
-                        ["EnablePackageVersionOverrideWithoutCentralVersion"] = "false"
+                        ["EnablePackageVersionOverrideWithoutCentralVersion"] = "false",
                     }),
                     projectCreator: creator => creator
                         .ItemPackageReference(
                             "Orphan",
                             metadata: new Dictionary<string, string>
                             {
-                                ["VersionOverride"] = "1.0.0"
+                                ["VersionOverride"] = "1.0.0",
                             })
                         .Import(Path.Combine(Environment.CurrentDirectory, @"Sdk\Sdk.targets")))
                 .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput);
@@ -480,11 +480,11 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                     {
                         ["Foo"] = "1.2.3",
                         ["Bar"] = "4.5.6",
-                        ["NETStandard.Library"] = "2.0.0"
+                        ["NETStandard.Library"] = "2.0.0",
                     },
                     globalPackageReferences: new Dictionary<string, string>
                     {
-                        ["Global1"] = "1.0.0"
+                        ["Global1"] = "1.0.0",
                     })
                 .Save();
         }

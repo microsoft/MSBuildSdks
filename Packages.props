@@ -1,23 +1,23 @@
 <Project>
   <ItemGroup>
-    <PackageReference Update="Microsoft.Build" Version="16.5.0" />
-    <PackageReference Update="Microsoft.Build.Framework" Version="16.5.0" />
-    <PackageReference Update="Microsoft.Build.Utilities.Core" Version="16.5.0" />
-    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="16.6.1" />
-    <PackageReference Update="MSBuild.ProjectCreation" Version="1.4.2" />
+    <PackageReference Update="Microsoft.Build" Version="16.6.0" />
+    <PackageReference Update="Microsoft.Build.Framework" Version="16.6.0" />
+    <PackageReference Update="Microsoft.Build.Utilities.Core" Version="16.6.0" />
+    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="16.7.1" />
+    <PackageReference Update="MSBuild.ProjectCreation" Version="1.4.6" />
     <PackageReference Update="Shouldly" Version="3.0.2" />
     <PackageReference Update="xunit" Version="2.4.1" />
-    <PackageReference Update="xunit.runner.visualstudio" Version="2.4.1" />
+    <PackageReference Update="xunit.runner.visualstudio" Version="2.4.3" />
   </ItemGroup>
 
   <ItemGroup>
     <GlobalPackageReference Include="Microsoft.Build.Artifacts" Version="2.0.35" Condition="'$(EnableArtifacts)' != 'false'" />
     <GlobalPackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" Version="0.4.1" Condition="'$(EnableMicroBuild)' != 'false'" />
-    <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="3.1.91" Condition="'$(EnableGitVersioning)' != 'false'" />
+    <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="3.2.31" Condition="'$(EnableGitVersioning)' != 'false'" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(EnableStyleCop)' != 'false' ">
-    <GlobalPackageReference Include="StyleCop.Analyzers" Version="1.0.2" />
+    <GlobalPackageReference Include="StyleCop.Analyzers" Version="1.1.118" />
     <Compile Include="..\GlobalSuppressions.cs" Visible="False" />
     <AdditionalFiles Include="..\..\stylecop.json" Visible="False" />
   </ItemGroup>

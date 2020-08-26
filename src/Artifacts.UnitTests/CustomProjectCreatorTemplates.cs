@@ -38,19 +38,19 @@ namespace Microsoft.Build.Artifacts.UnitTests
 
         public static ProjectCreator ProjectWithArtifacts(
                     this ProjectCreatorTemplates templates,
-            string outputPath = null,
-            string artifactsPath = null,
-            string targetFramework = "net472",
-            bool? appendTargetFrameworkToOutputPath = true,
-            Action<ProjectCreator> customAction = null,
-            string path = null,
-            string defaultTargets = null,
-            string initialTargets = null,
-            string sdk = null,
-            string toolsVersion = null,
-            string treatAsLocalProperty = null,
-            ProjectCollection projectCollection = null,
-            NewProjectFileOptions? projectFileOptions = null)
+                    string outputPath = null,
+                    string artifactsPath = null,
+                    string targetFramework = "net472",
+                    bool? appendTargetFrameworkToOutputPath = true,
+                    Action<ProjectCreator> customAction = null,
+                    string path = null,
+                    string defaultTargets = null,
+                    string initialTargets = null,
+                    string sdk = null,
+                    string toolsVersion = null,
+                    string treatAsLocalProperty = null,
+                    ProjectCollection projectCollection = null,
+                    NewProjectFileOptions? projectFileOptions = null)
         {
             return ProjectCreator.Create(
                     path,

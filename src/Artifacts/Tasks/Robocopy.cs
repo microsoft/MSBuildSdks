@@ -208,7 +208,7 @@ namespace Microsoft.Build.Artifacts.Tasks
 
                 List<RobocopyMetadata> bucket = new List<RobocopyMetadata>
                 {
-                    masterItem
+                    masterItem,
                 };
 
                 allBuckets.Add(bucket);
