@@ -3,9 +3,13 @@ resources:
 
 variables:
   ArtifactsDirectoryName: 'artifacts'
-  BinaryLoggerArgs: '"/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
   BuildConfiguration: 'Debug'
   BuildPlatform: 'Any CPU'
+  DotNetCore2Version: '2.x'
+  DotNetCore3Version: '3.x'
+  DotNetCore5Version: '5.x'
+  MSBuildArgs: '"/p:Platform=$(BuildPlatform)" "/p:Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
+  SignType: 'Test'
 
 trigger:
   batch: true
@@ -32,24 +36,34 @@ jobs:
     vmImage: windows-latest
   steps:
   - task: UseDotNet@2
-    displayName: 'Install .NET Core from globa.json'
+    displayName: 'Install .NET Core $(DotNetCore2Version)'
     inputs:
-      useGlobalJson: true
+      version: '$(DotNetCore2Version)'
 
-  - task: MSBuild@1
+  - task: UseDotNet@2
+    displayName: 'Install .NET Core $(DotNetCore3Version)'
+    inputs:
+      version: '$(DotNetCore3Version)'
+
+  - task: UseDotNet@2
+    displayName: 'Install .NET Core $(DotNetCore5Version)'
+    inputs:
+      version: '$(DotNetCore5Version)'
+      includePreviewVersions: true
+
+  - task: DotNetCoreCLI@2
     displayName: 'Build Solution'
     inputs:
-      platform: '$(BuildPlatform)'
-      configuration: '$(BuildConfiguration)'
-      msbuildArguments: '$(BinaryLoggerArgs)'
+      command: 'build'
+      projects: 'MSBuildSdks.sln'
+      arguments: '$(MSBuildArgs)'
 
-  - task: VSTest@2
+  - task: DotNetCoreCLI@2
     displayName: 'Run Unit Tests'
     inputs:
-      testAssemblyVer2: |
-       **\*Tests.dll
-       !**\obj\**
-      runInParallel: false
+      command: 'test'
+      arguments: '--no-restore --no-build "/restore:false"'
+      testRunTitle: 'Unit Tests'
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifacts'

@@ -42,10 +42,10 @@ namespace Microsoft.Build.Artifacts.UnitTests
                     {
                         ["DestinationFolder"] = destination.FullName,
                         ["FileMatch"] = "*txt",
-                        [nameof(RobocopyMetadata.IsRecursive)] = "false"
-                    }
+                        [nameof(RobocopyMetadata.IsRecursive)] = "false",
+                    },
                 },
-                Sleep = duration => { }
+                Sleep = duration => { },
             };
 
             copyArtifacts.Execute().ShouldBeTrue(buildEngine.GetConsoleLog());
@@ -90,10 +90,10 @@ namespace Microsoft.Build.Artifacts.UnitTests
                     new MockTaskItem(source.FullName)
                     {
                         ["DestinationFolder"] = destination.FullName,
-                        ["FileMatch"] = "*exe *dll *exe.config"
-                    }
+                        ["FileMatch"] = "*exe *dll *exe.config",
+                    },
                 },
-                Sleep = duration => { }
+                Sleep = duration => { },
             };
 
             copyArtifacts.Execute().ShouldBeTrue(buildEngine.GetConsoleLog());
@@ -106,7 +106,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
                     "foo.dll",
                     "foo.exe",
                     "foo.exe.config",
-                    @"baz\baz.dll"
+                    @"baz\baz.dll",
                 }.Select(i => Path.Combine(destination.FullName, i)));
         }
 
@@ -141,10 +141,10 @@ namespace Microsoft.Build.Artifacts.UnitTests
                     new MockTaskItem(source.FullName)
                     {
                         ["DestinationFolder"] = destination.FullName,
-                        ["FileMatch"] = "foo.pdb"
-                    }
+                        ["FileMatch"] = "foo.pdb",
+                    },
                 },
-                Sleep = duration => { }
+                Sleep = duration => { },
             };
 
             copyArtifacts.Execute().ShouldBeTrue(buildEngine.GetConsoleLog());
@@ -189,10 +189,10 @@ namespace Microsoft.Build.Artifacts.UnitTests
                     new MockTaskItem(source.FullName)
                     {
                         ["DestinationFolder"] = destination.FullName,
-                        ["FileMatch"] = "foo.pdb"
-                    }
+                        ["FileMatch"] = "foo.pdb",
+                    },
                 },
-                Sleep = duration => { }
+                Sleep = duration => { },
             };
 
             copyArtifacts.Execute().ShouldBeTrue(buildEngine.GetConsoleLog());
@@ -202,7 +202,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
                 .ShouldBe(new[]
                 {
                     "foo.pdb",
-                    @"foo\foo\foo\foo.pdb"
+                    @"foo\foo\foo\foo.pdb",
                 }.Select(i => Path.Combine(destination.FullName, i)));
         }
     }

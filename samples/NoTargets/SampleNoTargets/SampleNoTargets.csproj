@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.Build.NoTargets/1.0.94">
+﻿<Project Sdk="Microsoft.Build.NoTargets/2.0.1">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>

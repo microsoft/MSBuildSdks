@@ -27,7 +27,7 @@ namespace Microsoft.Build.Traversal.UnitTests
             string[] projects = new[]
             {
                 GetSkeletonCSProjWithTargetOutputs("A"),
-                GetSkeletonCSProjWithTargetOutputs("B")
+                GetSkeletonCSProjWithTargetOutputs("B"),
             }.Select(i => i.FullPath).ToArray();
 
             var subTraversalProject = ProjectCreator
@@ -43,7 +43,7 @@ namespace Microsoft.Build.Traversal.UnitTests
                     parameters: new Dictionary<string, string>
                     {
                         ["Projects"] = subTraversalProject.FullPath,
-                        ["Targets"] = target
+                        ["Targets"] = target,
                     })
                 .TaskOutputItem("TargetOutputs", "CollectedOutputs")
                 .TaskMessage("%(CollectedOutputs.Identity)", MessageImportance.High)
@@ -131,7 +131,7 @@ namespace Microsoft.Build.Traversal.UnitTests
             ProjectCollection projectCollection = new ProjectCollection(new Dictionary<string, string>
             {
                 ["Property1"] = "6A120037EE0E4D36865F3301CC2ABBB8",
-                ["Property2"] = "8531F12EB990413BA95CD48A953F927E"
+                ["Property2"] = "8531F12EB990413BA95CD48A953F927E",
             });
 
             ProjectCreator
@@ -148,7 +148,7 @@ namespace Microsoft.Build.Traversal.UnitTests
             buildOutput.Messages.High.ShouldBe(
                 new[]
                 {
-                    "6A120037EE0E4D36865F3301CC2ABBB8 / 8531F12EB990413BA95CD48A953F927E"
+                    "6A120037EE0E4D36865F3301CC2ABBB8 / 8531F12EB990413BA95CD48A953F927E",
                 },
                 () => buildOutput.GetConsoleLog());
         }
@@ -172,7 +172,7 @@ namespace Microsoft.Build.Traversal.UnitTests
                     projects,
                     projectCollection: new ProjectCollection(new Dictionary<string, string>
                     {
-                        ["NoBuild"] = "true"
+                        ["NoBuild"] = "true",
                     }),
                     path: GetTempFile("dirs.proj"))
                 .Save()
@@ -267,7 +267,7 @@ namespace Microsoft.Build.Traversal.UnitTests
                             .Property("TraversalGlobalProperties", traversalGlobalProperties)
                             .ItemProjectReference("one.csproj", metadata: new Dictionary<string, string>
                             {
-                                ["AdditionalProperties"] = additionalProperties
+                                ["AdditionalProperties"] = additionalProperties,
                             });
                     })
                 .TryGetItems("ProjectReference", out IReadOnlyCollection<ProjectItem> items);
@@ -308,7 +308,7 @@ namespace Microsoft.Build.Traversal.UnitTests
                     new[]
                     {
                         "BF0C6E1044514FE3AE4B78EC308D6F45",
-                        "40869F4000B44D75A52AB305F24E0FDB"
+                        "40869F4000B44D75A52AB305F24E0FDB",
                     },
                     ignoreOrder: true,
                     customMessage: () => buildOutput.GetConsoleLog());
@@ -348,7 +348,7 @@ namespace Microsoft.Build.Traversal.UnitTests
         {
             Dictionary<string, string> globalProperties = new Dictionary<string, string>
             {
-                ["DesignTimeBuild"] = "true"
+                ["DesignTimeBuild"] = "true",
             };
 
             if (!string.IsNullOrWhiteSpace(configuration))
