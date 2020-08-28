@@ -72,31 +72,3 @@ stages:
         PathtoPublish: '$(ArtifactsDirectoryName)'
         ArtifactName: $(ArtifactsDirectoryName)
       condition: always()
-
-- stage:
-  displayName: 'Deploy'
-  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
-  jobs:
-  - deployment: 'NuGet'
-    displayName: 'Publish NuGet Packages'
-    pool:
-      vmImage: 'windows-latest'
-    environment: 'SlnGen-NuGet'
-    strategy:
-      runOnce:
-        deploy:
-          steps:
-          - task: NuGetCommand@2
-            displayName: 'Push NuGet Packages to nuget.org'
-            inputs:
-              command: 'push'
-              packagesToPush: '$(Pipeline.Workspace)/$(ArtifactsDirectoryName)/**/Microsoft.VisualStudio.SlnGen*.nupkg'
-              nuGetFeedType: 'external'
-              publishFeedCredentials: 'NuGet-1ES-Full'
-          - task: NuGetCommand@2
-            displayName: 'Push SlnGen.Corext'
-            inputs:
-              command: 'push'
-              packagesToPush: '$(Pipeline.Workspace)/$(ArtifactsDirectoryName)/**/SlnGen.Corext*.nupkg'
-              nuGetFeedType: 'external'
-              publishFeedCredentials: 'CloudBuild-Push'
