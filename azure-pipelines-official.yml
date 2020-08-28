@@ -1,0 +1,102 @@
+resources:
+- repo: self
+
+variables:
+  ArtifactsDirectoryName: 'artifacts'
+  BuildConfiguration: 'Release'
+  BuildPlatform: 'Any CPU'
+  DotNetCore3Version: '3.x'
+  DotNetCore5Version: '5.x'
+  MSBuildArgs: '"/p:Platform=$(BuildPlatform)" "/p:Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
+  SignType: 'Test'
+
+trigger:
+  batch: true
+  branches:
+    include:
+    - 'master'
+    - 'refs/tags/*'
+  paths:
+    exclude:
+    - '*.md'
+
+pr:
+  branches:
+    include:
+    - master
+    - 'rel/*'
+  paths:
+    exclude:
+    - '*.md'
+
+stages:
+- stage:
+  displayName: 'Build'
+  jobs:
+  - job: Build
+    displayName: 'Build'
+    pool:
+      name: VSEng-MicroBuildVS2019
+    steps:
+    - script: 'echo ##vso[task.setvariable variable=SignType;]Real'
+      displayName: 'Set SignType to Real for tagged commits'
+      condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/Microsoft.Build'))
+
+    - task: UseDotNet@2
+      displayName: 'Install .NET Core $(DotNetCore3Version)'
+      inputs:
+        version: '$(DotNetCore3Version)'
+
+    - task: UseDotNet@2
+      displayName: 'Install .NET Core $(DotNetCore5Version)'
+      inputs:
+        version: '$(DotNetCore5Version)'
+        includePreviewVersions: true
+
+    - task: MicroBuildSigningPlugin@1
+      displayName: 'Install MicroBuild Signing Plugin'
+      inputs:
+        signType: '$(SignType)'
+        zipSources: false
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Build Solution'
+      inputs:
+        command: 'build'
+        projects: 'MSBuildSdks.sln'
+        arguments: '$(MSBuildArgs)'
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifacts'
+      inputs:
+        PathtoPublish: '$(ArtifactsDirectoryName)'
+        ArtifactName: $(ArtifactsDirectoryName)
+      condition: always()
+
+- stage:
+  displayName: 'Deploy'
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
+  jobs:
+  - deployment: 'NuGet'
+    displayName: 'Publish NuGet Packages'
+    pool:
+      vmImage: 'windows-latest'
+    environment: 'SlnGen-NuGet'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: NuGetCommand@2
+            displayName: 'Push NuGet Packages to nuget.org'
+            inputs:
+              command: 'push'
+              packagesToPush: '$(Pipeline.Workspace)/$(ArtifactsDirectoryName)/**/Microsoft.VisualStudio.SlnGen*.nupkg'
+              nuGetFeedType: 'external'
+              publishFeedCredentials: 'NuGet-1ES-Full'
+          - task: NuGetCommand@2
+            displayName: 'Push SlnGen.Corext'
+            inputs:
+              command: 'push'
+              packagesToPush: '$(Pipeline.Workspace)/$(ArtifactsDirectoryName)/**/SlnGen.Corext*.nupkg'
+              nuGetFeedType: 'external'
+              publishFeedCredentials: 'CloudBuild-Push'
