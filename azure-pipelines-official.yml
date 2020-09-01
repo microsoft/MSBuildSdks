@@ -7,8 +7,8 @@ variables:
   BuildPlatform: 'Any CPU'
   DotNetCore3Version: '3.x'
   DotNetCore5Version: '5.x'
-  MSBuildArgs: '"/p:Platform=$(BuildPlatform)" "/p:Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
-  SignType: 'Test'
+  MSBuildArgs: '"/clp:v=n" "/p:Platform=$(BuildPlatform)" "/p:Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
+  SignType: 'Real'
 
 trigger:
   batch: true
