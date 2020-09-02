@@ -85,10 +85,20 @@
                       Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true'"
                       IsImplicitlyDefined="true" />
 
-    <!--
-      Store a list of <PackageReference /> items that specified a Version so that an error can be displayed.
+    <!-- 
+      Store a list of <PackageReference /> items that specified a Version
     -->
-    <_PackageReferenceWithVersion Include="@(PackageReference->HasMetadata('Version'))" Condition=" '$(AllowPackageReferenceWithVersion)' != 'true' "/>
+    <_OriginalPackageReferenceWithVersion Include="@(PackageReference->HasMetadata('Version'))"/>
+
+    <!-- 
+      Remove stored list of <PackageReference /> items that specified a Version if AllowPackageReferenceWithVersion is set to true
+    -->
+    <PackageReference Remove="@(_OriginalPackageReferenceWithVersion)" Condition=" '$(AllowPackageReferenceWithVersion)' == 'true' " />
+
+    <!--
+      Store a list of <PackageReference /> items that specified a Version again so that an error can be displayed.
+    -->
+    <_PackageReferenceWithVersion Include="@(PackageReference->HasMetadata('Version'))" />
 
     <!--
       Store a list of the original <PackageReference /> items so later they can be checked for duplicates in
@@ -195,6 +205,18 @@
       Text="The package reference '%(_PackageReferenceWithVersionOverrideButNoCentralVersion.Identity)' must have a version defined in '$(CentralPackagesFile)'."
       Condition=" @(_PackageReferenceWithVersionOverrideButNoCentralVersion->Count()) > 0 "
       File="$(MSBuildProjectFullPath)" />
+  </Target>
+
+  <Target Name="RestoreStoredPackageReferenceWithVersion"
+          AfterTargets="CheckPackageReferences"
+          Condition=" '$(AllowPackageReferenceWithVersion)' == 'true' AND @(_OriginalPackageReferenceWithVersion->Count()) > 0 ">
+
+    <!--
+      Restore original <PackageReference /> items that specified a Version when AllowPackageReferenceWithVersion is set to true.
+    -->
+    <ItemGroup>
+      <PackageReference Include="@(_StoredPackageReferenceWithVersion)" />
+    </ItemGroup>
   </Target>
 
   <!--
