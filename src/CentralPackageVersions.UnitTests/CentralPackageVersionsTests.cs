@@ -4,12 +4,16 @@
 
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Utilities.ProjectCreation;
+
 using Shouldly;
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+
 using UnitTest.Common;
+
 using Xunit;
 
 namespace Microsoft.Build.CentralPackageVersions.UnitTests
@@ -110,6 +114,28 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                     ignoreOrder: true);
 
             result.ShouldBeTrue(() => buildOutput.GetConsoleLog());
+        }
+
+        [Theory]
+        [InlineData(".csproj")]
+        [InlineData(".fsproj")]
+        [InlineData(".vbproj")]
+        public void CanAllowPackageReferenceWithVersion(string projectFileExtension)
+        {
+            ProjectCreator packagesProps = WritePackagesProps();
+
+            ProjectCreator.Templates
+                .SdkCsproj(
+                    path: Path.Combine(TestRootPath, $"test.{projectFileExtension}"),
+                    projectCreator: creator => creator
+                        .Property("AllowPackageReferenceWithVersion", "true")
+                        .ItemPackageReference("Foo", "10.0.0")
+                        .Import(Path.Combine(Environment.CurrentDirectory, @"Sdk\Sdk.targets")))
+                .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput);
+
+            result.ShouldBeTrue(() => buildOutput.GetConsoleLog());
+
+            buildOutput.Errors.ShouldBeEmpty();
         }
 
         [Theory]

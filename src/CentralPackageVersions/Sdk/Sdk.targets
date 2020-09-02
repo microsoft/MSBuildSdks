@@ -29,6 +29,12 @@
       Condition="'$(EnableCentralPackageVersions)' == '' And (!Exists('$(CentralPackagesFile)') Or Exists('$(MSBuildProjectDirectory)\packages.config') Or '$(MSBuildProjectExtension)' == '.vcxproj' Or '$(MSBuildProjectExtension)' == '.ccproj' Or '$(MSBuildProjectExtension)' == '.nuproj')">false</EnableCentralPackageVersions>
 
     <!--
+      Allow users to specify PacakgeReference with Version in project file without showing up in CentralPackagesFile
+    -->
+    <AllowPackageReferenceWithVersion
+      Condition=" '$(AllowPackageReferenceWithVersion)' == '' ">false</AllowPackageReferenceWithVersion>
+
+    <!--
       Include this file and the Packages.props file (if necessary) in MSBuildAllProjects so that rebuilds happen if the Packages.props changes.
     -->
     <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
@@ -82,7 +88,7 @@
     <!--
       Store a list of <PackageReference /> items that specified a Version so that an error can be displayed.
     -->
-    <_PackageReferenceWithVersion Include="@(PackageReference->HasMetadata('Version'))" />
+    <_PackageReferenceWithVersion Include="@(PackageReference->HasMetadata('Version'))" Condition=" '$(AllowPackageReferenceWithVersion)' != 'true' "/>
 
     <!--
       Store a list of the original <PackageReference /> items so later they can be checked for duplicates in
