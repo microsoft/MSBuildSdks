@@ -207,7 +207,7 @@
       File="$(MSBuildProjectFullPath)" />
   </Target>
 
-  <Target Name="RestoreStoredPackageReferenceWithVersion"
+  <Target Name="RestoreOriginalPackageReferenceWithVersion"
           AfterTargets="CheckPackageReferences"
           Condition=" '$(AllowPackageReferenceWithVersion)' == 'true' AND @(_OriginalPackageReferenceWithVersion->Count()) > 0 ">
 
@@ -215,7 +215,7 @@
       Restore original <PackageReference /> items that specified a Version when AllowPackageReferenceWithVersion is set to true.
     -->
     <ItemGroup>
-      <PackageReference Include="@(_StoredPackageReferenceWithVersion)" />
+      <PackageReference Include="@(_OriginalPackageReferenceWithVersion)" />
     </ItemGroup>
   </Target>
 
