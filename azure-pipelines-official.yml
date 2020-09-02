@@ -38,9 +38,24 @@ stages:
     pool:
       name: VSEng-MicroBuildVS2019
     steps:
-    - script: 'echo ##vso[task.setvariable variable=SignType;]Real'
-      displayName: 'Set SignType to Real for tagged commits'
+    - task: PowerShell@2
+      displayName: 'Update SignType, Build Number, and Add Build Tag for tagged commits'
       condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/Microsoft.Build'))
+      inputs:
+        targetType: 'inline'
+        script: |
+          Write-Host "Updating SignType to 'Real'"
+          Write-Host "##vso[task.setvariable variable=SignType;]Real"
+          Write-Host ""
+          $buildTag = [System.Text.RegularExpressions.Regex]::Match("$(Build.SourceBranchName)", "Microsoft\.Build\.[\w\.]+.*")
+          if($buildTag.Success -eq $true)
+          {
+              Write-Host "Updating VSTS build number to ""$buildTag"""
+              Write-Host "##vso[build.updatebuildnumber]$buildTag"
+              Write-Host ""
+              Write-Host "Adding build tag ""$buildTag"""
+              Write-Host "##vso[build.addbuildtag]$buildTag"
+          }
 
     - task: UseDotNet@2
       displayName: 'Install .NET Core $(DotNetCore3Version)'
