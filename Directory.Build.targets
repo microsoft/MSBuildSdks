@@ -4,10 +4,12 @@
   <PropertyGroup>
     <!-- Full symbols so that unit test assertions have more info -->
     <DebugType Condition=" '$(Configuration)' == 'Debug' ">Full</DebugType>
+    <MicroBuild_NuPkgSigningEnabled Condition="'$(SignType)' == 'Test'">false</MicroBuild_NuPkgSigningEnabled>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(SignType)' == 'Test'">
     <SignAssembly>true</SignAssembly>
+    <DelaySign Condition="'$(MicroBuild_SigningTargetsImported)' == 'true'">true</DelaySign>
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)Test.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
