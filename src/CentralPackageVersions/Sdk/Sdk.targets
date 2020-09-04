@@ -140,6 +140,14 @@
                       Condition=" '$(EnablePackageVersionOverride)' != 'false' "/>
 
     <!--
+      Override version of <PackageReference /> items that declared in CentralPackagesFile if AllowPackageReferenceWithVersion
+      is set to true.
+    -->
+    <PackageReference Update="@(_PackageReferenceWithVersion)"
+                      Version="%(_PackageReferenceWithVersion.Version)"
+                      Condition="'$(AllowPackageReferenceWithVersion)' == 'true'" />
+
+    <!--
       Clear the temporary list of package references with VersionOverride to free up some memory.
     -->
     <_PackageReferenceWithVersionOverride Remove="@(_PackageReferenceWithVersionOverride)" />
