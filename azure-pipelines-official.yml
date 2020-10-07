@@ -11,7 +11,7 @@ variables:
   SignType: 'Test'
 
 trigger:
-  batch: true
+  batch: 'true'
   branches:
     include:
     - 'master'

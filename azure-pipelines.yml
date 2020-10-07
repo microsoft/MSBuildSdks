@@ -5,14 +5,13 @@ variables:
   ArtifactsDirectoryName: 'artifacts'
   BuildConfiguration: 'Debug'
   BuildPlatform: 'Any CPU'
-  DotNetCore2Version: '2.x'
   DotNetCore3Version: '3.x'
   DotNetCore5Version: '5.x'
   MSBuildArgs: '"/p:Platform=$(BuildPlatform)" "/p:Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
   SignType: 'Test'
 
 trigger:
-  batch: true
+  batch: 'true'
   branches:
     include:
     - 'master'
@@ -35,11 +34,6 @@ jobs:
   pool:
     vmImage: windows-latest
   steps:
-  - task: UseDotNet@2
-    displayName: 'Install .NET Core $(DotNetCore2Version)'
-    inputs:
-      version: '$(DotNetCore2Version)'
-
   - task: UseDotNet@2
     displayName: 'Install .NET Core $(DotNetCore3Version)'
     inputs:
