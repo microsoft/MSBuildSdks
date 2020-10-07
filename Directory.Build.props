@@ -6,5 +6,6 @@
     <BaseArtifactsPath>$(MSBuildThisFileDirectory)artifacts\</BaseArtifactsPath>
     <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
     <NoWarn>$(NoWarn);NU5128;SA0001</NoWarn>
+    
   </PropertyGroup>
 </Project>
