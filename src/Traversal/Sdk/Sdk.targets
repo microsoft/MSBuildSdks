@@ -127,6 +127,7 @@
     <MSBuild Projects="@(ProjectReference)"
              Condition="'%(ProjectReference.Build)' != 'false'"
              BuildInParallel="$([MSBuild]::ValueOrDefault('%(ProjectReference.BuildInParallel)', '$(BuildInParallel)'))"
+             Properties="%(ProjectReference.SetConfiguration); %(ProjectReference.SetPlatform); %(ProjectReference.SetTargetFramework)"
              SkipNonexistentProjects="$(SkipNonexistentProjects)"
              SkipNonexistentTargets="$(SkipNonexistentTargets)"
              StopOnFirstFailure="$(StopOnFirstFailure)"
