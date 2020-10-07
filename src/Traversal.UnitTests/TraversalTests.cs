@@ -278,6 +278,73 @@ namespace Microsoft.Build.Traversal.UnitTests
         }
 
         [Theory]
+        [InlineData("Platform=x86", "x86", null, null, null, null)]
+        [InlineData(null, null, "Configuration=Debug", "Debug", null, null)]
+        [InlineData(null, null, null, null, "TargetFramework=net472", "net472")]
+        [InlineData("Platform=x64", "x64", "Configuration=Debug", "Debug", null, null)]
+        public void TraversalPreserveWellKnownProperties(string setPlatformMetadata, string expectedPlatform, string setConfigurationMetadata, string expectedConfiguration, string setTargetFrameworkMetadata, string expectedTargetFramework)
+        {
+            // Create a project that prints out its Platform, Configuration, and TargetFramework in the Build target.
+            string csProj = GetSkeletonCSProjWithMessageTasksPrintingWellKnownMetadata("A").FullPath;
+
+            // Create a traversal project that invokes the csproj.
+            ProjectCreator subTraversalProject = ProjectCreator
+                .Templates
+                .TraversalProject(
+                    path: GetTempFile("dirs.proj"),
+                    customAction: creator =>
+                    {
+                        var metadata = new Dictionary<string, string>();
+                        if (setPlatformMetadata != null)
+                        {
+                            metadata["SetPlatform"] = setPlatformMetadata;
+                        }
+
+                        if (setConfigurationMetadata != null)
+                        {
+                            metadata["SetConfiguration"] = setConfigurationMetadata;
+                        }
+
+                        if (setTargetFrameworkMetadata != null)
+                        {
+                            metadata["SetTargetFramework"] = setTargetFrameworkMetadata;
+                        }
+
+                        creator.ItemProjectReference(csProj, metadata: metadata);
+                    })
+                .Save()
+                .TryBuild("Build", out bool result, out BuildOutput buildOutput);
+
+            ProjectCreator GetSkeletonCSProjWithMessageTasksPrintingWellKnownMetadata(string projectName)
+            {
+                return ProjectCreator.Templates.SdkCsproj(path: GetTempFile($"{projectName}.csproj"), sdk: string.Empty)
+                    .Target("Build")
+                    .TaskMessage("Platform: $(Platform)")
+                    .TaskMessage("Configuration: $(Configuration)")
+                    .TaskMessage("TargetFramework: $(TargetFramework)")
+                    .Save();
+            }
+
+            // Verify we received three normal messages and that the csproj received the right properties from the traversal project.
+            buildOutput.Messages.Normal.Count().ShouldBe(3);
+
+            if (setPlatformMetadata != null)
+            {
+                buildOutput.Messages.Normal.ShouldContain($"Platform: {expectedPlatform}");
+            }
+
+            if (setConfigurationMetadata != null)
+            {
+                buildOutput.Messages.Normal.ShouldContain($"Configuration: {expectedConfiguration}");
+            }
+
+            if (setTargetFrameworkMetadata != null)
+            {
+                buildOutput.Messages.Normal.ShouldContain($"TargetFramework: {expectedTargetFramework}");
+            }
+        }
+
+        [Theory]
         [InlineData("Build")]
         [InlineData("Clean")]
         [InlineData("Pack")]
