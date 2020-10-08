@@ -229,5 +229,9 @@
   -->
   <Target Name="_CheckForInvalidConfigurationAndPlatform" />
 
+  <!-- For CPS/VS support. See https://github.com/dotnet/project-system/blob/master/src/Microsoft.VisualStudio.ProjectSystem.Managed/ProjectSystem/DesignTimeTargets/Microsoft.Managed.DesignTime.targets#L60 -->
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed\Microsoft.Managed.DesignTime.targets" 
+          Condition="'$(DebuggerFlavor)' == '' And Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed\Microsoft.Managed.DesignTime.targets')" />
+
   <Import Project="$(CustomAfterTraversalTargets)" Condition=" '$(CustomAfterTraversalTargets)' != '' And Exists('$(CustomAfterTraversalTargets)') " />
 </Project>

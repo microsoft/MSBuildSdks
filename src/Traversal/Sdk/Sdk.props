@@ -42,6 +42,9 @@
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
     </ProjectReference>
   </ItemDefinitionGroup>
+  
+  <!-- For CPS/VS support. Importing in .props allows any subsequent targets to redefine this if needed -->
+  <Target Name="CompileDesignTime" />
 
   <Import Project="$(CustomAfterTraversalProps)" Condition=" '$(CustomAfterTraversalProps)' != '' And Exists('$(CustomAfterTraversalProps)') " />
 </Project>
