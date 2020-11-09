@@ -12,7 +12,7 @@
 
   <Import Project="$(CustomBeforeTraversalProps)" Condition=" '$(CustomBeforeTraversalProps)' != '' And Exists('$(CustomBeforeTraversalProps)') " />
 
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition=" '$(MicrosoftCommonPropsHasBeenImported)' != 'true' And Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props') "/>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
     <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>

@@ -25,9 +25,16 @@
   -->
   <PropertyGroup>
     <TargetFrameworks></TargetFrameworks>
+
+    <EnableDefaultItems>false</EnableDefaultItems>
+
+    <!-- 
+      TargetFramework is required for restore and used to default to .NET Framework v4.5.  However, Traversal projects don't specify a version so it needs to be defaulted here.
+    -->
+    <TargetFramework Condition="'$(TargetFramework)' == ''">net45</TargetFramework>
   </PropertyGroup>
 
-  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition=" Exists('$(MSBuildToolsPath)\Microsoft.Common.targets') " />
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
   <ItemGroup>
     <ProjectReferenceTargets Remove="@(ProjectReferenceTargets)" />

@@ -1,6 +1,7 @@
 {
   "version": "1.0",
   "assemblyVersion": "1.0",
+  "buildNumberOffset": -1,
   "publicReleaseRefSpec": [
     "^refs/tags/Microsoft\\.Build.*"
   ],

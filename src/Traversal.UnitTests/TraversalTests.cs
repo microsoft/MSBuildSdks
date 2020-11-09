@@ -26,18 +26,26 @@ namespace Microsoft.Build.Traversal.UnitTests
         {
             string[] projects = new[]
             {
-                GetSkeletonCSProjWithTargetOutputs("A"),
-                GetSkeletonCSProjWithTargetOutputs("B"),
+                GetSkeletonCSProjWithTargetOutputs(@"A\A"),
+                GetSkeletonCSProjWithTargetOutputs(@"B\B"),
             }.Select(i => i.FullPath).ToArray();
 
             var subTraversalProject = ProjectCreator
                 .Templates
-                .TraversalProject(projects, path: GetTempFile("dirs.proj"))
+                .TraversalProject(projects, path: GetTempFile(@"dirs\dirs.proj"))
                 .Save();
 
             ProjectCreator
                 .Create(path: GetTempFile("root.proj"))
                 .Target("BuildTraversalProject")
+                .Task(
+                    "MSBuild",
+                    parameters: new Dictionary<string, string>
+                    {
+                        ["Projects"] = subTraversalProject.FullPath,
+                        ["Targets"] = "Restore",
+                        ["Properties"] = $"MSBuildRestoreSessionId={Guid.NewGuid():N}",
+                    })
                 .Task(
                     "MSBuild",
                     parameters: new Dictionary<string, string>
@@ -50,7 +58,6 @@ namespace Microsoft.Build.Traversal.UnitTests
                 .Save()
                 .TryBuild("BuildTraversalProject", out bool result, out BuildOutput buildOutput);
 
-            buildOutput.Messages.High.Count.ShouldBe(2, customMessage: () => buildOutput.GetConsoleLog());
             buildOutput.Messages.High.ShouldContain("A.dll", customMessage: () => buildOutput.GetConsoleLog());
             buildOutput.Messages.High.ShouldContain("B.dll", customMessage: () => buildOutput.GetConsoleLog());
 
