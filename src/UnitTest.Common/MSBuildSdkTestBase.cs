@@ -6,12 +6,41 @@ using Microsoft.Build.Utilities.ProjectCreation;
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 
 namespace UnitTest.Common
 {
     public abstract class MSBuildSdkTestBase : MSBuildTestBase, IDisposable
     {
+        private static readonly string ThisAssemblyDirectory = Path.GetDirectoryName(typeof(MSBuildSdkTestBase).Assembly.Location);
+
         private readonly string _testRootPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+
+        public MSBuildSdkTestBase()
+        {
+            string globalJson = Path.Combine(TestRootPath, "global.json");
+#if NET50
+            File.WriteAllText(
+                globalJson,
+                @"{
+   ""sdk"": {
+    ""version"": ""5.0.100-preview"",
+    ""rollForward"": ""latestMinor"",
+    ""allowPrerelease"": true
+  },
+}");
+#else
+            File.WriteAllText(
+                globalJson,
+                @"{
+   ""sdk"": {
+    ""version"": ""3.1.400"",
+    ""rollForward"": ""latestMinor""
+  }
+}");
+#endif
+            Environment.CurrentDirectory = TestRootPath;
+        }
 
         public string TestRootPath
         {
@@ -46,6 +75,8 @@ namespace UnitTest.Common
         {
             if (disposing)
             {
+                Environment.CurrentDirectory = ThisAssemblyDirectory;
+
                 if (Directory.Exists(TestRootPath))
                 {
                     Directory.Delete(TestRootPath, recursive: true);

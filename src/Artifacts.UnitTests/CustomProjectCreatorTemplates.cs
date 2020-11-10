@@ -2,6 +2,7 @@
 //
 // Licensed under the MIT license.
 
+using Microsoft.Build.Artifacts.Tasks;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Utilities.ProjectCreation;
 using System;
@@ -12,8 +13,9 @@ namespace Microsoft.Build.Artifacts.UnitTests
 {
     internal static class CustomProjectCreatorTemplates
     {
-        private static readonly string ArtifactsTaskAssembly = Path.Combine(Environment.CurrentDirectory, "Microsoft.Build.Artifacts.dll");
-        private static readonly string CurrentDirectory = Environment.CurrentDirectory;
+        private static readonly string ArtifactsTaskAssembly = typeof(Robocopy).Assembly.Location;
+
+        private static readonly string ThisAssemblyDirectory = Path.GetDirectoryName(ArtifactsTaskAssembly);
 
         public static ProjectCreator MultiTargetingProjectWithArtifacts(
             this ProjectCreatorTemplates templates,
@@ -28,12 +30,12 @@ namespace Microsoft.Build.Artifacts.UnitTests
                     path: path,
                     projectCreator: creator => creator
                         .Property("ArtifactsTaskAssembly", ArtifactsTaskAssembly)
-                        .Import(Path.Combine(CurrentDirectory, "build", "Microsoft.Build.Artifacts.props"), condition: "'$(TargetFramework)' != ''")
-                        .Import(Path.Combine(CurrentDirectory, "buildMultiTargeting", "Microsoft.Build.Artifacts.props"), condition: "'$(TargetFramework)' == ''")
-                        .Property("ArtifactsPath", artifactsPath.FullName)
+                        .Import(Path.Combine(ThisAssemblyDirectory, "build", "Microsoft.Build.Artifacts.props"), condition: "'$(TargetFramework)' != ''")
+                        .Import(Path.Combine(ThisAssemblyDirectory, "buildMultiTargeting", "Microsoft.Build.Artifacts.props"), condition: "'$(TargetFramework)' == ''")
+                        .Property("ArtifactsPath", artifactsPath?.FullName)
                         .CustomAction(customAction)
-                        .Import(Path.Combine(CurrentDirectory, "build", "Microsoft.Build.Artifacts.targets"), condition: "'$(TargetFramework)' != ''")
-                        .Import(Path.Combine(CurrentDirectory, "buildMultiTargeting", "Microsoft.Build.Artifacts.targets"), condition: "'$(TargetFramework)' == ''"));
+                        .Import(Path.Combine(ThisAssemblyDirectory, "build", "Microsoft.Build.Artifacts.targets"), condition: "'$(TargetFramework)' != ''")
+                        .Import(Path.Combine(ThisAssemblyDirectory, "buildMultiTargeting", "Microsoft.Build.Artifacts.targets"), condition: "'$(TargetFramework)' == ''"));
         }
 
         public static ProjectCreator ProjectWithArtifacts(
@@ -62,7 +64,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
                     projectCollection,
                     projectFileOptions)
                 .Property("ArtifactsTaskAssembly", ArtifactsTaskAssembly)
-                .Import(Path.Combine(CurrentDirectory, "build", "Microsoft.Build.Artifacts.props"))
+                .Import(Path.Combine(ThisAssemblyDirectory, "build", "Microsoft.Build.Artifacts.props"))
                 .Property("TargetFramework", targetFramework)
                 .Property("OutputPath", outputPath == null ? null : $"{outputPath.TrimEnd('\\')}\\")
                 .Property("AppendTargetFrameworkToOutputPath", appendTargetFrameworkToOutputPath.HasValue ? appendTargetFrameworkToOutputPath.ToString() : null)
@@ -71,7 +73,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
                 .CustomAction(customAction)
                 .Target("Build")
                 .Target("AfterBuild", afterTargets: "Build")
-                .Import(Path.Combine(CurrentDirectory, "build", "Microsoft.Build.Artifacts.targets"));
+                .Import(Path.Combine(ThisAssemblyDirectory, "build", "Microsoft.Build.Artifacts.targets"));
         }
 
         public static ProjectCreator SdkProjectWithArtifacts(
@@ -100,7 +102,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
                     projectCollection,
                     projectFileOptions)
                 .Property("ArtifactsTaskAssembly", ArtifactsTaskAssembly)
-                .Import(Path.Combine(CurrentDirectory, "Sdk", "Sdk.props"))
+                .Import(Path.Combine(ThisAssemblyDirectory, "Sdk", "Sdk.props"))
                 .Property("TargetFramework", targetFramework)
                 .Property("OutputPath", $"{outputPath.TrimEnd('\\')}\\")
                 .Property("AppendTargetFrameworkToOutputPath", appendTargetFrameworkToOutputPath.HasValue ? appendTargetFrameworkToOutputPath.ToString() : null)
@@ -109,7 +111,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
                 .CustomAction(customAction)
                 .Target("Build")
                 .Target("AfterBuild", afterTargets: "Build")
-                .Import(Path.Combine(CurrentDirectory, "Sdk", "Sdk.targets"));
+                .Import(Path.Combine(ThisAssemblyDirectory, "Sdk", "Sdk.targets"));
         }
     }
 }

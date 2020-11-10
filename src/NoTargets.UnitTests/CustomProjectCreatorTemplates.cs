@@ -12,6 +12,8 @@ namespace Microsoft.Build.NoTargets.UnitTests
 {
     public static class CustomProjectCreatorTemplates
     {
+        private static readonly string ThisAssemblyDirectory = Path.GetDirectoryName(typeof(CustomProjectCreatorTemplates).Assembly.Location);
+
         public static ProjectCreator NoTargetsProject(
             this ProjectCreatorTemplates templates,
             Action<ProjectCreator> customAction = null,
@@ -26,8 +28,6 @@ namespace Microsoft.Build.NoTargets.UnitTests
             IDictionary<string, string> globalProperties = null,
             NewProjectFileOptions? projectFileOptions = NewProjectFileOptions.None)
         {
-            string currentDirectory = Environment.CurrentDirectory;
-
             return ProjectCreator.Create(
                     path,
                     defaultTargets,
@@ -38,10 +38,10 @@ namespace Microsoft.Build.NoTargets.UnitTests
                     projectCollection,
                     projectFileOptions,
                     globalProperties)
-                .Import(Path.Combine(currentDirectory, "Sdk", "Sdk.props"))
+                .Import(Path.Combine(ThisAssemblyDirectory, "Sdk", "Sdk.props"))
                 .Property("TargetFramework", targetFramework)
                 .CustomAction(customAction)
-                .Import(Path.Combine(currentDirectory, "Sdk", "Sdk.targets"));
+                .Import(Path.Combine(ThisAssemblyDirectory, "Sdk", "Sdk.targets"));
         }
     }
 }
