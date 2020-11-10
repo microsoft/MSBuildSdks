@@ -56,7 +56,7 @@ namespace Microsoft.Build.Traversal.UnitTests
                 .TaskOutputItem("TargetOutputs", "CollectedOutputs")
                 .TaskMessage("%(CollectedOutputs.Identity)", MessageImportance.High)
                 .Save()
-                .TryBuild("BuildTraversalProject", out bool result, out BuildOutput buildOutput);
+                .TryBuild("BuildTraversalProject", out bool _, out BuildOutput buildOutput);
 
             buildOutput.Messages.High.ShouldContain("A.dll", customMessage: () => buildOutput.GetConsoleLog());
             buildOutput.Messages.High.ShouldContain("B.dll", customMessage: () => buildOutput.GetConsoleLog());
