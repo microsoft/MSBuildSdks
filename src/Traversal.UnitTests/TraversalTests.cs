@@ -26,13 +26,13 @@ namespace Microsoft.Build.Traversal.UnitTests
         {
             string[] projects = new[]
             {
-                GetSkeletonCSProjWithTargetOutputs("A"),
-                GetSkeletonCSProjWithTargetOutputs("B"),
+                GetSkeletonCSProjWithTargetOutputs(@"A\A"),
+                GetSkeletonCSProjWithTargetOutputs(@"B\B"),
             }.Select(i => i.FullPath).ToArray();
 
             var subTraversalProject = ProjectCreator
                 .Templates
-                .TraversalProject(projects, path: GetTempFile("dirs.proj"))
+                .TraversalProject(projects, path: GetTempFile(@"dirs\dirs.proj"))
                 .Save();
 
             ProjectCreator
@@ -43,14 +43,21 @@ namespace Microsoft.Build.Traversal.UnitTests
                     parameters: new Dictionary<string, string>
                     {
                         ["Projects"] = subTraversalProject.FullPath,
+                        ["Targets"] = "Restore",
+                        ["Properties"] = $"MSBuildRestoreSessionId={Guid.NewGuid():N}",
+                    })
+                .Task(
+                    "MSBuild",
+                    parameters: new Dictionary<string, string>
+                    {
+                        ["Projects"] = subTraversalProject.FullPath,
                         ["Targets"] = target,
                     })
                 .TaskOutputItem("TargetOutputs", "CollectedOutputs")
                 .TaskMessage("%(CollectedOutputs.Identity)", MessageImportance.High)
                 .Save()
-                .TryBuild("BuildTraversalProject", out bool result, out BuildOutput buildOutput);
+                .TryBuild("BuildTraversalProject", out bool _, out BuildOutput buildOutput);
 
-            buildOutput.Messages.High.Count.ShouldBe(2, customMessage: () => buildOutput.GetConsoleLog());
             buildOutput.Messages.High.ShouldContain("A.dll", customMessage: () => buildOutput.GetConsoleLog());
             buildOutput.Messages.High.ShouldContain("B.dll", customMessage: () => buildOutput.GetConsoleLog());
 
