@@ -99,7 +99,10 @@ namespace UnitTest.Common
                     Environment.SetEnvironmentVariable(environmentVariable.Key, environmentVariable.Value);
                 }
 
-                Environment.CurrentDirectory = _currentDirectoryBackup;
+                if (Directory.Exists(_currentDirectoryBackup))
+                {
+                    Environment.CurrentDirectory = _currentDirectoryBackup;
+                }
 
                 if (Directory.Exists(TestRootPath))
                 {
