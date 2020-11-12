@@ -138,6 +138,7 @@
              SkipNonexistentProjects="$(SkipNonexistentProjects)"
              SkipNonexistentTargets="$(SkipNonexistentTargets)"
              StopOnFirstFailure="$(StopOnFirstFailure)"
+             Targets="%(ProjectReference.Targets)"
              ContinueOnError="$(ContinueOnError)">
       <Output TaskParameter="TargetOutputs" ItemName="CollectedBuildOutput" />
     </MSBuild>
