@@ -121,6 +121,40 @@ namespace Microsoft.Build.Traversal.UnitTests
         }
 
         [Theory]
+        [InlineData(null, "F15898EAC7F347EA9011A752F0F4B81C")]
+        [InlineData("Build", "F15898EAC7F347EA9011A752F0F4B81C")]
+        [InlineData("Target1", "7D37800C941546489A320E1B2C0480BC")]
+        public void ProjectReferenceCanSpecifyTargets(string targets, string expected)
+        {
+            ProjectCreator projectA = ProjectCreator.Create(
+                    path: GetTempFile("ProjectA.csproj"))
+                .Target("Build")
+                    .TaskMessage("F15898EAC7F347EA9011A752F0F4B81C", MessageImportance.High)
+                .Target("Target1")
+                    .TaskMessage("7D37800C941546489A320E1B2C0480BC", MessageImportance.High)
+                .Save();
+
+            ProjectCreator
+                .Templates
+                .TraversalProject(
+                    path: GetTempFile("dirs.proj"),
+                    customAction: creator => creator.ItemProjectReference(projectA, metadata: new Dictionary<string, string>
+                    {
+                        ["Targets"] = targets,
+                    }))
+                .Save()
+                .TryBuild(out bool result, out BuildOutput buildOutput);
+
+            result.ShouldBeTrue();
+
+            buildOutput.Messages.High.ShouldBe(
+                new[]
+                {
+                    expected,
+                });
+        }
+
+        [Theory]
         [InlineData("Build")]
         [InlineData("Clean")]
         [InlineData("Pack")]
