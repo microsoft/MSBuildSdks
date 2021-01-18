@@ -32,6 +32,8 @@
       TargetFramework is required for restore and used to default to .NET Framework v4.5.  However, Traversal projects don't specify a version so it needs to be defaulted here.
     -->
     <TargetFramework Condition="'$(TargetFramework)' == ''">net45</TargetFramework>
+    <!-- We don't want to get any targeting pack references as traversal projects don't build anything. -->
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
   </PropertyGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
