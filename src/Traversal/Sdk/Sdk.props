@@ -30,7 +30,7 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
     
     <!-- Targeting packs shouldn't be referenced as traversal projects don't compile. -->
-    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <DisableImplicitFrameworkReferences Condition="'$(DisableImplicitFrameworkReferences)' == ''">true</DisableImplicitFrameworkReferences>
   </PropertyGroup>
 
   <ItemDefinitionGroup Condition=" '$(TraversalDoNotReferenceOutputAssemblies)' != 'false' ">
