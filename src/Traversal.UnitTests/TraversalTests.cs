@@ -72,6 +72,20 @@ namespace Microsoft.Build.Traversal.UnitTests
             }
         }
 
+        [Fact]
+        public void ImplicitFrameworkReferencesDisabledByDefault()
+        {
+            ProjectCreator
+                .Templates
+                .TraversalProject(
+                    new string[0],
+                    path: GetTempFile("dirs.proj"))
+                .Save()
+                .TryGetPropertyValue("DisableImplicitFrameworkReferences", out string disableImplicitFrameworkReferences);
+
+            disableImplicitFrameworkReferences.ShouldBe(bool.TrueString, StringCompareShould.IgnoreCase);
+        }
+
         [Theory]
         [InlineData("dirs.proj")]
         [InlineData("Dirs.proj")]

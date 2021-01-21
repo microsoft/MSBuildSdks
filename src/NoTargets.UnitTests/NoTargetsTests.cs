@@ -63,6 +63,18 @@ namespace Microsoft.Build.NoTargets.UnitTests
         }
 
         [Fact]
+        public void ImplicitFrameworkReferencesDisabledByDefault()
+        {
+            ProjectCreator noTargetsProject = ProjectCreator.Templates.NoTargetsProject(
+                    path: Path.Combine(TestRootPath, "NoTargets", "NoTargets.csproj"),
+                    targetFramework: "net45")
+                .Save()
+                .TryGetPropertyValue("DisableImplicitFrameworkReferences", out string disableImplicitFrameworkReferences);
+
+            disableImplicitFrameworkReferences.ShouldBe(bool.TrueString, StringCompareShould.IgnoreCase);
+        }
+
+        [Fact]
         public void IncludeBuildOutputIsFalseByDefault()
         {
             ProjectCreator.Templates.NoTargetsProject(

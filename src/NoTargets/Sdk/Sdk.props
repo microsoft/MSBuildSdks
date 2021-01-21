@@ -29,6 +29,9 @@
       NuGet should always restore Traversal projects with "PackageReference" style restore.  Setting this property will cause the right thing to happen even if there aren't any PackageReference items in the project.
     -->
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+
+    <!-- Targeting packs shouldn't be referenced as traversal projects don't compile. -->
+    <DisableImplicitFrameworkReferences Condition="'$(DisableImplicitFrameworkReferences)' == ''">true</DisableImplicitFrameworkReferences>
   </PropertyGroup>
 
   <ItemDefinitionGroup Condition=" '$(NoTargetsDoNotReferenceOutputAssemblies)' != 'false' ">
