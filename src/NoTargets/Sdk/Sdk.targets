@@ -47,6 +47,7 @@
       PrepareForBuild;
       PreBuildEvent;
       ResolveReferences;
+      Compile;
       GetTargetPath;
       PrepareForRun;
       IncrementalClean;
@@ -88,4 +89,6 @@
     <CallTarget Targets="$(TargetsTriggeredByCompilation)" Condition="'$(TargetsTriggeredByCompilation)' != ''" />
   </Target>
 
+  <Target Name="_GenerateCompileInputs" />
+  <Target Name="_GenerateCompileDependencyCache" />
 </Project>

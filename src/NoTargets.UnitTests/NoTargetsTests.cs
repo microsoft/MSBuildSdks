@@ -19,6 +19,61 @@ namespace Microsoft.Build.NoTargets.UnitTests
 {
     public class NoTargetsTests : MSBuildSdkTestBase
     {
+        [Theory]
+        [InlineData("BeforeCompile")]
+        [InlineData("AfterCompile")]
+        public void CompileIsExtensibleWithBeforeAfterTargets(string targetName)
+        {
+            ProjectCreator noTargetsProject = ProjectCreator.Templates.NoTargetsProject(
+                    path: Path.Combine(TestRootPath, "NoTargets", "NoTargets.csproj"),
+                    targetFramework: "net45")
+                .Target(targetName)
+                .TaskMessage("503CF1EBA6DC415F95F4DB630E7C1817", MessageImportance.High)
+                .Save();
+
+            noTargetsProject.TryBuild(restore: true, out bool result, out BuildOutput buildOutput);
+
+            result.ShouldBeTrue(buildOutput.GetConsoleLog());
+
+            buildOutput.Messages.High.ShouldContain("503CF1EBA6DC415F95F4DB630E7C1817", buildOutput.GetConsoleLog());
+        }
+
+        [Fact]
+        public void CoreCompileIsExtensibleWithCoreCompileDependsOn()
+        {
+            ProjectCreator noTargetsProject = ProjectCreator.Templates.NoTargetsProject(
+                    path: Path.Combine(TestRootPath, "NoTargets", "NoTargets.csproj"),
+                    targetFramework: "net45")
+                .Property("CoreCompileDependsOn", "$(CoreCompileDependsOn);TestThatCoreCompileIsExtensible")
+                .Target("TestThatCoreCompileIsExtensible")
+                .TaskMessage("35F1C217730445E0AC0F30E70F5C7826", MessageImportance.High)
+                .Save();
+
+            noTargetsProject.TryBuild(restore: true, out bool result, out BuildOutput buildOutput);
+
+            result.ShouldBeTrue(buildOutput.GetConsoleLog());
+
+            buildOutput.Messages.High.ShouldContain("35F1C217730445E0AC0F30E70F5C7826", buildOutput.GetConsoleLog());
+        }
+
+        [Fact]
+        public void CoreCompileIsExtensibleWithTargetsTriggeredByCompilation()
+        {
+            ProjectCreator noTargetsProject = ProjectCreator.Templates.NoTargetsProject(
+                    path: Path.Combine(TestRootPath, "NoTargets", "NoTargets.csproj"),
+                    targetFramework: "net45")
+                .Property("TargetsTriggeredByCompilation", "TestThatCoreCompileIsExtensible")
+                .Target("TestThatCoreCompileIsExtensible")
+                    .TaskMessage("D031211C98F1454CA47A424ADC86A8F7", MessageImportance.High)
+                .Save();
+
+            noTargetsProject.TryBuild(restore: true, out bool result, out BuildOutput buildOutput);
+
+            result.ShouldBeTrue(buildOutput.GetConsoleLog());
+
+            buildOutput.Messages.High.ShouldContain("D031211C98F1454CA47A424ADC86A8F7", buildOutput.GetConsoleLog());
+        }
+
         [Fact]
         public void DoNotReferenceOutputAssemblies()
         {
