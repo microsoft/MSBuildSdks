@@ -33,9 +33,14 @@
        * $(TargetFramworks) is specified in which case the artifacts are copied in the outer build
     -->
     <Artifact Include="$(DefaultArtifactsSource)"
-               DestinationFolder="$(ArtifactsPath)"
-               FileMatch="$([MSBuild]::ValueOrDefault($(DefaultArtifactsFileMatch), '*exe *dll *exe.config *nupkg'))"
-               DirExclude="ref" />
+              DestinationFolder="$(ArtifactsPath)"
+              FileMatch="$([MSBuild]::ValueOrDefault($(DefaultArtifactsFileMatch), '*exe *dll *exe.config *nupkg'))"
+              FileExclude="$(DefaultArtifactsFileExclude)"
+              DirExclude="$([MSBuild]::ValueOrDefault($(DefaultArtifactsDirExclude), 'ref'))"
+              IsRecursive="$(DefaultArtifactsIsRecursive)"
+              VerifyExists="$(DefaultArtifactsVerifyExists)"
+              AlwaysCopy="$(DefaultArtifactsAlwaysCopy)"
+              OnlyNewer="$(DefaultArtifactsOnlyNewer)" />
   </ItemGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.Build.Artifacts.Common.targets" />
