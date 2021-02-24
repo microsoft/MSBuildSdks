@@ -46,21 +46,35 @@ namespace Microsoft.Build.Artifacts.UnitTests
                 }.Select(i => Path.Combine(distribPath.FullName, i)));
         }
 
-        [Fact]
-        public void CanOverrideDefaultArtifactsSourcePath()
+        [Theory]
+        [InlineData("DefaultArtifactsSource", null, @"\", "Identity")]
+        [InlineData("DefaultArtifactsSource", "42393E0FE4594084BE617E5A5DED5E36", "42393E0FE4594084BE617E5A5DED5E36", "Identity")]
+        [InlineData("DefaultArtifactsFileMatch", null, "*exe *dll *exe.config *nupkg", "FileMatch")]
+        [InlineData("DefaultArtifactsFileMatch", "45E2284F4E554B6BA8458416F5F81AC3", "45E2284F4E554B6BA8458416F5F81AC3", "FileMatch")]
+        [InlineData("DefaultArtifactsFileExclude", null, "", "FileExclude")]
+        [InlineData("DefaultArtifactsFileExclude", "6A275AAD8DD14046BA5AA81AF13900CA", "6A275AAD8DD14046BA5AA81AF13900CA", "FileExclude")]
+        [InlineData("DefaultArtifactsDirExclude", null, "ref", "DirExclude")]
+        [InlineData("DefaultArtifactsDirExclude", "8BB2E704B4F040A1AD3503FA4216AC4B", "8BB2E704B4F040A1AD3503FA4216AC4B", "DirExclude")]
+        [InlineData("DefaultArtifactsIsRecursive", null, "", "IsRecursive")]
+        [InlineData("DefaultArtifactsIsRecursive", "2A7120386A494C7A976FF2CB35E36744", "2A7120386A494C7A976FF2CB35E36744", "IsRecursive")]
+        [InlineData("DefaultArtifactsVerifyExists", null, "", "VerifyExists")]
+        [InlineData("DefaultArtifactsVerifyExists", "1F9FEBDCAE54456B893B74E5EBE59FA4", "1F9FEBDCAE54456B893B74E5EBE59FA4", "VerifyExists")]
+        [InlineData("DefaultArtifactsAlwaysCopy", null, "", "AlwaysCopy")]
+        [InlineData("DefaultArtifactsAlwaysCopy", "A9CC65BE9CD04DA3B8B1573798F6AB1A", "A9CC65BE9CD04DA3B8B1573798F6AB1A", "AlwaysCopy")]
+        [InlineData("DefaultArtifactsOnlyNewer", null, "", "OnlyNewer")]
+        [InlineData("DefaultArtifactsOnlyNewer", "F51A2ADC8A654605ABCECCCDB5BE506A", "F51A2ADC8A654605ABCECCCDB5BE506A", "OnlyNewer")]
+        public void CanOverrideDefaultArtifacts(string propertyName, string actual, string expected, string metadataName)
         {
-            string customPath = Path.Combine(TestRootPath, "custom");
-
             string artifactsPath = Path.Combine(TestRootPath, "artifacts");
 
             ProjectCreator.Templates.ProjectWithArtifacts(
                     artifactsPath: artifactsPath)
-                .Property("DefaultArtifactsSource", customPath)
+                .Property(propertyName, actual)
                 .TryGetItems("Artifact", out IReadOnlyCollection<ProjectItem> artifactItems);
 
             ProjectItem artifactItem = artifactItems.ShouldHaveSingleItem();
 
-            artifactItem.EvaluatedInclude.ShouldBe(customPath);
+            artifactItem.GetMetadataValue(metadataName ?? propertyName).ShouldBe(expected ?? actual);
             artifactItem.GetMetadataValue("DestinationFolder").ShouldBe(artifactsPath);
         }
 

@@ -136,6 +136,12 @@ The following properties control artifacts staging:
 | `DefaultArtifactsSource` | The default path to use as a source for staging artifacts. | `$(OutputPath)` |
 | `ArtifactsPath` | The default path to use as a destination for staging artifacts | |
 | `DefaultArtifactsFileMatch` | The default filter to use for staging artifacts | `*exe *dll *exe.config` |
+| `DefaultArtifactsFileExclude` | The default file filter to exclude when staging artifacts | |
+| `DefaultArtifactsDirExclude` | The default directory filter to exclude when staging artifacts | `ref` |
+| `DefaultArtifactsIsRecursive` | Specifies whether or not default artifacts should be staged recursively | `true` |
+| `DefaultArtifactsVerifyExists` | Specifies whether or not default artifacts should be verified for existence before staging | `true` |
+| `DefaultArtifactsAlwaysCopy` | Specifies whether or not default artifacts should be copied even if the destination already exists | `false` |
+| `DefaultArtifactsOnlyNewer` | Specifies whether or not default artifacts should be copied only if the destnation exist and the source is newer | `false` |
 | `CopyArtifactsAfterTargets` | The target to run after for stating artifacts | `AfterBuild` |
 | `ArtifactsCopyRetryCount` | The number of times to retry copies | `$(CopyRetryCount)` |
 | `ArtifactsCopyRetryDelayMilliseconds` | The number of milliseconds to wait in between retries | `$(CopyRetryDelayMilliseconds)` |
