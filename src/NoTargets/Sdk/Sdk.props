@@ -32,6 +32,13 @@
 
     <!-- Targeting packs shouldn't be referenced as traversal projects don't compile. -->
     <DisableImplicitFrameworkReferences Condition="'$(DisableImplicitFrameworkReferences)' == ''">true</DisableImplicitFrameworkReferences>
+
+    <!-- Disable publish actions -->
+    <CopyBuildOutputToPublishDirectory Condition="'$(CopyBuildOutputToPublishDirectory)' == ''">false</CopyBuildOutputToPublishDirectory>
+    <CopyOutputSymbolsToPublishDirectory Condition="'$(CopyOutputSymbolsToPublishDirectory)' == ''">false</CopyOutputSymbolsToPublishDirectory>
+
+    <!-- Don't generate a deps file -->
+    <GenerateDependencyFile Condition="'$(GenerateDependencyFile)' == ''">false</GenerateDependencyFile>
   </PropertyGroup>
 
   <ItemDefinitionGroup Condition=" '$(NoTargetsDoNotReferenceOutputAssemblies)' != 'false' ">
@@ -45,11 +52,12 @@
     </ProjectReference>
   </ItemDefinitionGroup>
 
+  <Target Name="CreateManifestResourceNames" />
+
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" Condition=" '$(MicrosoftCommonPropsHasBeenImported)' != 'true' "/>
 
   <Import Project="$(CustomAfterNoTargetsProps)" Condition=" '$(CustomAfterNoTargetsProps)' != '' And Exists('$(CustomAfterNoTargetsProps)') " />
 
   <!-- For CPS/VS support. Importing in .props allows any subsequent targets to redefine this if needed -->
   <Target Name="CompileDesignTime" />
-  
 </Project>

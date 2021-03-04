@@ -220,6 +220,35 @@ namespace Microsoft.Build.NoTargets.UnitTests
         [Theory]
         [InlineData(".csproj")]
         [InlineData(".proj")]
+        public void PublishWithNoBuild(string projectExtension)
+        {
+            var f = ProjectCreator.Templates.NoTargetsProject(
+                    path: GetTempFileWithExtension(projectExtension),
+                    targetFramework: "netcoreapp3.1",
+                    customAction: creator =>
+                    {
+                        creator
+                            .Property("RuntimeIdentifier", "win-x64")
+                            .Property("Platforms", "x64")
+                            .Target("TakeAction", afterTargets: "Build")
+                                .TaskMessage("2EA26E6FC5C842B682AA26096A769E07", MessageImportance.High);
+                    })
+                .Save()
+                .TryBuild(restore: true, "Build", out bool buildResult, out BuildOutput buildOutput)
+                .TryBuild("Publish", new Dictionary<string, string> { ["NoBuild"] = "true" }, out bool publishResult, out BuildOutput publishOutput);
+
+            buildResult.ShouldBeTrue(() => buildOutput.GetConsoleLog());
+
+            buildOutput.Messages.High.ShouldContain("2EA26E6FC5C842B682AA26096A769E07");
+
+            publishResult.ShouldBeTrue(() => publishOutput.GetConsoleLog());
+
+            publishOutput.Messages.High.ShouldNotContain("2EA26E6FC5C842B682AA26096A769E07");
+        }
+
+        [Theory]
+        [InlineData(".csproj")]
+        [InlineData(".proj")]
         public void SimpleBuild(string projectExtension)
         {
             ProjectCreator.Templates.NoTargetsProject(
