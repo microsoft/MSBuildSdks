@@ -1,10 +1,10 @@
 <Project>
   <ItemGroup>
-    <PackageReference Update="Microsoft.Build" Version="16.6.0" />
-    <PackageReference Update="Microsoft.Build.Framework" Version="16.6.0" />
-    <PackageReference Update="Microsoft.Build.Utilities.Core" Version="16.6.0" />
+    <PackageReference Update="Microsoft.Build" Version="16.8.0" />
+    <PackageReference Update="Microsoft.Build.Framework" Version="16.8.0" />
+    <PackageReference Update="Microsoft.Build.Utilities.Core" Version="16.8.0" />
     <PackageReference Update="Microsoft.NET.Test.Sdk" Version="16.7.1" />
-    <PackageReference Update="MSBuild.ProjectCreation" Version="1.4.6" />
+    <PackageReference Update="MSBuild.ProjectCreation" Version="2.1.1" />
     <PackageReference Update="Shouldly" Version="3.0.2" />
     <PackageReference Update="xunit" Version="2.4.1" />
     <PackageReference Update="xunit.runner.visualstudio" Version="2.4.3" />
