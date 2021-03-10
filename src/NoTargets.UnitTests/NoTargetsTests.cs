@@ -237,11 +237,11 @@ namespace Microsoft.Build.NoTargets.UnitTests
                 .TryBuild(restore: true, "Build", out bool buildResult, out BuildOutput buildOutput)
                 .TryBuild("Publish", new Dictionary<string, string> { ["NoBuild"] = "true" }, out bool publishResult, out BuildOutput publishOutput);
 
-            buildResult.ShouldBeTrue(() => buildOutput.GetConsoleLog());
+            buildResult.ShouldBeTrue(buildOutput.GetConsoleLog());
 
             buildOutput.Messages.High.ShouldContain("2EA26E6FC5C842B682AA26096A769E07");
 
-            publishResult.ShouldBeTrue(() => publishOutput.GetConsoleLog());
+            publishResult.ShouldBeTrue(publishOutput.GetConsoleLog());
 
             publishOutput.Messages.High.ShouldNotContain("2EA26E6FC5C842B682AA26096A769E07");
         }
@@ -267,7 +267,7 @@ namespace Microsoft.Build.NoTargets.UnitTests
                 .Save()
                 .TryBuild("Build", out bool result, out BuildOutput buildOutput);
 
-            result.ShouldBeTrue(() => buildOutput.GetConsoleLog());
+            result.ShouldBeTrue(buildOutput.GetConsoleLog());
 
             buildOutput.Messages.High.ShouldContain("86F00AF59170450E9D687652D74A6394");
         }
@@ -367,7 +367,7 @@ namespace Microsoft.Build.NoTargets.UnitTests
                     .TryBuild(target, out result, out buildOutput);
             }
 
-            result.ShouldBeTrue(() => buildOutput.GetConsoleLog());
+            result.ShouldBeTrue(buildOutput.GetConsoleLog());
         }
 
         [Fact]
