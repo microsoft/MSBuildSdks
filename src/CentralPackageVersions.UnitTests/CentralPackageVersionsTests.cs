@@ -77,7 +77,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                     ["Foo"] = "10.0.0",
                 });
 
-            result.ShouldBeTrue(() => buildOutput.GetConsoleLog());
+            result.ShouldBeTrue(buildOutput.GetConsoleLog());
         }
 
         [Theory]
@@ -111,7 +111,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                     },
                     ignoreOrder: true);
 
-            result.ShouldBeTrue(() => buildOutput.GetConsoleLog());
+            result.ShouldBeTrue(buildOutput.GetConsoleLog());
         }
 
         [Theory]
@@ -150,7 +150,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                     },
                     ignoreOrder: true);
 
-            result.ShouldBeTrue(() => buildOutput.GetConsoleLog());
+            result.ShouldBeTrue(buildOutput.GetConsoleLog());
         }
 
         [Fact]
@@ -266,7 +266,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                         .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.targets")))
                 .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput);
 
-            result.ShouldBeFalse(() => buildOutput.GetConsoleLog());
+            result.ShouldBeFalse(buildOutput.GetConsoleLog());
 
             buildOutput.Errors.ShouldBe(new[] { $"The package reference \'Global1\' is already defined as a GlobalPackageReference in \'{packagesProps.FullPath}\'.  Individual projects do not need to include a PackageReference if a GlobalPackageReference is declared." });
         }
@@ -288,7 +288,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                         .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.targets")))
                 .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput);
 
-            result.ShouldBeFalse(() => buildOutput.GetConsoleLog());
+            result.ShouldBeFalse(buildOutput.GetConsoleLog());
 
             buildOutput.Errors.ShouldBe(new[] { $"The package reference \'Baz\' must have a version defined in \'{packagesProps.FullPath}\'." });
         }
@@ -309,7 +309,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                         .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.targets")))
                 .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput);
 
-            result.ShouldBeFalse(() => buildOutput.GetConsoleLog());
+            result.ShouldBeFalse(buildOutput.GetConsoleLog());
 
             buildOutput.Errors.ShouldBe(new[] { $"The package reference \'Foo\' should not specify a version.  Please specify the version in \'{packagesProps.FullPath}\' or set VersionOverride to override the centrally defined version." });
         }
@@ -335,7 +335,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                         .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.targets")))
                 .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput);
 
-            result.ShouldBeFalse(() => buildOutput.GetConsoleLog());
+            result.ShouldBeFalse(buildOutput.GetConsoleLog());
 
             buildOutput.Errors.ShouldBe(new[] { $"The package reference \'Foo\' should not specify a version.  Please specify the version in \'{packagesProps.FullPath}\'." });
         }
@@ -439,7 +439,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                         .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.targets")))
                 .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput);
 
-            result.ShouldBeTrue(() => buildOutput.GetConsoleLog());
+            result.ShouldBeTrue(buildOutput.GetConsoleLog());
         }
 
         [Theory]
@@ -468,7 +468,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                         .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.targets")))
                 .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput);
 
-            result.ShouldBeFalse(() => buildOutput.GetConsoleLog());
+            result.ShouldBeFalse(buildOutput.GetConsoleLog());
 
             buildOutput.Errors.ShouldBe(new[] { $"The package reference \'Orphan\' must have a version defined in \'{packagesProps.FullPath}\'." });
         }

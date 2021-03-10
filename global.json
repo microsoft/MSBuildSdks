@@ -1,10 +1,9 @@
 {
   "sdk": {
-    "version": "5.0.100-preview",
-    "rollForward": "latestMajor",
-    "allowPrerelease": true
+    "version": "5.0.200",
+    "rollForward": "latestMajor"
   },
   "msbuild-sdks": {
-    "Microsoft.Build.NoTargets": "2.0.1"
+    "Microsoft.Build.NoTargets": "3.0.4"
   }
 }

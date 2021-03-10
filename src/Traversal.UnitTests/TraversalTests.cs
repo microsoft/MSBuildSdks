@@ -58,8 +58,8 @@ namespace Microsoft.Build.Traversal.UnitTests
                 .Save()
                 .TryBuild("BuildTraversalProject", out bool _, out BuildOutput buildOutput);
 
-            buildOutput.Messages.High.ShouldContain("A.dll", customMessage: () => buildOutput.GetConsoleLog());
-            buildOutput.Messages.High.ShouldContain("B.dll", customMessage: () => buildOutput.GetConsoleLog());
+            buildOutput.Messages.High.ShouldContain("A.dll", buildOutput.GetConsoleLog());
+            buildOutput.Messages.High.ShouldContain("B.dll", buildOutput.GetConsoleLog());
 
             ProjectCreator GetSkeletonCSProjWithTargetOutputs(string projectName)
             {
@@ -198,14 +198,14 @@ namespace Microsoft.Build.Traversal.UnitTests
                 .Save()
                 .TryBuild(target, out bool result, out BuildOutput buildOutput);
 
-            result.ShouldBeTrue(customMessage: () => buildOutput.GetConsoleLog());
+            result.ShouldBeTrue(buildOutput.GetConsoleLog());
 
             buildOutput.Messages.High.ShouldBe(
                 new[]
                 {
                     "6A120037EE0E4D36865F3301CC2ABBB8 / 8531F12EB990413BA95CD48A953F927E",
                 },
-                () => buildOutput.GetConsoleLog());
+                buildOutput.GetConsoleLog());
         }
 
         [Fact]
@@ -233,10 +233,10 @@ namespace Microsoft.Build.Traversal.UnitTests
                 .Save()
                 .TryBuild("Publish", out bool result, out BuildOutput buildOutput);
 
-            result.ShouldBeTrue(customMessage: () => buildOutput.GetConsoleLog());
+            result.ShouldBeTrue(buildOutput.GetConsoleLog());
 
-            buildOutput.Messages.ShouldContain("20B044FEEC3E435D90CE721012C6577E", customMessage: () => buildOutput.GetConsoleLog());
-            buildOutput.Messages.ShouldNotContain("02CA9347E8BB4C5E856BC0903780CC9B", customMessage: () => buildOutput.GetConsoleLog());
+            buildOutput.Messages.ShouldContain("20B044FEEC3E435D90CE721012C6577E", buildOutput.GetConsoleLog());
+            buildOutput.Messages.ShouldNotContain("02CA9347E8BB4C5E856BC0903780CC9B", buildOutput.GetConsoleLog());
         }
 
         [Fact]
@@ -257,7 +257,7 @@ namespace Microsoft.Build.Traversal.UnitTests
                 .Save()
                 .TryBuild("Clean", out bool result, out BuildOutput buildOutput);
 
-            result.ShouldBeTrue(customMessage: () => buildOutput.GetConsoleLog());
+            result.ShouldBeTrue(buildOutput.GetConsoleLog());
         }
 
         [Theory]
@@ -304,7 +304,7 @@ namespace Microsoft.Build.Traversal.UnitTests
                 .Save()
                 .TryBuild("Restore", out bool result, out BuildOutput buildOutput);
 
-            result.ShouldBeTrue(customMessage: () => buildOutput.GetConsoleLog());
+            result.ShouldBeTrue(buildOutput.GetConsoleLog());
         }
 
         [Theory]
@@ -424,7 +424,7 @@ namespace Microsoft.Build.Traversal.UnitTests
                 .Save()
                 .TryBuild(target, out bool result, out BuildOutput buildOutput);
 
-            result.ShouldBeTrue(customMessage: () => buildOutput.GetConsoleLog());
+            result.ShouldBeTrue(buildOutput.GetConsoleLog());
 
             buildOutput.Messages.High.ShouldBe(
                     new[]
@@ -433,7 +433,7 @@ namespace Microsoft.Build.Traversal.UnitTests
                         "40869F4000B44D75A52AB305F24E0FDB",
                     },
                     ignoreOrder: true,
-                    customMessage: () => buildOutput.GetConsoleLog());
+                    buildOutput.GetConsoleLog());
         }
 
         [Theory]
@@ -493,7 +493,7 @@ namespace Microsoft.Build.Traversal.UnitTests
                 .Save()
                 .TryBuild("Clean", out bool result, out BuildOutput buildOutput);
 
-            result.ShouldBeTrue(customMessage: () => buildOutput.GetConsoleLog());
+            result.ShouldBeTrue(buildOutput.GetConsoleLog());
         }
     }
 }
