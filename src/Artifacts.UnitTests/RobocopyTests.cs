@@ -20,14 +20,14 @@ namespace Microsoft.Build.Artifacts.UnitTests
         {
             DirectoryInfo source = CreateFiles(
                 "source",
-                @"foo.txt",
-                @"foo.ini",
-                @"bar.txt",
-                @"bar\bar.pdb",
-                @"bar\bar.txt",
-                @"bar.cs",
-                @"baz\baz.dll",
-                @"baz\baz.txt");
+                "foo.txt",
+                "foo.ini",
+                "bar.txt",
+                Path.Combine("bar", "bar.pdb"),
+                Path.Combine("bar", "bar.txt"),
+                "bar.cs",
+                Path.Combine("baz", "baz.dll"),
+                Path.Combine("baz", "baz.txt"));
 
             DirectoryInfo destination = new DirectoryInfo(Path.Combine(TestRootPath, "destination"));
 
@@ -64,19 +64,19 @@ namespace Microsoft.Build.Artifacts.UnitTests
         {
             DirectoryInfo source = CreateFiles(
                 "source",
-                @"foo.txt",
-                @"foo.exe",
-                @"foo.exe.config",
-                @"foo.dll",
-                @"foo.pdb",
-                @"foo.xml",
-                @"foo.cs",
-                @"foo.ini",
-                @"bar.dll",
-                @"bar.pdb",
-                @"bar.xml",
-                @"bar.cs",
-                @"baz\baz.dll");
+                "foo.txt",
+                "foo.exe",
+                "foo.exe.config",
+                "foo.dll",
+                "foo.pdb",
+                "foo.xml",
+                "foo.cs",
+                "foo.ini",
+                "bar.dll",
+                "bar.pdb",
+                "bar.xml",
+                "bar.cs",
+                Path.Combine("baz", "baz.dll"));
 
             DirectoryInfo destination = new DirectoryInfo(Path.Combine(TestRootPath, "destination"));
 
@@ -106,7 +106,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
                     "foo.dll",
                     "foo.exe",
                     "foo.exe.config",
-                    @"baz\baz.dll",
+                    Path.Combine("baz", "baz.dll"),
                 }.Select(i => Path.Combine(destination.FullName, i)));
         }
 
@@ -115,19 +115,19 @@ namespace Microsoft.Build.Artifacts.UnitTests
         {
             DirectoryInfo source = CreateFiles(
                 "source",
-                @"foo.txt",
-                @"foo.exe",
-                @"foo.exe.config",
-                @"foo.dll",
-                @"foo.pdb",
-                @"foo.xml",
-                @"foo.cs",
-                @"foo.ini",
-                @"bar.dll",
-                @"bar.pdb",
-                @"bar.xml",
-                @"bar.cs",
-                @"baz\baz.dll");
+                "foo.txt",
+                "foo.exe",
+                "foo.exe.config",
+                "foo.dll",
+                "foo.pdb",
+                "foo.xml",
+                "foo.cs",
+                "foo.ini",
+                "bar.dll",
+                "bar.pdb",
+                "bar.xml",
+                "bar.cs",
+                Path.Combine("baz", "baz.dll"));
 
             DirectoryInfo destination = new DirectoryInfo(Path.Combine(TestRootPath, "destination"));
 
@@ -174,8 +174,8 @@ namespace Microsoft.Build.Artifacts.UnitTests
                 @"bar.pdb",
                 @"bar.xml",
                 @"bar.cs",
-                @"baz\baz.dll",
-                @"foo\foo\foo\foo.pdb");
+                Path.Combine("baz", "baz.dll"),
+                Path.Combine("foo", "foo", "foo", "foo.pdb"));
 
             DirectoryInfo destination = new DirectoryInfo(Path.Combine(TestRootPath, "destination"));
 
@@ -202,7 +202,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
                 .ShouldBe(new[]
                 {
                     "foo.pdb",
-                    @"foo\foo\foo\foo.pdb",
+                    Path.Combine("foo", "foo", "foo", "foo.pdb"),
                 }.Select(i => Path.Combine(destination.FullName, i)));
         }
     }
