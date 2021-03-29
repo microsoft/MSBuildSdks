@@ -85,11 +85,6 @@ jobs:
     vmImage: ubuntu-latest
   steps:
   - task: UseDotNet@2
-    displayName: 'Install .NET Core $(DotNetCore3Version)'
-    inputs:
-      version: '$(DotNetCore3Version)'
-
-  - task: UseDotNet@2
     displayName: 'Install .NET Core $(DotNetCore5Version)'
     inputs:
       version: '$(DotNetCore5Version)'
@@ -107,13 +102,6 @@ jobs:
       arguments: '--no-restore --no-build --framework net5.0 "/restore:false"'
       testRunTitle: 'Linux .NET v5.0'
 
-  - task: DotNetCoreCLI@2
-    displayName: 'Run Unit Tests (.NET Core)'
-    inputs:
-      command: 'test'
-      arguments: '--no-restore --no-build --framework netcoreapp3.1 "/restore:false"'
-      testRunTitle: 'Linux .NET Core v3.1'
-
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifacts'
     inputs:
@@ -126,11 +114,6 @@ jobs:
   pool:
     vmImage: macOS-latest
   steps:
-  - task: UseDotNet@2
-    displayName: 'Install .NET Core $(DotNetCore3Version)'
-    inputs:
-      version: '$(DotNetCore3Version)'
-
   - task: UseDotNet@2
     displayName: 'Install .NET Core $(DotNetCore5Version)'
     inputs:
@@ -149,12 +132,6 @@ jobs:
       arguments: '--no-restore --no-build --framework net5.0 "/restore:false"'
       testRunTitle: 'MacOS .NET v5.0'
 
-  - task: DotNetCoreCLI@2
-    displayName: 'Run Unit Tests (.NET Core)'
-    inputs:
-      command: 'test'
-      arguments: '--no-restore --no-build --framework netcoreapp3.1 "/restore:false"'
-      testRunTitle: 'MacOS .NET Core v3.1'
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifacts'
