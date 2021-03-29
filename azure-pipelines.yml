@@ -29,8 +29,8 @@ pr:
     - '*.md'
 
 jobs:
-- job: BuildAndTest
-  displayName: 'Build and Test'
+- job: WindowsBuild
+  displayName: 'Build and Test (Windows)'
   pool:
     vmImage: windows-latest
   steps:
@@ -43,7 +43,6 @@ jobs:
     displayName: 'Install .NET Core $(DotNetCore5Version)'
     inputs:
       version: '$(DotNetCore5Version)'
-      includePreviewVersions: true
 
   - task: DotNetCoreCLI@2
     displayName: 'Build Solution'
@@ -57,25 +56,86 @@ jobs:
     inputs:
       command: 'test'
       arguments: '--no-restore --no-build --framework net5.0 "/restore:false"'
-      testRunTitle: '.NET v5.0'
+      testRunTitle: 'Windows .NET v5.0'
 
   - task: DotNetCoreCLI@2
     displayName: 'Run Unit Tests (.NET Framework)'
     inputs:
       command: 'test'
       arguments: '--no-restore --no-build --framework net472 "/restore:false"'
-      testRunTitle: '.NET Framework v4.7.2'
+      testRunTitle: 'Windows .NET Framework v4.7.2'
 
   - task: DotNetCoreCLI@2
     displayName: 'Run Unit Tests (.NET Core)'
     inputs:
       command: 'test'
       arguments: '--no-restore --no-build --framework netcoreapp3.1 "/restore:false"'
-      testRunTitle: '.NET Core v3.1'
+      testRunTitle: 'Windows .NET Core v3.1'
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifacts'
     inputs:
       PathtoPublish: '$(ArtifactsDirectoryName)'
-      ArtifactName: $(ArtifactsDirectoryName)
+      ArtifactName: '$(ArtifactsDirectoryName)-win'
+    condition: always()
+
+- job: LinuxBuild
+  displayName: 'Build and Test (Linux)'
+  pool:
+    vmImage: ubuntu-latest
+  steps:
+  - task: UseDotNet@2
+    displayName: 'Install .NET Core $(DotNetCore5Version)'
+    inputs:
+      version: '$(DotNetCore5Version)'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'dotnet build'
+    inputs:
+      command: 'build'
+      arguments: '-property:"Platform=$(BuildPlatform);Configuration=$(BuildConfiguration)"'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Run Unit Tests (.NET 5)'
+    inputs:
+      command: 'test'
+      arguments: '--no-restore --no-build --framework net5.0 "/restore:false"'
+      testRunTitle: 'Linux .NET v5.0'
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifacts'
+    inputs:
+      PathtoPublish: '$(ArtifactsDirectoryName)'
+      ArtifactName: '$(ArtifactsDirectoryName)-linux'
+    condition: always()
+
+- job: MacOSBuild
+  displayName: 'Build and Test (Mac)'
+  pool:
+    vmImage: macOS-latest
+  steps:
+  - task: UseDotNet@2
+    displayName: 'Install .NET Core $(DotNetCore5Version)'
+    inputs:
+      version: '$(DotNetCore5Version)'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'dotnet build'
+    inputs:
+      command: 'build'
+      arguments: '-property:"Platform=$(BuildPlatform);Configuration=$(BuildConfiguration)"'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Run Unit Tests (.NET 5)'
+    inputs:
+      command: 'test'
+      arguments: '--no-restore --no-build --framework net5.0 "/restore:false"'
+      testRunTitle: 'MacOS .NET v5.0'
+
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifacts'
+    inputs:
+      PathtoPublish: '$(ArtifactsDirectoryName)'
+      ArtifactName: '$(ArtifactsDirectoryName)-macOS'
     condition: always()
