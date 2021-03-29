@@ -101,18 +101,18 @@ jobs:
       arguments: '-property:"Platform=$(BuildPlatform);Configuration=$(BuildConfiguration)"'
 
   - task: DotNetCoreCLI@2
-    displayName: 'Run Unit Tests (.NET Core)'
-    inputs:
-      command: 'test'
-      arguments: '--no-restore --no-build --framework netcoreapp3.1 "/restore:false"'
-      testRunTitle: 'Linux .NET Core v3.1'
-
-  - task: DotNetCoreCLI@2
     displayName: 'Run Unit Tests (.NET 5)'
     inputs:
       command: 'test'
       arguments: '--no-restore --no-build --framework net5.0 "/restore:false"'
       testRunTitle: 'Linux .NET v5.0'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Run Unit Tests (.NET Core)'
+    inputs:
+      command: 'test'
+      arguments: '--no-restore --no-build --framework netcoreapp3.1 "/restore:false"'
+      testRunTitle: 'Linux .NET Core v3.1'
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifacts'
@@ -143,18 +143,18 @@ jobs:
       arguments: '-property:"Platform=$(BuildPlatform);Configuration=$(BuildConfiguration)"'
 
   - task: DotNetCoreCLI@2
-    displayName: 'Run Unit Tests (.NET Core)'
-    inputs:
-      command: 'test'
-      arguments: '--no-restore --no-build --framework netcoreapp3.1 "/restore:false"'
-      testRunTitle: 'MacOS .NET Core v3.1'
-
-  - task: DotNetCoreCLI@2
     displayName: 'Run Unit Tests (.NET 5)'
     inputs:
       command: 'test'
       arguments: '--no-restore --no-build --framework net5.0 "/restore:false"'
       testRunTitle: 'MacOS .NET v5.0'
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Run Unit Tests (.NET Core)'
+    inputs:
+      command: 'test'
+      arguments: '--no-restore --no-build --framework netcoreapp3.1 "/restore:false"'
+      testRunTitle: 'MacOS .NET Core v3.1'
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifacts'
