@@ -120,7 +120,7 @@ namespace Microsoft.Build.NoTargets.UnitTests
         [Fact]
         public void ImplicitFrameworkReferencesDisabledByDefault()
         {
-            ProjectCreator noTargetsProject = ProjectCreator.Templates.NoTargetsProject(
+            ProjectCreator.Templates.NoTargetsProject(
                     path: Path.Combine(TestRootPath, "NoTargets", "NoTargets.csproj"),
                     targetFramework: "net45")
                 .Save()
@@ -222,7 +222,7 @@ namespace Microsoft.Build.NoTargets.UnitTests
         [InlineData(".proj")]
         public void PublishWithNoBuild(string projectExtension)
         {
-            var f = ProjectCreator.Templates.NoTargetsProject(
+            ProjectCreator.Templates.NoTargetsProject(
                     path: GetTempFileWithExtension(projectExtension),
                     targetFramework: "netcoreapp3.1",
                     customAction: creator =>
@@ -281,11 +281,12 @@ namespace Microsoft.Build.NoTargets.UnitTests
                 Path.Combine(TestRootPath, "sdkstyle", "sdkstyle.csproj"),
                 targetFramework: "net472")
                 .Save();
-
+#if NETFRAMEWORK
             ProjectCreator legacyReference = ProjectCreator.Templates.LegacyCsproj(
                     Path.Combine(TestRootPath, "legacy", "legacy.csproj"),
                     targetFrameworkVersion: "v4.7.2")
                 .Save();
+#endif
 
             ProjectCreator noTargets = ProjectCreator.Templates.NoTargetsProject(
                 path: Path.Combine(TestRootPath, "notargets", "notargets.csproj"),
@@ -293,7 +294,9 @@ namespace Microsoft.Build.NoTargets.UnitTests
                 customAction: creator =>
                 {
                     creator.ItemProjectReference(sdkReference, referenceOutputAssembly: false);
+#if NETFRAMEWORK
                     creator.ItemProjectReference(legacyReference, referenceOutputAssembly: false);
+#endif
                 }).Save();
 
             ProjectCreator project = ProjectCreator.Templates.SdkCsproj(
