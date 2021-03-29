@@ -3,6 +3,7 @@
 // Licensed under the MIT license.
 
 using Microsoft.Build.Evaluation;
+using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities.ProjectCreation;
 using Shouldly;
 using System.Collections.Generic;
@@ -10,6 +11,7 @@ using System.IO;
 using System.Linq;
 using UnitTest.Common;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.Build.Artifacts.UnitTests
 {
@@ -89,25 +91,24 @@ namespace Microsoft.Build.Artifacts.UnitTests
         [Fact]
         public void DefaultArtifactsUseOutputPath()
         {
-            DirectoryInfo baseOutputPath = CreateFiles(@"bin\Debug");
+            DirectoryInfo baseOutputPath = CreateFiles(
+                    Path.Combine("bin", "Debug", "net472"),
+                    "foo.exe",
+                    "foo.pdb",
+                    "foo.exe.config",
+                    "bar.dll",
+                    "bar.pdb",
+                    "bar.cs");
 
             CreateFiles(
-                Path.Combine(baseOutputPath.FullName, "net472"),
-                "foo.exe",
-                "foo.pdb",
-                "foo.exe.config",
-                "bar.dll",
-                "bar.pdb",
-                "bar.cs");
-
-            CreateFiles(
-                Path.Combine(baseOutputPath.FullName, "net472", "ref"),
+                Path.Combine(baseOutputPath.FullName, "ref"),
                 "bar.dll");
 
             DirectoryInfo artifactsPath = new DirectoryInfo(Path.Combine(TestRootPath, "artifacts"));
 
             ProjectCreator.Templates.ProjectWithArtifacts(
                 outputPath: baseOutputPath.FullName,
+                appendTargetFrameworkToOutputPath: false,
                 artifactsPath: artifactsPath.FullName)
                 .TryGetItems("Artifact", out IReadOnlyCollection<ProjectItem> artifactItems)
                 .TryBuild(out bool result, out BuildOutput buildOutput);
@@ -121,19 +122,21 @@ namespace Microsoft.Build.Artifacts.UnitTests
 
             artifactsPath.GetFiles("*", SearchOption.AllDirectories)
                 .Select(i => i.FullName)
-                .ShouldBe(new[]
-                {
-                    @"net472\bar.dll",
-                    @"net472\foo.exe",
-                    @"net472\foo.exe.config",
-                }.Select(i => Path.Combine(artifactsPath.FullName, i)));
+                .ShouldBe(
+                    new[]
+                    {
+                        "bar.dll",
+                        "foo.exe",
+                        "foo.exe.config",
+                    }.Select(i => Path.Combine(artifactsPath.FullName, i)),
+                    ignoreOrder: true);
         }
 
         [Fact]
         public void DefaultArtifactsUseOutputPathWithAppendTargetFrameworkToOutputPathFalse()
         {
             DirectoryInfo outputPath = CreateFiles(
-                @"bin\Debug",
+                Path.Combine("bin", "Debug"),
                 "foo.exe",
                 "foo.pdb",
                 "foo.exe.config",
@@ -161,9 +164,9 @@ namespace Microsoft.Build.Artifacts.UnitTests
                 .Select(i => i.FullName)
                 .ShouldBe(new[]
                 {
-                    @"bar.dll",
-                    @"foo.exe",
-                    @"foo.exe.config",
+                    "bar.dll",
+                    "foo.exe",
+                    "foo.exe.config",
                 }.Select(i => Path.Combine(artifactsPath.FullName, i)));
         }
 
@@ -211,10 +214,8 @@ namespace Microsoft.Build.Artifacts.UnitTests
         [Fact]
         public void UsingSdkLogic()
         {
-            DirectoryInfo baseOutputPath = CreateFiles(@"bin\Debug");
-
-            CreateFiles(
-                Path.Combine(baseOutputPath.FullName, "net472"),
+            DirectoryInfo baseOutputPath = CreateFiles(
+                Path.Combine("bin", "Debug", "net472"),
                 "foo.exe",
                 "foo.pdb",
                 "foo.exe.config",
@@ -226,6 +227,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
 
             ProjectCreator.Templates.SdkProjectWithArtifacts(
                     outputPath: baseOutputPath.FullName,
+                    appendTargetFrameworkToOutputPath: false,
                     artifactsPath: artifactsPath.FullName)
                 .TryGetItems("Artifact", out IReadOnlyCollection<ProjectItem> artifactItems)
                 .TryBuild(out bool result, out BuildOutput buildOutput);
@@ -241,9 +243,9 @@ namespace Microsoft.Build.Artifacts.UnitTests
                 .Select(i => i.FullName)
                 .ShouldBe(new[]
                 {
-                    @"net472\bar.dll",
-                    @"net472\foo.exe",
-                    @"net472\foo.exe.config",
+                    "bar.dll",
+                    "foo.exe",
+                    "foo.exe.config",
                 }.Select(i => Path.Combine(artifactsPath.FullName, i)));
         }
     }

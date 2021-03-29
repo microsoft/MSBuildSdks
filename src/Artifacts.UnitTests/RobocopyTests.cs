@@ -52,11 +52,13 @@ namespace Microsoft.Build.Artifacts.UnitTests
 
             destination.GetFiles("*", SearchOption.AllDirectories)
                 .Select(i => i.FullName)
-                .ShouldBe(new[]
-                {
-                    "bar.txt",
-                    "foo.txt",
-                }.Select(i => Path.Combine(destination.FullName, i)));
+                .ShouldBe(
+                    new[]
+                    {
+                        "bar.txt",
+                        "foo.txt",
+                    }.Select(i => Path.Combine(destination.FullName, i)),
+                    ignoreOrder: true);
         }
 
         [Fact]
@@ -100,14 +102,16 @@ namespace Microsoft.Build.Artifacts.UnitTests
 
             destination.GetFiles("*", SearchOption.AllDirectories)
                 .Select(i => i.FullName)
-                .ShouldBe(new[]
-                {
-                    "bar.dll",
-                    "foo.dll",
-                    "foo.exe",
-                    "foo.exe.config",
-                    Path.Combine("baz", "baz.dll"),
-                }.Select(i => Path.Combine(destination.FullName, i)));
+                .ShouldBe(
+                    new[]
+                    {
+                        "bar.dll",
+                        "foo.dll",
+                        "foo.exe",
+                        "foo.exe.config",
+                        Path.Combine("baz", "baz.dll"),
+                    }.Select(i => Path.Combine(destination.FullName, i)),
+                    ignoreOrder: true);
         }
 
         [Fact]
