@@ -82,10 +82,10 @@ namespace Microsoft.Build.Artifacts.Tasks
         private void CopyItems(IList<RobocopyMetadata> items)
         {
             // buckets are grouped by source, IsRecursive, and HasWildcardMatches
-            RobocopyMetadata master = items[0];
-            bool isRecursive = master.IsRecursive;
-            bool hasWildcards = master.HasWildcardMatches;
-            DirectoryInfo source = new DirectoryInfo(master.SourceFolder);
+            RobocopyMetadata first = items.First();
+            bool isRecursive = first.IsRecursive;
+            bool hasWildcards = first.HasWildcardMatches;
+            DirectoryInfo source = new DirectoryInfo(first.SourceFolder);
 
             if (hasWildcards || isRecursive)
             {
@@ -203,28 +203,28 @@ namespace Microsoft.Build.Artifacts.Tasks
             int itemIndex = 0;
             while (allSources.Count > 0)
             {
-                RobocopyMetadata masterItem = allSources[0];
+                RobocopyMetadata first = allSources.First();
                 allSources.RemoveAt(0);
 
                 List<RobocopyMetadata> bucket = new List<RobocopyMetadata>
                 {
-                    masterItem,
+                    first,
                 };
 
                 allBuckets.Add(bucket);
 
                 if (ShowDiagnosticTrace)
                 {
-                    masterItem.Dump(Log, ++bucketNum, 0);
+                    first.Dump(Log, ++bucketNum, 0);
                     itemIndex = 1;
                 }
 
                 for (int i = 0; i < allSources.Count; ++i)
                 {
                     RobocopyMetadata item = allSources[i];
-                    if (string.Equals(item.SourceFolder, masterItem.SourceFolder, StringComparison.OrdinalIgnoreCase) &&
-                        item.HasWildcardMatches == masterItem.HasWildcardMatches &&
-                        item.IsRecursive == masterItem.IsRecursive)
+                    if (string.Equals(item.SourceFolder, first.SourceFolder, StringComparison.OrdinalIgnoreCase) &&
+                        item.HasWildcardMatches == first.HasWildcardMatches &&
+                        item.IsRecursive == first.IsRecursive)
                     {
                         bucket.Add(item);
                         allSources.RemoveAt(i);
