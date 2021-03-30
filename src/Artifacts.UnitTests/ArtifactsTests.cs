@@ -3,7 +3,6 @@
 // Licensed under the MIT license.
 
 using Microsoft.Build.Evaluation;
-using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities.ProjectCreation;
 using Shouldly;
 using System.Collections.Generic;
@@ -11,7 +10,6 @@ using System.IO;
 using System.Linq;
 using UnitTest.Common;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.Build.Artifacts.UnitTests
 {
@@ -88,11 +86,13 @@ namespace Microsoft.Build.Artifacts.UnitTests
             artifactItem.GetMetadataValue("DestinationFolder").ShouldBe(artifactsPath);
         }
 
-        [Fact]
-        public void DefaultArtifactsUseOutputPath()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void DefaultArtifactsUseOutputPath(bool appendTargetFrameworkToOutputPath)
         {
             DirectoryInfo baseOutputPath = CreateFiles(
-                    Path.Combine("bin", "Debug", "net472"),
+                    appendTargetFrameworkToOutputPath ? Path.Combine("bin", "Debug", "net472") : Path.Combine("bin", "Debug"),
                     "foo.exe",
                     "foo.pdb",
                     "foo.exe.config",
@@ -106,18 +106,23 @@ namespace Microsoft.Build.Artifacts.UnitTests
 
             DirectoryInfo artifactsPath = new DirectoryInfo(Path.Combine(TestRootPath, "artifacts"));
 
+            string outputPath = $"{(appendTargetFrameworkToOutputPath ? Path.Combine("bin", "Debug", "net472") : Path.Combine("bin", "Debug"))}{Path.DirectorySeparatorChar}";
+
             ProjectCreator.Templates.ProjectWithArtifacts(
-                outputPath: baseOutputPath.FullName,
-                appendTargetFrameworkToOutputPath: false,
+                outputPath: outputPath,
+                appendTargetFrameworkToOutputPath: appendTargetFrameworkToOutputPath,
                 artifactsPath: artifactsPath.FullName)
                 .TryGetItems("Artifact", out IReadOnlyCollection<ProjectItem> artifactItems)
+                .TryGetPropertyValue("DefaultArtifactsSource", out string defaultArtifactsSource)
                 .TryBuild(out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeTrue(buildOutput.GetConsoleLog());
 
+            defaultArtifactsSource.ShouldBe(outputPath);
+
             ProjectItem artifactItem = artifactItems.ShouldHaveSingleItem();
 
-            artifactItem.EvaluatedInclude.ShouldBe($"{baseOutputPath.FullName}{Path.DirectorySeparatorChar}");
+            artifactItem.EvaluatedInclude.ShouldBe(defaultArtifactsSource);
             artifactItem.GetMetadataValue("DestinationFolder").ShouldBe(artifactsPath.FullName);
 
             artifactsPath.GetFiles("*", SearchOption.AllDirectories)
@@ -130,44 +135,6 @@ namespace Microsoft.Build.Artifacts.UnitTests
                         "foo.exe.config",
                     }.Select(i => Path.Combine(artifactsPath.FullName, i)),
                     ignoreOrder: true);
-        }
-
-        [Fact]
-        public void DefaultArtifactsUseOutputPathWithAppendTargetFrameworkToOutputPathFalse()
-        {
-            DirectoryInfo outputPath = CreateFiles(
-                Path.Combine("bin", "Debug"),
-                "foo.exe",
-                "foo.pdb",
-                "foo.exe.config",
-                "bar.dll",
-                "bar.pdb",
-                "bar.cs");
-
-            DirectoryInfo artifactsPath = new DirectoryInfo(Path.Combine(TestRootPath, "artifacts"));
-
-            ProjectCreator.Templates.ProjectWithArtifacts(
-                    outputPath: outputPath.FullName,
-                    appendTargetFrameworkToOutputPath: false,
-                    artifactsPath: artifactsPath.FullName)
-                .TryGetItems("Artifact", out IReadOnlyCollection<ProjectItem> artifactItems)
-                .TryBuild(out bool result, out BuildOutput buildOutput);
-
-            result.ShouldBeTrue(buildOutput.GetConsoleLog());
-
-            ProjectItem artifactItem = artifactItems.ShouldHaveSingleItem();
-
-            artifactItem.EvaluatedInclude.ShouldBe($"{outputPath.FullName}{Path.DirectorySeparatorChar}");
-            artifactItem.GetMetadataValue("DestinationFolder").ShouldBe(artifactsPath.FullName);
-
-            artifactsPath.GetFiles("*", SearchOption.AllDirectories)
-                .Select(i => i.FullName)
-                .ShouldBe(new[]
-                {
-                    "bar.dll",
-                    "foo.exe",
-                    "foo.exe.config",
-                }.Select(i => Path.Combine(artifactsPath.FullName, i)));
         }
 
         [Theory]
@@ -211,11 +178,13 @@ namespace Microsoft.Build.Artifacts.UnitTests
             }
         }
 
-        [Fact]
-        public void UsingSdkLogic()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void UsingSdkLogic(bool appendTargetFrameworkToOutputPath)
         {
-            DirectoryInfo baseOutputPath = CreateFiles(
-                Path.Combine("bin", "Debug", "net472"),
+            CreateFiles(
+                appendTargetFrameworkToOutputPath ? Path.Combine("bin", "Debug", "net472") : Path.Combine("bin", "Debug"),
                 "foo.exe",
                 "foo.pdb",
                 "foo.exe.config",
@@ -226,17 +195,20 @@ namespace Microsoft.Build.Artifacts.UnitTests
             DirectoryInfo artifactsPath = new DirectoryInfo(Path.Combine(TestRootPath, "artifacts"));
 
             ProjectCreator.Templates.SdkProjectWithArtifacts(
-                    outputPath: baseOutputPath.FullName,
-                    appendTargetFrameworkToOutputPath: false,
-                    artifactsPath: artifactsPath.FullName)
+                    outputPath: appendTargetFrameworkToOutputPath ? Path.Combine("bin", "Debug", "net472") : Path.Combine("bin", "Debug"),
+                    artifactsPath: artifactsPath.FullName,
+                    appendTargetFrameworkToOutputPath: appendTargetFrameworkToOutputPath)
                 .TryGetItems("Artifact", out IReadOnlyCollection<ProjectItem> artifactItems)
+                .TryGetPropertyValue("DefaultArtifactsSource", out string defaultArtifactsSource)
                 .TryBuild(out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeTrue(buildOutput.GetConsoleLog());
 
             ProjectItem artifactItem = artifactItems.ShouldHaveSingleItem();
 
-            artifactItem.EvaluatedInclude.ShouldBe($"{baseOutputPath.FullName}{Path.DirectorySeparatorChar}");
+            defaultArtifactsSource.ShouldBe($"{(appendTargetFrameworkToOutputPath ? Path.Combine("bin", "Debug", "net472") : Path.Combine("bin", "Debug"))}{Path.DirectorySeparatorChar}");
+
+            artifactItem.EvaluatedInclude.ShouldBe(defaultArtifactsSource);
             artifactItem.GetMetadataValue("DestinationFolder").ShouldBe(artifactsPath.FullName);
 
             artifactsPath.GetFiles("*", SearchOption.AllDirectories)
