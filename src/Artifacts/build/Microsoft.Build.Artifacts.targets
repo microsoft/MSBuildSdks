@@ -22,7 +22,8 @@
          Default artifacts source is the output path unless AppendTargetFrameworkToOutputPath is true in which case the parent folder is the default.
        -->
       <DefaultArtifactsSource Condition="'$(AppendTargetFrameworkToOutputPath)' != 'true'">$(OutputPath)</DefaultArtifactsSource>
-      <DefaultArtifactsSource Condition="'$(AppendTargetFrameworkToOutputPath)' == 'true'">$([System.IO.Path]::GetDirectoryName($(OutputPath.TrimEnd('\'))))\</DefaultArtifactsSource>
+      <DefaultArtifactsSource Condition="'$(AppendTargetFrameworkToOutputPath)' == 'true' And $(OutputPath.EndsWith('\'))">$([System.IO.Path]::GetDirectoryName($(OutputPath.TrimEnd('\'))))\</DefaultArtifactsSource>
+      <DefaultArtifactsSource Condition="'$(AppendTargetFrameworkToOutputPath)' == 'true' And $(OutputPath.EndsWith('/'))">$([System.IO.Path]::GetDirectoryName($(OutputPath.TrimEnd('/'))))/</DefaultArtifactsSource>
    </PropertyGroup>
 
   <ItemGroup Condition="'$(EnableDefaultArtifacts)' != 'false' And '$(ArtifactsPath)' != '' And '$(DefaultArtifactsSource)' != '' And '$(TargetFrameworks)' == ''">

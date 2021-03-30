@@ -3,7 +3,7 @@
 
   <PropertyGroup>
     <!-- Full symbols so that unit test assertions have more info -->
-    <DebugType Condition=" '$(Configuration)' == 'Debug' ">Full</DebugType>
+    <DebugType Condition="'$(Configuration)' == 'Debug'">Full</DebugType>
     <MicroBuild_NuPkgSigningEnabled Condition="'$(SignType)' == 'Test'">false</MicroBuild_NuPkgSigningEnabled>
   </PropertyGroup>
 
