@@ -5,7 +5,7 @@ This document covers how to do an official release of a package from this reposi
 
 ## Create GitHub release
 
-Releases are tagged with the same version as what is built.  However, you must determine ahead of time which version will be used.  To do this, build the repository from the master branch and note which version was used.
+Releases are tagged with the same version as what is built.  However, you must determine ahead of time which version will be used.  To do this, build the repository from the main branch and note which version was used.
 
 ```
 D:\MSBuildSdks>msbuild dirs.proj
