@@ -1,5 +1,5 @@
 # MSBuild SDKs
-[![Build Status](https://dev.azure.com/devdiv/DevDiv/_apis/build/status/MSBuild/microsoft.MSBuildSdks%20Official?branchName=master)](https://dev.azure.com/devdiv/DevDiv/_build/latest?definitionId=13584&branchName=master)
+[![Build Status](https://dev.azure.com/devdiv/DevDiv/_apis/build/status/MSBuild/microsoft.MSBuildSdks%20Official?branchName=main)](https://dev.azure.com/devdiv/DevDiv/_build/latest?definitionId=13584&branchName=main)
 
 The MSBuild project SDKs are used to configure and extend your build.
 
