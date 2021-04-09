@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 
 namespace UnitTest.Common
 {
@@ -117,7 +118,23 @@ namespace UnitTest.Common
 
                 if (Directory.Exists(TestRootPath))
                 {
-                    Directory.Delete(TestRootPath, recursive: true);
+                    try
+                    {
+                        Directory.Delete(TestRootPath, recursive: true);
+                    }
+                    catch (Exception)
+                    {
+                        try
+                        {
+                            Thread.Sleep(500);
+
+                            Directory.Delete(TestRootPath, recursive: true);
+                        }
+                        catch (Exception)
+                        {
+                            // Ignored
+                        }
+                    }
                 }
             }
         }
