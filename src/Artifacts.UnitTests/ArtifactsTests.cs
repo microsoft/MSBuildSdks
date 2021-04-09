@@ -61,12 +61,14 @@ namespace Microsoft.Build.Artifacts.UnitTests
 
             distribPath.GetFiles("*", SearchOption.AllDirectories)
                 .Select(i => i.FullName)
-                .ShouldBe(new[]
-                {
-                    "bar.dll",
-                    "foo.exe",
-                    "foo.exe.config",
-                }.Select(i => Path.Combine(distribPath.FullName, i)));
+                .ShouldBe(
+                    new[]
+                    {
+                        "bar.dll",
+                        "foo.exe",
+                        "foo.exe.config",
+                    }.Select(i => Path.Combine(distribPath.FullName, i)),
+                    ignoreOrder: true);
         }
 
         [Theory]
@@ -213,12 +215,14 @@ namespace Microsoft.Build.Artifacts.UnitTests
 
             artifactsPath.GetFiles("*", SearchOption.AllDirectories)
                 .Select(i => i.FullName)
-                .ShouldBe(new[]
-                {
-                    "bar.dll",
-                    "foo.exe",
-                    "foo.exe.config",
-                }.Select(i => Path.Combine(artifactsPath.FullName, i)));
+                .ShouldBe(
+                    new[]
+                    {
+                        "bar.dll",
+                        "foo.exe",
+                        "foo.exe.config",
+                    }.Select(i => Path.Combine(artifactsPath.FullName, i)),
+                    ignoreOrder: true);
         }
     }
 }
