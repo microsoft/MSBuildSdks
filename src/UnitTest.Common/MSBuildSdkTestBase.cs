@@ -30,9 +30,8 @@ namespace UnitTest.Common
                 globalJson,
                 @"{
    ""sdk"": {
-    ""version"": ""5.0.100-preview"",
-    ""rollForward"": ""latestMinor"",
-    ""allowPrerelease"": true
+    ""version"": ""5.0.100"",
+    ""rollForward"": ""latestMinor""
   },
 }");
 #else
@@ -45,6 +44,18 @@ namespace UnitTest.Common
   }
 }");
 #endif
+
+            string nugetConfig = Path.Combine(TestRootPath, "NuGet.config");
+
+            File.WriteAllText(
+                nugetConfig,
+                @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <clear />
+    <add key=""NuGet.org"" value=""https://api.nuget.org/v3/index.json"" />
+  </packageSources>
+</configuration>");
 
             // Save the current directory to restore it later
             _currentDirectoryBackup = Environment.CurrentDirectory;
