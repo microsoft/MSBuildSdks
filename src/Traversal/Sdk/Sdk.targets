@@ -28,7 +28,7 @@
 
     <EnableDefaultItems>false</EnableDefaultItems>
 
-    <!-- 
+    <!--
       TargetFramework is required for restore and used to default to .NET Framework v4.5.  However, Traversal projects don't specify a version so it needs to be defaulted here.
     -->
     <TargetFramework Condition="'$(TargetFramework)' == ''">net45</TargetFramework>
@@ -41,6 +41,7 @@
 
     <ProjectReferenceTargets Include="Build" Targets=".default" />
     <ProjectReferenceTargets Include="Clean" Targets="Clean" />
+    <ProjectReferenceTargets Include="Rebuild" Targets="Rebuild" />
     <ProjectReferenceTargets Include="Test" Targets="Test" />
     <ProjectReferenceTargets Include="VSTest" Targets="VSTest" />
     <ProjectReferenceTargets Include="Publish" Targets="Publish" />
@@ -161,7 +162,10 @@
              ContinueOnError="$([MSBuild]::ValueOrDefault('$(CleanContinueOnError)', '$(ContinueOnError)'))" />
   </Target>
 
-  <Target Name="Rebuild" DependsOnTargets="$(RebuildDependsOn)" Returns="@(CollectedBuildOutput)" />
+  <Target Name="Rebuild"
+          DependsOnTargets="$(RebuildDependsOn)"
+          Condition=" '$(IsGraphBuild)' != 'true' "
+          Returns="@(CollectedBuildOutput)" />
 
   <Target Name="Test"
           DependsOnTargets="$(TestDependsOn)"
@@ -238,7 +242,7 @@
   <Target Name="_CheckForInvalidConfigurationAndPlatform" />
 
   <!-- For CPS/VS support. See https://github.com/dotnet/project-system/blob/master/src/Microsoft.VisualStudio.ProjectSystem.Managed/ProjectSystem/DesignTimeTargets/Microsoft.Managed.DesignTime.targets#L60 -->
-  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed\Microsoft.Managed.DesignTime.targets" 
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed\Microsoft.Managed.DesignTime.targets"
           Condition="'$(DebuggerFlavor)' == '' And Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed\Microsoft.Managed.DesignTime.targets')" />
 
   <Import Project="$(CustomAfterTraversalTargets)" Condition=" '$(CustomAfterTraversalTargets)' != '' And Exists('$(CustomAfterTraversalTargets)') " />
