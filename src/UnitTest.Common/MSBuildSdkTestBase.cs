@@ -113,7 +113,14 @@ namespace UnitTest.Common
 
                 if (Directory.Exists(_currentDirectoryBackup))
                 {
-                    Environment.CurrentDirectory = _currentDirectoryBackup;
+                    try
+                    {
+                        Environment.CurrentDirectory = _currentDirectoryBackup;
+                    }
+                    catch (Exception)
+                    {
+                        // Ignored
+                    }
                 }
 
                 if (Directory.Exists(TestRootPath))
