@@ -37,7 +37,7 @@ stages:
   - job: Build
     displayName: 'Build'
     pool:
-      name: VSEng-MicroBuildVS2019
+      name: 'VSEngSS-MicroBuild2019'
     steps:
     - task: PowerShell@2
       displayName: 'Update SignType, Build Number, and Add Build Tag for tagged commits'
