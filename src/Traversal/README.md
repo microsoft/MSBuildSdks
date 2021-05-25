@@ -99,7 +99,7 @@ The following properties control the invocation of the to traversed projects.
 
 **Example**
 
-Change the `BuildInParallel` setting for the Test target.
+Change the `TestInParallel` setting for the Test target.
 
 ```xml
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
