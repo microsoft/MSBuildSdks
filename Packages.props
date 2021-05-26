@@ -2,7 +2,7 @@
   <ItemGroup>
     <PackageReference Update="Microsoft.Build" Version="16.9.0" />
     <PackageReference Update="Microsoft.Build.Framework" Version="16.9.0" />
-    <PackageReference Update="Microsoft.Build.Utilities.Core" Version="16.9.0" />
+    <PackageReference Update="Microsoft.Build.Utilities.Core" Version="16.10.0" />
     <PackageReference Update="Microsoft.NET.Test.Sdk" Version="16.10.0" />
     <PackageReference Update="MSBuild.ProjectCreation" Version="3.0.5" />
     <PackageReference Update="Shouldly" Version="4.0.3" />
