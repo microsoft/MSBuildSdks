@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net472;netcoreapp3.1;net5.0</TargetFrameworks>
+    <TargetFrameworks>net472;net5.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
@@ -14,7 +14,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CentralPackageVersions\Microsoft.Build.CentralPackageVersions.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\UnitTest.Common\UnitTest.Common.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\CentralPackageVersions\Sdk\Sdk.props" Link="Sdk\Sdk.props" CopyToOutputDirectory="PreserveNewest" />

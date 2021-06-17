@@ -5,7 +5,6 @@ variables:
   ArtifactsDirectoryName: 'artifacts'
   BuildConfiguration: 'Debug'
   BuildPlatform: 'Any CPU'
-  DotNetCore3Version: '3.x'
   DotNetCore5Version: '5.x'
   MSBuildArgs: '"/p:Platform=$(BuildPlatform)" "/p:Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
   SignType: 'Test'
@@ -35,11 +34,6 @@ jobs:
     vmImage: windows-latest
   steps:
   - task: UseDotNet@2
-    displayName: 'Install .NET Core $(DotNetCore3Version)'
-    inputs:
-      version: '$(DotNetCore3Version)'
-
-  - task: UseDotNet@2
     displayName: 'Install .NET Core $(DotNetCore5Version)'
     inputs:
       version: '$(DotNetCore5Version)'
@@ -64,13 +58,6 @@ jobs:
       command: 'test'
       arguments: '--no-restore --no-build --framework net472 "/restore:false"'
       testRunTitle: 'Windows .NET Framework v4.7.2'
-
-  - task: DotNetCoreCLI@2
-    displayName: 'Run Unit Tests (.NET Core)'
-    inputs:
-      command: 'test'
-      arguments: '--no-restore --no-build --framework netcoreapp3.1 "/restore:false"'
-      testRunTitle: 'Windows .NET Core v3.1'
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifacts'

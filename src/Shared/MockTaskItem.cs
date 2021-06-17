@@ -7,9 +7,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace UnitTest.Common
+namespace Microsoft.Build.UnitTests.Common
 {
-    public class MockTaskItem : Dictionary<string, string>, ITaskItem2
+    internal class MockTaskItem : Dictionary<string, string>, ITaskItem2
     {
         public MockTaskItem(string itemSpec)
             : base(StringComparer.OrdinalIgnoreCase)

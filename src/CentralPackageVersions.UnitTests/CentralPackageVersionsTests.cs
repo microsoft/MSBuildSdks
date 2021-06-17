@@ -3,13 +3,12 @@
 // Licensed under the MIT license.
 
 using Microsoft.Build.Evaluation;
+using Microsoft.Build.UnitTests.Common;
 using Microsoft.Build.Utilities.ProjectCreation;
 using Shouldly;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using UnitTest.Common;
 using Xunit;
 
 namespace Microsoft.Build.CentralPackageVersions.UnitTests
