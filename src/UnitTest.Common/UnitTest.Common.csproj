@@ -4,12 +4,10 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="MSBuild.ProjectCreation" />
     <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
-    <PackageReference Include="Microsoft.Win32.Registry" VersionOverride="4.7.0" />
-    <PackageReference Include="System.Security.Cryptography.ProtectedData" VersionOverride="4.7.0" />
+    <PackageReference Include="Microsoft.Win32.Registry"  Condition="'$(TargetFramework)' == 'netcoreapp3.1'" />
+    <PackageReference Include="MSBuild.ProjectCreation" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData"  Condition="'$(TargetFramework)' == 'netcoreapp3.1'" />
   </ItemGroup>
 </Project>

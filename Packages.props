@@ -1,11 +1,18 @@
 <Project>
+  <PropertyGroup>
+    <MicrosoftBuildPackageVersion>16.10.0</MicrosoftBuildPackageVersion>
+    <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'netcoreapp3.1' Or '$(TargetFramework)' == 'netstandard2.0'">16.9.0</MicrosoftBuildPackageVersion>
+    <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'net46'">15.9.20</MicrosoftBuildPackageVersion>
+  </PropertyGroup>
   <ItemGroup>
-    <PackageReference Update="Microsoft.Build" Version="16.9.0" />
-    <PackageReference Update="Microsoft.Build.Framework" Version="16.9.0" />
-    <PackageReference Update="Microsoft.Build.Utilities.Core" Version="16.9.0" />
+    <PackageReference Update="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" />
+    <PackageReference Update="Microsoft.Build.Framework" Version="$(MicrosoftBuildPackageVersion)" />
+    <PackageReference Update="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildPackageVersion)" />
     <PackageReference Update="Microsoft.NET.Test.Sdk" Version="16.10.0" />
+    <PackageReference Update="Microsoft.Win32.Registry" Version="4.7.0" />
     <PackageReference Update="MSBuild.ProjectCreation" Version="3.0.5" />
     <PackageReference Update="Shouldly" Version="4.0.3" />
+    <PackageReference Update="System.Security.Cryptography.ProtectedData" Version="4.7.0" />
     <PackageReference Update="xunit" Version="2.4.1" />
     <PackageReference Update="xunit.runner.visualstudio" Version="2.4.3" />
   </ItemGroup>

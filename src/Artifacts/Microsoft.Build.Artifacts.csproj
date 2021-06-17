@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net46;net472;netcoreapp3.1;net5.0</TargetFrameworks>
+    <TargetFrameworks>net46;net472;netstandard2.0;net5.0</TargetFrameworks>
     <BuildOutputTargetFolder>build\</BuildOutputTargetFolder>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>Build logic for staging artifacts from build outputs.</Description>
@@ -11,13 +11,9 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
-  <ItemGroup Condition="'$(TargetFramework)' != 'net46'">
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="Runtime" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" PrivateAssets="All" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net46'">
-    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="Runtime" PrivateAssets="All" VersionOverride="15.9.20" />
-    <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" PrivateAssets="All" VersionOverride="15.9.20" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" PrivateAssets="All" VersionOverride="15.9.20" />
   </ItemGroup>
   <ItemGroup>
     <None Include="build\*" Pack="true" PackagePath="build\" />
@@ -34,10 +30,6 @@
           AfterTargets="Pack"
           DependsOnTargets="SignNuGetPackage"
           Condition="'$(IsInnerBuild)' != 'true'">
-    <!-- 
-      Workaround for https://github.com/NuGet/Home/issues/6754 
-      Only needed because SlnGen the project depends on SlnGen the package
-    -->
     <ItemGroup>
       <Artifact Include="$(OutputPath)\**" />
     </ItemGroup>
