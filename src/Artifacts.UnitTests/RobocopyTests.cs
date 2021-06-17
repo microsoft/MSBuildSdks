@@ -4,11 +4,11 @@
 
 using Microsoft.Build.Artifacts.Tasks;
 using Microsoft.Build.Framework;
+using Microsoft.Build.UnitTests.Common;
 using Microsoft.Build.Utilities.ProjectCreation;
 using Shouldly;
 using System.IO;
 using System.Linq;
-using UnitTest.Common;
 using Xunit;
 
 namespace Microsoft.Build.Artifacts.UnitTests

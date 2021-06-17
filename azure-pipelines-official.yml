@@ -5,7 +5,6 @@ variables:
   ArtifactsDirectoryName: 'artifacts'
   BuildConfiguration: 'Release'
   BuildPlatform: 'Any CPU'
-  DotNetCore3Version: '3.x'
   DotNetCore5Version: '5.x'
   MSBuildArgs: '"/p:Platform=$(BuildPlatform)" "/p:Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
   SignType: 'Test'
@@ -57,11 +56,6 @@ stages:
               Write-Host "Adding build tag ""$buildTag"""
               Write-Host "##vso[build.addbuildtag]$buildTag"
           }
-
-    - task: UseDotNet@2
-      displayName: 'Install .NET Core $(DotNetCore3Version)'
-      inputs:
-        version: '$(DotNetCore3Version)'
 
     - task: UseDotNet@2
       displayName: 'Install .NET Core $(DotNetCore5Version)'

@@ -9,7 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 
-namespace UnitTest.Common
+namespace Microsoft.Build.UnitTests.Common
 {
     public abstract class MSBuildSdkTestBase : MSBuildTestBase, IDisposable
     {
@@ -25,31 +25,17 @@ namespace UnitTest.Common
 
         public MSBuildSdkTestBase()
         {
-            string globalJson = Path.Combine(TestRootPath, "global.json");
-#if NET5_0
             File.WriteAllText(
-                globalJson,
+                Path.Combine(TestRootPath, "global.json"),
                 @"{
    ""sdk"": {
     ""version"": ""5.0.100"",
     ""rollForward"": ""latestMinor""
   },
 }");
-#else
-            File.WriteAllText(
-                globalJson,
-                @"{
-   ""sdk"": {
-    ""version"": ""3.1.100"",
-    ""rollForward"": ""latestMinor""
-  }
-}");
-#endif
-
-            string nugetConfig = Path.Combine(TestRootPath, "NuGet.config");
 
             File.WriteAllText(
-                nugetConfig,
+                Path.Combine(TestRootPath, "NuGet.config"),
                 @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageSources>
