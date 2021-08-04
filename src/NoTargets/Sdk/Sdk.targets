@@ -38,6 +38,12 @@
     <IntermediateRefAssembly Remove="@(IntermediateRefAssembly)" />
   </ItemGroup>
 
+  <!-- Clear output group items which are read by the IDE and NuGet. -->
+  <ItemGroup>
+    <BuiltProjectOutputGroupKeyOutput Remove="@(BuiltProjectOutputGroupKeyOutput)" />
+    <DebugSymbolsProjectOutputGroupOutput Remove="@(DebugSymbolsProjectOutputGroupOutput)" />
+  </ItemGroup>
+
   <PropertyGroup>
     <!--
       This property must be overridden to remove a few targets that compile assemblies
