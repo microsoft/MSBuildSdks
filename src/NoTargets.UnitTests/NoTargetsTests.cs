@@ -93,65 +93,6 @@ namespace Microsoft.Build.NoTargets.UnitTests
             result.ShouldBeTrue(buildOutput.GetConsoleLog());
         }
 
-        [Fact]
-        public void EnableDefaultCompileItemsIsFalse()
-        {
-            ProjectCreator.Templates.NoTargetsProject(
-                path: GetTempFileWithExtension(".csproj"))
-                .Property("GenerateDependencyFile", "false")
-                .Save()
-                .TryGetPropertyValue("EnableDefaultCompileItems", out string enableDefaultCompileItems);
-
-            enableDefaultCompileItems.ShouldBe("false");
-        }
-
-        [Fact]
-        public void EnableDefaultEmbeddedResourceItemsIsFalse()
-        {
-            ProjectCreator.Templates.NoTargetsProject(
-                path: GetTempFileWithExtension(".csproj"))
-                .Property("GenerateDependencyFile", "false")
-                .Save()
-                .TryGetPropertyValue("EnableDefaultEmbeddedResourceItems", out string enableDefaultEmbeddedResourceItems);
-
-            enableDefaultEmbeddedResourceItems.ShouldBe("false");
-        }
-
-        [Fact]
-        public void ImplicitFrameworkReferencesDisabledByDefault()
-        {
-            ProjectCreator.Templates.NoTargetsProject(
-                    path: Path.Combine(TestRootPath, "NoTargets", "NoTargets.csproj"),
-                    targetFramework: "net45")
-                .Save()
-                .TryGetPropertyValue("DisableImplicitFrameworkReferences", out string disableImplicitFrameworkReferences);
-
-            disableImplicitFrameworkReferences.ShouldBe(bool.TrueString, StringCompareShould.IgnoreCase);
-        }
-
-        [Fact]
-        public void IncludeBuildOutputIsFalseByDefault()
-        {
-            ProjectCreator.Templates.NoTargetsProject(
-                path: GetTempFileWithExtension(".csproj"))
-                .Save()
-                .TryGetPropertyValue("IncludeBuildOutput", out string includeBuildOutput);
-
-            includeBuildOutput.ShouldBe("false");
-        }
-
-        [Fact]
-        public void ProduceReferenceAssemblyIsFalse()
-        {
-            ProjectCreator.Templates.NoTargetsProject(
-                    path: GetTempFileWithExtension(".csproj"))
-                .Property("ProduceReferenceAssembly", "true")
-                .Save()
-                .TryGetPropertyValue("IncludeBuildOutput", out string produceReferenceAssembly);
-
-            produceReferenceAssembly.ShouldBe("false");
-        }
-
         [Theory]
         [InlineData(".csproj")]
         [InlineData(".proj")]
@@ -215,6 +156,24 @@ namespace Microsoft.Build.NoTargets.UnitTests
             project3.TryBuild(out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeTrue(buildOutput.GetConsoleLog());
+        }
+
+        [Theory]
+        [InlineData("DisableImplicitFrameworkReferences", "true")]
+        [InlineData("EnableDefaultCompileItems", "false")]
+        [InlineData("EnableDefaultEmbeddedResourceItems", "false")]
+        [InlineData("GenerateAssemblyInfo", "false")]
+        [InlineData("GenerateMSBuildEditorConfigFile", "false")]
+        [InlineData("IncludeBuildOutput", "false")]
+        [InlineData("ProduceReferenceAssembly", "false")]
+        public void PropertiesHaveExpectedValues(string propertyName, string expectedValue)
+        {
+            ProjectCreator.Templates.NoTargetsProject(
+                path: GetTempFileWithExtension(".csproj"))
+                .Save()
+                .TryGetPropertyValue(propertyName, out string actualValue);
+
+            actualValue.ShouldBe(expectedValue, StringComparer.OrdinalIgnoreCase, customMessage: $"Property {propertyName} should have a value of \"{expectedValue}\" but its value was \"{actualValue}\"");
         }
 
         [Theory]

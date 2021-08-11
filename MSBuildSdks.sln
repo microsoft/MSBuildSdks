@@ -13,7 +13,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{DC479DC1
 		Directory.Build.rsp = Directory.Build.rsp
 		Directory.Build.targets = Directory.Build.targets
 		global.json = global.json
-		src\GlobalSuppressions.cs = src\GlobalSuppressions.cs
 		LICENSE.txt = LICENSE.txt
 		NuGet.config = NuGet.config
 		Packages.props = Packages.props
