@@ -13,27 +13,10 @@ namespace Microsoft.Build.UnitTests.Common
 {
     public abstract class MSBuildSdkTestBase : MSBuildTestBase, IDisposable
     {
-        private static readonly string[] EnvironmentVariablesToRemove =
-        {
-            "MSBuildSdksPath",
-            "MSBuildExtensionsPath",
-        };
-
-        private readonly string _currentDirectoryBackup;
-        private readonly Dictionary<string, string> _environmentVariableBackup = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         private readonly string _testRootPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
         public MSBuildSdkTestBase()
         {
-            File.WriteAllText(
-                Path.Combine(TestRootPath, "global.json"),
-                @"{
-   ""sdk"": {
-    ""version"": ""5.0.100"",
-    ""rollForward"": ""latestMinor""
-  },
-}");
-
             File.WriteAllText(
                 Path.Combine(TestRootPath, "NuGet.config"),
                 @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -44,18 +27,7 @@ namespace Microsoft.Build.UnitTests.Common
   </packageSources>
 </configuration>");
 
-            // Save the current directory to restore it later
-            _currentDirectoryBackup = Environment.CurrentDirectory;
-
             Environment.CurrentDirectory = TestRootPath;
-
-            // Backup and remove environment variables
-            foreach (string environmentVariableName in EnvironmentVariablesToRemove)
-            {
-                _environmentVariableBackup[environmentVariableName] = Environment.GetEnvironmentVariable(environmentVariableName);
-
-                Environment.SetEnvironmentVariable(environmentVariableName, null);
-            }
         }
 
         public string TestRootPath
@@ -91,24 +63,6 @@ namespace Microsoft.Build.UnitTests.Common
         {
             if (disposing)
             {
-                // Restore environment variables
-                foreach (var environmentVariable in _environmentVariableBackup)
-                {
-                    Environment.SetEnvironmentVariable(environmentVariable.Key, environmentVariable.Value);
-                }
-
-                if (Directory.Exists(_currentDirectoryBackup))
-                {
-                    try
-                    {
-                        Environment.CurrentDirectory = _currentDirectoryBackup;
-                    }
-                    catch (Exception)
-                    {
-                        // Ignored
-                    }
-                }
-
                 if (Directory.Exists(TestRootPath))
                 {
                     try

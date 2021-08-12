@@ -50,8 +50,8 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(IsTestProject)' == 'true'">
-    <Compile Include="$(MSBuildThisFileDirectory)src\Shared\MockTaskItem.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)src\Shared\MSBuildSdkTestBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)src\Shared\*.cs" />
+
     <Content Include="$(MSBuildThisFileDirectory)xunit.runner.json"
              CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
