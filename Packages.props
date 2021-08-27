@@ -8,7 +8,7 @@
     <PackageReference Update="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildPackageVersion)" />
     <PackageReference Update="Microsoft.NET.Test.Sdk" Version="16.11.0" />
     <PackageReference Update="Microsoft.Win32.Registry" Version="4.7.0" />
-    <PackageReference Update="MSBuild.ProjectCreation" Version="4.0.4" />
+    <PackageReference Update="MSBuild.ProjectCreation" Version="6.0.2" />
     <PackageReference Update="Shouldly" Version="4.0.3" />
     <PackageReference Update="System.Security.Cryptography.ProtectedData" Version="4.7.0" />
     <PackageReference Update="xunit" Version="2.4.1" />
