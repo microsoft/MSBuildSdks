@@ -53,6 +53,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
             DirectoryInfo distribPath = new DirectoryInfo(Path.Combine(TestRootPath, "artifacts"));
 
             ProjectCreator.Templates.ProjectWithArtifacts(
+                    path: GetTempFileWithExtension(".csproj"),
                     outputPath: outputPath.FullName)
                 .ItemRobocopy(outputPath.FullName, distribPath.FullName, "*exe *dll *exe.config")
                 .TryBuild(out bool result, out BuildOutput buildOutput);
@@ -78,6 +79,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
             string artifactsPath = Path.Combine(TestRootPath, "artifacts");
 
             ProjectCreator.Templates.ProjectWithArtifacts(
+                    path: GetTempFileWithExtension(".csproj"),
                     artifactsPath: artifactsPath)
                 .Property(propertyName, actual)
                 .TryGetItems("Artifact", out IReadOnlyCollection<ProjectItem> artifactItems);
@@ -111,9 +113,10 @@ namespace Microsoft.Build.Artifacts.UnitTests
             string outputPath = $"{(appendTargetFrameworkToOutputPath ? Path.Combine("bin", "Debug", "net472") : Path.Combine("bin", "Debug"))}{Path.DirectorySeparatorChar}";
 
             ProjectCreator.Templates.ProjectWithArtifacts(
-                outputPath: outputPath,
-                appendTargetFrameworkToOutputPath: appendTargetFrameworkToOutputPath,
-                artifactsPath: artifactsPath.FullName)
+                    path: GetTempFileWithExtension(".csproj"),
+                    outputPath: outputPath,
+                    appendTargetFrameworkToOutputPath: appendTargetFrameworkToOutputPath,
+                    artifactsPath: artifactsPath.FullName)
                 .TryGetItems("Artifact", out IReadOnlyCollection<ProjectItem> artifactItems)
                 .TryGetPropertyValue("DefaultArtifactsSource", out string defaultArtifactsSource)
                 .TryBuild(out bool result, out BuildOutput buildOutput);
@@ -197,6 +200,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
             DirectoryInfo artifactsPath = new DirectoryInfo(Path.Combine(TestRootPath, "artifacts"));
 
             ProjectCreator.Templates.SdkProjectWithArtifacts(
+                    path: GetTempFileWithExtension(".csproj"),
                     outputPath: appendTargetFrameworkToOutputPath ? Path.Combine("bin", "Debug", "net472") : Path.Combine("bin", "Debug"),
                     artifactsPath: artifactsPath.FullName,
                     appendTargetFrameworkToOutputPath: appendTargetFrameworkToOutputPath)

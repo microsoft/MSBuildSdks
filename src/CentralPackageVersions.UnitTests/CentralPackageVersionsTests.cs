@@ -53,30 +53,32 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
         [InlineData(".vbproj")]
         public void CanDisableCentralPackageVersions(string projectFileExtension)
         {
+            Dictionary<string, string> globalProperties = new Dictionary<string, string>
+            {
+                ["EnableCentralPackageVersions"] = "false",
+                ["DisableImplicitFrameworkReferences"] = "true",
+            };
+
             WritePackagesProps();
 
             ProjectCreator.Templates
                 .SdkCsproj(
                     path: Path.Combine(TestRootPath, $"test.{projectFileExtension}"),
-                    projectCollection: new ProjectCollection(new Dictionary<string, string>
-                    {
-                        ["EnableCentralPackageVersions"] = "false",
-                        ["DisableImplicitFrameworkReferences"] = "true",
-                    }),
                     projectCreator: creator => creator
                         .ItemPackageReference("Foo", "10.0.0")
                         .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.targets")))
-                .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput)
-                .Project
-                .GetItems("PackageReference")
-                    .Where(i => !i.EvaluatedInclude.Equals("FSharp.Core"))
-                    .ToDictionary(i => i.EvaluatedInclude, i => i.GetMetadataValue("Version"))
+                .TryBuild("CheckPackageReferences", globalProperties, out bool result, out BuildOutput buildOutput)
+                .TryGetProject(out Project project, globalProperties);
+
+            result.ShouldBeTrue(buildOutput.GetConsoleLog());
+
+            project.GetItems("PackageReference")
+                .Where(i => !i.EvaluatedInclude.Equals("FSharp.Core"))
+                .ToDictionary(i => i.EvaluatedInclude, i => i.GetMetadataValue("Version"))
                 .ShouldBe(new Dictionary<string, string>
                 {
                     ["Foo"] = "10.0.0",
                 });
-
-            result.ShouldBeTrue(buildOutput.GetConsoleLog());
         }
 
         [Theory]
@@ -319,20 +321,21 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
         [InlineData(".vbproj")]
         public void LogErrorIfProjectSpecifiesVersionAndVersionOverrideIsDisabled(string projectFileExtension)
         {
+            Dictionary<string, string> globalProperties = new Dictionary<string, string>
+            {
+                ["DisableImplicitFrameworkReferences"] = "true",
+                ["EnablePackageVersionOverride"] = "false",
+            };
+
             ProjectCreator packagesProps = WritePackagesProps();
 
             ProjectCreator.Templates
                 .SdkCsproj(
                     path: Path.Combine(TestRootPath, $"test.{projectFileExtension}"),
-                    projectCollection: new ProjectCollection(new Dictionary<string, string>
-                    {
-                        ["DisableImplicitFrameworkReferences"] = "true",
-                        ["EnablePackageVersionOverride"] = "false",
-                    }),
                     projectCreator: creator => creator
                         .ItemPackageReference("Foo", "10.0.0")
                         .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.targets")))
-                .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput);
+                .TryBuild("CheckPackageReferences", globalProperties, out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeFalse(buildOutput.GetConsoleLog());
 
@@ -447,16 +450,17 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
         [InlineData(".vbproj")]
         public void VersionOverridesWithoutCentralVersionsCanBeDisabled(string projectFileExtension)
         {
+            Dictionary<string, string> globalProperties = new Dictionary<string, string>
+            {
+                ["DisableImplicitFrameworkReferences"] = "true",
+                ["EnablePackageVersionOverrideWithoutCentralVersion"] = "false",
+            };
+
             ProjectCreator packagesProps = WritePackagesProps();
 
             ProjectCreator.Templates
                 .SdkCsproj(
                     path: Path.Combine(TestRootPath, $"test.{projectFileExtension}"),
-                    projectCollection: new ProjectCollection(new Dictionary<string, string>
-                    {
-                        ["DisableImplicitFrameworkReferences"] = "true",
-                        ["EnablePackageVersionOverrideWithoutCentralVersion"] = "false",
-                    }),
                     projectCreator: creator => creator
                         .ItemPackageReference(
                             "Orphan",
@@ -465,7 +469,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                                 ["VersionOverride"] = "1.0.0",
                             })
                         .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.targets")))
-                .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput);
+                .TryBuild("CheckPackageReferences", globalProperties, out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeFalse(buildOutput.GetConsoleLog());
 
