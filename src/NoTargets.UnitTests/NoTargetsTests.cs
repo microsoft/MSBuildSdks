@@ -210,13 +210,13 @@ namespace Microsoft.Build.NoTargets.UnitTests
         [InlineData(".proj")]
         public void SimpleBuild(string projectExtension)
         {
+            Dictionary<string, string> globalProperties = new Dictionary<string, string>
+            {
+                ["DesignTimeBuild"] = "true",
+            };
+
             ProjectCreator.Templates.NoTargetsProject(
                 path: GetTempFileWithExtension(projectExtension),
-                projectCollection: new ProjectCollection(
-                    new Dictionary<string, string>
-                    {
-                        ["DesignTimeBuild"] = "true",
-                    }),
                 customAction: creator =>
                 {
                     creator.Target("TakeAction", afterTargets: "Build")
@@ -224,7 +224,7 @@ namespace Microsoft.Build.NoTargets.UnitTests
                 })
                 .Property("GenerateDependencyFile", "false")
                 .Save()
-                .TryBuild("Build", out bool result, out BuildOutput buildOutput);
+                .TryBuild("Build", globalProperties, out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeTrue(buildOutput.GetConsoleLog());
 
@@ -312,22 +312,15 @@ namespace Microsoft.Build.NoTargets.UnitTests
                 ["DesignTimeBuild"] = bool.TrueString,
             };
 
-            bool result;
-            BuildOutput buildOutput;
+            ProjectCreator.Create()
+                .Target("EnableIntermediateOutputPathMismatchWarning")
+                .Save(Path.Combine(TestRootPath, "Directory.Build.targets"));
 
-            using (ProjectCollection projectCollection = new ProjectCollection(globalProperties))
-            {
-                ProjectCreator.Create()
-                    .Target("EnableIntermediateOutputPathMismatchWarning")
-                    .Save(Path.Combine(TestRootPath, "Directory.Build.targets"));
-
-                ProjectCreator.Templates.NoTargetsProject(
-                        path: GetTempFileWithExtension(extension),
-                        projectCollection: projectCollection)
-                    .Property("GenerateDependencyFile", "false")
-                    .Save()
-                    .TryBuild(target, out result, out buildOutput);
-            }
+            ProjectCreator.Templates.NoTargetsProject(
+                    path: GetTempFileWithExtension(extension))
+                .Property("GenerateDependencyFile", "false")
+                .Save()
+                .TryBuild(target, globalProperties, out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeTrue(buildOutput.GetConsoleLog());
         }

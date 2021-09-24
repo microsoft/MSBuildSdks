@@ -183,20 +183,19 @@ namespace Microsoft.Build.Traversal.UnitTests
                     .Save(),
             }.Select(i => i.FullPath).ToArray();
 
-            ProjectCollection projectCollection = new ProjectCollection(new Dictionary<string, string>
+            Dictionary<string, string> globalProperties = new Dictionary<string, string>
             {
                 ["Property1"] = "6A120037EE0E4D36865F3301CC2ABBB8",
                 ["Property2"] = "8531F12EB990413BA95CD48A953F927E",
-            });
+            };
 
             ProjectCreator
                 .Templates
                 .TraversalProject(
                     projects,
-                    projectCollection: projectCollection,
                     path: GetTempFile("dirs.proj"))
                 .Save()
-                .TryBuild(target, out bool result, out BuildOutput buildOutput);
+                .TryBuild(target, globalProperties, out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeTrue(buildOutput.GetConsoleLog());
 
@@ -221,22 +220,23 @@ namespace Microsoft.Build.Traversal.UnitTests
                     .Save(),
             }.Select(i => i.FullPath).ToArray();
 
+            Dictionary<string, string> globalProperties = new Dictionary<string, string>
+            {
+                ["NoBuild"] = "true",
+            };
+
             ProjectCreator
                 .Templates
                 .TraversalProject(
                     projects,
-                    projectCollection: new ProjectCollection(new Dictionary<string, string>
-                    {
-                        ["NoBuild"] = "true",
-                    }),
                     path: GetTempFile("dirs.proj"))
                 .Save()
-                .TryBuild("Publish", out bool result, out BuildOutput buildOutput);
+                .TryBuild("Publish", globalProperties, out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeTrue(buildOutput.GetConsoleLog());
 
-            buildOutput.Messages.ShouldContain("20B044FEEC3E435D90CE721012C6577E", buildOutput.GetConsoleLog());
-            buildOutput.Messages.ShouldNotContain("02CA9347E8BB4C5E856BC0903780CC9B", buildOutput.GetConsoleLog());
+            buildOutput.Messages.High.ShouldContain("20B044FEEC3E435D90CE721012C6577E", buildOutput.GetConsoleLog());
+            buildOutput.Messages.High.ShouldNotContain("02CA9347E8BB4C5E856BC0903780CC9B", buildOutput.GetConsoleLog());
         }
 
         [Fact]
