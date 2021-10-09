@@ -45,6 +45,9 @@
 
     <!-- Don't generate editor config file -->
     <GenerateMSBuildEditorConfigFile Condition="'$(GenerateMSBuildEditorConfigFile)' == ''">false</GenerateMSBuildEditorConfigFile>
+    
+    <!-- Don't log the high priority message mentioning this project's name (or copy the product we didn't build). -->
+    <SkipCopyBuildProduct>true</SkipCopyBuildProduct>
   </PropertyGroup>
 
   <ItemDefinitionGroup Condition=" '$(NoTargetsDoNotReferenceOutputAssemblies)' != 'false' ">
