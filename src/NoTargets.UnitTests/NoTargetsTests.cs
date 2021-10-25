@@ -166,6 +166,7 @@ namespace Microsoft.Build.NoTargets.UnitTests
         [InlineData("GenerateMSBuildEditorConfigFile", "false")]
         [InlineData("IncludeBuildOutput", "false")]
         [InlineData("ProduceReferenceAssembly", "false")]
+        [InlineData("SkipCopyBuildProduct", "true")]
         public void PropertiesHaveExpectedValues(string propertyName, string expectedValue)
         {
             ProjectCreator.Templates.NoTargetsProject(
