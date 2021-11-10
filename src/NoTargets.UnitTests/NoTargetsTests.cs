@@ -25,8 +25,7 @@ namespace Microsoft.Build.NoTargets.UnitTests
         public void CompileIsExtensibleWithBeforeAfterTargets(string targetName)
         {
             ProjectCreator noTargetsProject = ProjectCreator.Templates.NoTargetsProject(
-                    path: Path.Combine(TestRootPath, "NoTargets", "NoTargets.csproj"),
-                    targetFramework: "net45")
+                    path: Path.Combine(TestRootPath, "NoTargets", "NoTargets.csproj"))
                 .Target(targetName)
                 .TaskMessage("503CF1EBA6DC415F95F4DB630E7C1817", MessageImportance.High)
                 .Save();
@@ -42,8 +41,7 @@ namespace Microsoft.Build.NoTargets.UnitTests
         public void CoreCompileIsExtensibleWithCoreCompileDependsOn()
         {
             ProjectCreator noTargetsProject = ProjectCreator.Templates.NoTargetsProject(
-                    path: Path.Combine(TestRootPath, "NoTargets", "NoTargets.csproj"),
-                    targetFramework: "net45")
+                    path: Path.Combine(TestRootPath, "NoTargets", "NoTargets.csproj"))
                 .Property("CoreCompileDependsOn", "$(CoreCompileDependsOn);TestThatCoreCompileIsExtensible")
                 .Target("TestThatCoreCompileIsExtensible")
                 .TaskMessage("35F1C217730445E0AC0F30E70F5C7826", MessageImportance.High)
@@ -60,8 +58,7 @@ namespace Microsoft.Build.NoTargets.UnitTests
         public void CoreCompileIsExtensibleWithTargetsTriggeredByCompilation()
         {
             ProjectCreator noTargetsProject = ProjectCreator.Templates.NoTargetsProject(
-                    path: Path.Combine(TestRootPath, "NoTargets", "NoTargets.csproj"),
-                    targetFramework: "net45")
+                    path: Path.Combine(TestRootPath, "NoTargets", "NoTargets.csproj"))
                 .Property("TargetsTriggeredByCompilation", "TestThatCoreCompileIsExtensible")
                 .Target("TestThatCoreCompileIsExtensible")
                     .TaskMessage("D031211C98F1454CA47A424ADC86A8F7", MessageImportance.High)
@@ -83,8 +80,7 @@ namespace Microsoft.Build.NoTargets.UnitTests
                 .Save();
 
             ProjectCreator noTargetsProject = ProjectCreator.Templates.NoTargetsProject(
-                    path: Path.Combine(TestRootPath, "NoTargets", "NoTargets.csproj"),
-                    targetFramework: "net45")
+                    path: Path.Combine(TestRootPath, "NoTargets", "NoTargets.csproj"))
                 .ItemProjectReference(projectA)
                 .Save();
 
@@ -184,7 +180,6 @@ namespace Microsoft.Build.NoTargets.UnitTests
         {
             ProjectCreator.Templates.NoTargetsProject(
                     path: GetTempFileWithExtension(projectExtension),
-                    targetFramework: "netcoreapp3.1",
                     customAction: creator =>
                     {
                         creator
@@ -238,8 +233,7 @@ namespace Microsoft.Build.NoTargets.UnitTests
         public void StaticGraphBuildsSucceed(string projectExtension)
         {
             ProjectCreator sdkReference = ProjectCreator.Templates.SdkCsproj(
-                Path.Combine(TestRootPath, "sdkstyle", "sdkstyle.csproj"),
-                targetFramework: "net472")
+                Path.Combine(TestRootPath, "sdkstyle", "sdkstyle.csproj"))
                 .Save();
 #if NETFRAMEWORK
             ProjectCreator legacyReference = ProjectCreator.Templates.LegacyCsproj(
@@ -250,7 +244,6 @@ namespace Microsoft.Build.NoTargets.UnitTests
 
             ProjectCreator noTargets = ProjectCreator.Templates.NoTargetsProject(
                 path: Path.Combine(TestRootPath, "notargets", "notargets.csproj"),
-                targetFramework: "net472",
                 customAction: creator =>
                 {
                     creator.ItemProjectReference(sdkReference, referenceOutputAssembly: false);
@@ -261,7 +254,6 @@ namespace Microsoft.Build.NoTargets.UnitTests
 
             ProjectCreator project = ProjectCreator.Templates.SdkCsproj(
                     Path.Combine(TestRootPath, "main", $"main{projectExtension}"),
-                    targetFramework: "net472",
                     projectCreator: creator =>
                     {
                         creator.ItemProjectReference(noTargets, referenceOutputAssembly: false);
