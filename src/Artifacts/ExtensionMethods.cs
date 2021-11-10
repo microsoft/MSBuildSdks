@@ -15,10 +15,10 @@ namespace Microsoft.Build.Artifacts
 
             if (defaultValue)
             {
-                return !string.Equals(value, "false", StringComparison.OrdinalIgnoreCase);
+                return !string.Equals(value, bool.FalseString, StringComparison.OrdinalIgnoreCase);
             }
 
-            return string.Equals(value, "true", StringComparison.OrdinalIgnoreCase);
+            return string.Equals(value, bool.TrueString, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

@@ -2,8 +2,6 @@
   <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.79" />
 
   <PropertyGroup>
-    <!-- Full symbols so that unit test assertions have more info -->
-    <DebugType Condition="'$(Configuration)' == 'Debug'">Full</DebugType>
     <MicroBuild_NuPkgSigningEnabled Condition="'$(SignType)' == 'Test'">false</MicroBuild_NuPkgSigningEnabled>
   </PropertyGroup>
 
