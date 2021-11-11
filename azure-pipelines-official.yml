@@ -5,7 +5,7 @@ variables:
   ArtifactsDirectoryName: 'artifacts'
   BuildConfiguration: 'Release'
   BuildPlatform: 'Any CPU'
-  DotNetCore5Version: '5.x'
+  DotNet5Version: '5.x'
   MSBuildArgs: '"/p:Platform=$(BuildPlatform)" "/p:Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
   SignType: 'Test'
 
@@ -36,7 +36,7 @@ stages:
   - job: Build
     displayName: 'Build'
     pool:
-      name: 'VSEngSS-MicroBuild2019-1ES'
+      name: 'VSEngSS-MicroBuild2022-1ES'
     steps:
     - task: PowerShell@2
       displayName: 'Update SignType, Build Number, and Add Build Tag for tagged commits'
@@ -58,9 +58,9 @@ stages:
           }
 
     - task: UseDotNet@2
-      displayName: 'Install .NET Core $(DotNetCore5Version)'
+      displayName: 'Install .NET $(DotNet5Version)'
       inputs:
-        version: '$(DotNetCore5Version)'
+        version: '$(DotNet5Version)'
         includePreviewVersions: true
 
     - task: MicroBuildSigningPlugin@1

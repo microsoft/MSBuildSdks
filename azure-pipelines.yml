@@ -5,7 +5,9 @@ variables:
   ArtifactsDirectoryName: 'artifacts'
   BuildConfiguration: 'Debug'
   BuildPlatform: 'Any CPU'
-  DotNetCore5Version: '5.x'
+  DotNet3Version: '3.x'
+  DotNet5Version: '5.x'
+  DotNet6Version: '6.x'
   MSBuildArgs: '"/p:Platform=$(BuildPlatform)" "/p:Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
   SignType: 'Test'
 
@@ -33,31 +35,59 @@ jobs:
   pool:
     vmImage: windows-latest
   steps:
+
   - task: UseDotNet@2
-    displayName: 'Install .NET Core $(DotNetCore5Version)'
+    displayName: 'Install .NET Core $(DotNet3Version)'
     inputs:
-      version: '$(DotNetCore5Version)'
+      version: '$(DotNet3Version)'
+
+  - task: UseDotNet@2
+    displayName: 'Install .NET $(DotNet5Version)'
+    inputs:
+      version: '$(DotNet5Version)'
+
+  - task: UseDotNet@2
+    displayName: 'Install .NET $(DotNet6Version)'
+    inputs:
+      version: '$(DotNet6Version)'
 
   - task: DotNetCoreCLI@2
     displayName: 'Build Solution'
     inputs:
       command: 'build'
-      projects: 'MSBuildSdks.sln'
       arguments: '$(MSBuildArgs)'
-
-  - task: DotNetCoreCLI@2
-    displayName: 'Run Unit Tests (.NET 5)'
-    inputs:
-      command: 'test'
-      arguments: '--no-restore --no-build --framework net5.0 "/restore:false"'
-      testRunTitle: 'Windows .NET v5.0'
 
   - task: DotNetCoreCLI@2
     displayName: 'Run Unit Tests (.NET Framework)'
     inputs:
       command: 'test'
-      arguments: '--no-restore --no-build --framework net472 "/restore:false"'
-      testRunTitle: 'Windows .NET Framework v4.7.2'
+      arguments: '--no-restore --no-build --framework net472 /noautorsp'
+      testRunTitle: 'Windows .NET Framework'
+    condition: succeededOrFailed()
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Run Unit Tests (.NET Core 3.0)'
+    inputs:
+      command: 'test'
+      arguments: '--no-restore --no-build --framework netcoreapp3.1 /noautorsp'
+      testRunTitle: 'Windows .NET Core 3.0'
+    condition: succeededOrFailed()
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Run Unit Tests (.NET 5.0)'
+    inputs:
+      command: 'test'
+      arguments: '--no-restore --no-build --framework net5.0 /noautorsp'
+      testRunTitle: 'Windows .NET 5.0'
+    condition: succeededOrFailed()
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Run Unit Tests (.NET 6.0)'
+    inputs:
+      command: 'test'
+      arguments: '--no-restore --no-build --framework net6.0 /noautorsp'
+      testRunTitle: 'Windows .NET 6.0'
+    condition: succeededOrFailed()
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifacts'
@@ -71,23 +101,51 @@ jobs:
   pool:
     vmImage: ubuntu-latest
   steps:
+
   - task: UseDotNet@2
-    displayName: 'Install .NET Core $(DotNetCore5Version)'
+    displayName: 'Install .NET Core $(DotNet3Version)'
     inputs:
-      version: '$(DotNetCore5Version)'
+      version: '$(DotNet3Version)'
+
+  - task: UseDotNet@2
+    displayName: 'Install .NET $(DotNet5Version)'
+    inputs:
+      version: '$(DotNet5Version)'
+
+  - task: UseDotNet@2
+    displayName: 'Install .NET $(DotNet6Version)'
+    inputs:
+      version: '$(DotNet6Version)'
 
   - task: DotNetCoreCLI@2
     displayName: 'dotnet build'
     inputs:
       command: 'build'
-      arguments: '-property:"Platform=$(BuildPlatform);Configuration=$(BuildConfiguration)"'
+      arguments: '$(MSBuildArgs)'
 
   - task: DotNetCoreCLI@2
-    displayName: 'Run Unit Tests (.NET 5)'
+    displayName: 'Run Unit Tests (.NET Core 3.0)'
     inputs:
       command: 'test'
-      arguments: '--no-restore --no-build --framework net5.0 "/restore:false"'
-      testRunTitle: 'Linux .NET v5.0'
+      arguments: '--no-restore --no-build --framework netcoreapp3.1 /noautorsp'
+      testRunTitle: 'Linux .NET Core 3.0'
+    condition: succeededOrFailed()
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Run Unit Tests (.NET 5.0)'
+    inputs:
+      command: 'test'
+      arguments: '--no-restore --no-build --framework net5.0 /noautorsp'
+      testRunTitle: 'Linux .NET 5.0'
+    condition: succeededOrFailed()
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Run Unit Tests (.NET 6.0)'
+    inputs:
+      command: 'test'
+      arguments: '--no-restore --no-build --framework net6.0 /noautorsp'
+      testRunTitle: 'Linux .NET 6.0'
+    condition: succeededOrFailed()
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifacts'
@@ -101,24 +159,51 @@ jobs:
   pool:
     vmImage: macOS-latest
   steps:
+
   - task: UseDotNet@2
-    displayName: 'Install .NET Core $(DotNetCore5Version)'
+    displayName: 'Install .NET Core $(DotNet3Version)'
     inputs:
-      version: '$(DotNetCore5Version)'
+      version: '$(DotNet3Version)'
+
+  - task: UseDotNet@2
+    displayName: 'Install .NET $(DotNet5Version)'
+    inputs:
+      version: '$(DotNet5Version)'
+
+  - task: UseDotNet@2
+    displayName: 'Install .NET $(DotNet6Version)'
+    inputs:
+      version: '$(DotNet6Version)'
 
   - task: DotNetCoreCLI@2
     displayName: 'dotnet build'
     inputs:
       command: 'build'
-      arguments: '-property:"Platform=$(BuildPlatform);Configuration=$(BuildConfiguration)"'
+      arguments: '$(MSBuildArgs)'
 
   - task: DotNetCoreCLI@2
-    displayName: 'Run Unit Tests (.NET 5)'
+    displayName: 'Run Unit Tests (.NET Core 3.0)'
     inputs:
       command: 'test'
-      arguments: '--no-restore --no-build --framework net5.0 "/restore:false"'
-      testRunTitle: 'MacOS .NET v5.0'
+      arguments: '--no-restore --no-build --framework netcoreapp3.1 /noautorsp'
+      testRunTitle: 'MacOS .NET Core 3.0'
+    condition: succeededOrFailed()
 
+  - task: DotNetCoreCLI@2
+    displayName: 'Run Unit Tests (.NET 5.0)'
+    inputs:
+      command: 'test'
+      arguments: '--no-restore --no-build --framework net5.0 /noautorsp'
+      testRunTitle: 'MacOS .NET 5.0'
+    condition: succeededOrFailed()
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Run Unit Tests (.NET 6.0)'
+    inputs:
+      command: 'test'
+      arguments: '--no-restore --no-build --framework net6.0 /noautorsp'
+      testRunTitle: 'MacOS .NET 6.0'
+    condition: succeededOrFailed()
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifacts'

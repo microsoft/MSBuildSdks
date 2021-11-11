@@ -18,7 +18,11 @@ namespace Microsoft.Build.NoTargets.UnitTests
             this ProjectCreatorTemplates templates,
             Action<ProjectCreator> customAction = null,
             string path = null,
+#if NETFRAMEWORK
+            string targetFramework = "net472",
+#else
             string targetFramework = "netstandard2.0",
+#endif
             string defaultTargets = null,
             string initialTargets = null,
             string sdk = null,
