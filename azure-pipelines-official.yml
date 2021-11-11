@@ -5,7 +5,7 @@ variables:
   ArtifactsDirectoryName: 'artifacts'
   BuildConfiguration: 'Release'
   BuildPlatform: 'Any CPU'
-  DotNet5Version: '5.x'
+  DotNetVersion: '6.x'
   MSBuildArgs: '"/p:Platform=$(BuildPlatform)" "/p:Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
   SignType: 'Test'
 
@@ -58,10 +58,9 @@ stages:
           }
 
     - task: UseDotNet@2
-      displayName: 'Install .NET $(DotNet5Version)'
+      displayName: 'Install .NET $(DotNetVersion)'
       inputs:
-        version: '$(DotNet5Version)'
-        includePreviewVersions: true
+        version: '$(DotNetVersion)'
 
     - task: MicroBuildSigningPlugin@1
       displayName: 'Install MicroBuild Signing Plugin'
