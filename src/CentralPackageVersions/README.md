@@ -10,36 +10,42 @@ The `Microsoft.Build.CentralPackageVersions` MSBuild project SDK allows project 
 
 To get started, you will need to create an MSBuild project at the root of your repository named `Packages.props` that declares `PackageReference` items that set the versions for projects.
 
-In this example, packages like `Newtonsoft.Json` are set to exactly version `10.0.1`.  All projects that reference this package will be locked to that version.  If someone attempts to specify a version in a project they will encounter a build error.
+In this example, packages like `Newtonsoft.Json` are set to use version `10.0.1`.  All projects that reference this package will be use to that version.  If someone attempts to specify a version in a project they will encounter a build error.
 
 **Packages.props**
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <PackageReference Update="Microsoft.NET.Test.Sdk"   Version="[15.5.0]" />
-    <PackageReference Update="MSTest.TestAdapter"       Version="[1.1.18]" />
-    <PackageReference Update="MSTest.TestFramework"     Version="[1.1.18]" />
-    <PackageReference Update="Newtonsoft.Json"          Version="[10.0.1]" />
+    <PackageReference Update="Microsoft.NET.Test.Sdk"   Version="15.5.0" />
+    <PackageReference Update="MSTest.TestAdapter"       Version="1.1.18" />
+    <PackageReference Update="MSTest.TestFramework"     Version="1.1.18" />
+    <PackageReference Update="Newtonsoft.Json"          Version="10.0.1" />
   </ItemGroup>
 </Project>
 ```
 
+Then create a [`Directory.Build.targets`](https://docs.microsoft.com/en-us/visualstudio/msbuild/customize-your-build?#directorybuildprops-and-directorybuildtargets) at the root of your repository to use `Microsoft.Build.CentralPackageVersions` (be sure to determine the latest version):
+
+**Directory.Build.targets**
+```xml
+<Project>
+  <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.1" />
+</Project>
+```
+Now all projects will use `Microsoft.Build.CentralPackageVersions`, still have a `PackageReference`, but must not specify a version.  This ensures that the correct packages are referenced for each project.
+
 **SampleProject.csproj**
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
-  <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.1" />
-  
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" />
   </ItemGroup>
 </Project>
 ```
-Each project still has a `PackageReference` but must not specify a version.  This ensures that the correct packages are referenced for each project.
 
 ### Overriding a PackageReference version
 
@@ -47,12 +53,9 @@ In some cases, you may need to override the version for a particular project.  T
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
-  <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.1" />
-  
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" VersionOverride="9.0.1" />
   </ItemGroup>
