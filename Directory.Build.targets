@@ -22,12 +22,11 @@
     <Authors>Microsoft</Authors>
     <Company>Microsoft</Company>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
-    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
-    <PackageLicensePath>$(MSBuildThisFileDirectory)$(PackageLicenseFile)</PackageLicensePath>
     <PackageProjectUrl>https://github.com/Microsoft/MSBuildSdks</PackageProjectUrl>
     <PackageIcon>MSBuild-NuGet-Icon.png</PackageIcon>
     <PackageIconPath>$(MSBuildThisFileDirectory)branding\$(PackageIcon)</PackageIconPath>
     <RepositoryUrl>https://github.com/Microsoft/MSBuildSdks.git</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(IsPackable)' == 'true'">
@@ -36,11 +35,6 @@
           PackagePath="Sdk\" />
     <None Include="README.md" />
     <None Include="version.json" />
-    <None Include="$(PackageLicensePath)"
-          Pack="true"
-          PackagePath="$(PackageLicenseFile)"
-          Visible="false" />
-
     <None Include="$(PackageIconPath)"
           Pack="true"
           PackagePath="\"
