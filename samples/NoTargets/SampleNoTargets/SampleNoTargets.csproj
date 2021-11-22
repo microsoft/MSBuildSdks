@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.Build.NoTargets/3.2.9">
+﻿<Project Sdk="Microsoft.Build.NoTargets/3.2.14">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
