@@ -40,8 +40,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                         ["DisableImplicitFrameworkReferences"] = "true",
                     }),
                     projectCreator: creator => creator
-                        .Property("EnableCentralPackageVersions", "true")
-                        .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.targets")))
+                        .Property("EnableCentralPackageVersions", "true"))
                 .TryGetPropertyValue("EnableCentralPackageVersions", out string enableCentralPackageVersions);
 
             enableCentralPackageVersions.ShouldBe("true");
@@ -64,8 +63,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                         ["DisableImplicitFrameworkReferences"] = "true",
                     }),
                     projectCreator: creator => creator
-                        .ItemPackageReference("Foo", "10.0.0")
-                        .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.targets")))
+                        .ItemPackageReference("Foo", "10.0.0"))
                 .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput)
                 .Project
                 .GetItems("PackageReference")
@@ -96,8 +94,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                         ["EnableGlobalPackageReferences"] = "false",
                     }),
                     projectCreator: creator => creator
-                        .ItemPackageReference("Foo")
-                        .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.targets")))
+                        .ItemPackageReference("Foo"))
                 .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput)
                 .Project
                 .GetItems("PackageReference")
@@ -134,8 +131,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                             metadata: new Dictionary<string, string>
                             {
                                 ["VersionOverride"] = "9.0.1",
-                            })
-                        .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.targets")))
+                            }))
                 .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput)
                 .Project
                 .GetItems("PackageReference")
@@ -164,9 +160,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                     {
                         ["UpdateImplicitFSharpCoreReference"] = "false",
                     }),
-                    targetFramework: "net46",
-                    projectCreator: creator => creator
-                        .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.targets")))
+                    targetFramework: "net46")
                 .TryGetItems("PackageReference", out IReadOnlyCollection<ProjectItem> items);
 
             items.Where(i => i.EvaluatedInclude.Equals("FSharp.Core"))
@@ -182,9 +176,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
 
             ProjectCreator.Templates
                 .SdkCsproj(
-                    path: Path.Combine(TestRootPath, "test.fsproj"),
-                    projectCreator: creator => creator
-                        .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.targets")))
+                    path: Path.Combine(TestRootPath, "test.fsproj"))
                 .TryGetItems("PackageReference", out IReadOnlyCollection<ProjectItem> items);
 
             items.Where(i => i.EvaluatedInclude.Equals("FSharp.Core"))
@@ -203,9 +195,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
             ProjectCreator.Templates
                 .SdkCsproj(
                     path: Path.Combine(TestRootPath, "test.fsproj"),
-                    targetFramework: "net46",
-                    projectCreator: creator => creator
-                        .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.targets")))
+                    targetFramework: "net46")
                 .TryGetItems("PackageReference", out IReadOnlyCollection<ProjectItem> items);
 
             items.Where(i => i.EvaluatedInclude.Equals("FSharp.Core"))
@@ -240,9 +230,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                     projectCollection: new ProjectCollection(new Dictionary<string, string>
                     {
                         ["DisableImplicitFrameworkReferences"] = "true",
-                    }),
-                    projectCreator: creator => creator
-                        .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.targets")))
+                    }))
                 .TryGetPropertyValue("EnableCentralPackageVersions", out string enableCentralPackageVersions);
 
             enableCentralPackageVersions.ShouldBe("false");
@@ -261,8 +249,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                     path: Path.Combine(TestRootPath, $"test.{projectFileExtension}"),
                     projectCreator: creator => creator
                         .ItemPackageReference("Foo")
-                        .ItemPackageReference("Global1")
-                        .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.targets")))
+                        .ItemPackageReference("Global1"))
                 .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeFalse(buildOutput.GetConsoleLog());
@@ -283,8 +270,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                     path: Path.Combine(TestRootPath, $"test.{projectFileExtension}"),
                     projectCreator: creator => creator
                         .ItemPackageReference("Foo")
-                        .ItemPackageReference("Baz")
-                        .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.targets")))
+                        .ItemPackageReference("Baz"))
                 .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeFalse(buildOutput.GetConsoleLog());
@@ -304,8 +290,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                 .SdkCsproj(
                     path: Path.Combine(TestRootPath, $"test.{projectFileExtension}"),
                     projectCreator: creator => creator
-                        .ItemPackageReference("Foo", "10.0.0")
-                        .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.targets")))
+                        .ItemPackageReference("Foo", "10.0.0"))
                 .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeFalse(buildOutput.GetConsoleLog());
@@ -330,8 +315,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                         ["EnablePackageVersionOverride"] = "false",
                     }),
                     projectCreator: creator => creator
-                        .ItemPackageReference("Foo", "10.0.0")
-                        .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.targets")))
+                        .ItemPackageReference("Foo", "10.0.0"))
                 .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeFalse(buildOutput.GetConsoleLog());
@@ -350,8 +334,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                     targetFramework: "netcoreapp2.0",
                     sdk: "Microsoft.NET.Sdk.Web",
                     projectCreator: creator => creator
-                        .ItemPackageReference("Microsoft.AspNetCore.All")
-                        .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.targets")))
+                        .ItemPackageReference("Microsoft.AspNetCore.All"))
                 .TryGetItems("PackageReference", out IReadOnlyCollection<ProjectItem> items);
 
             items.Where(i => i.EvaluatedInclude.Equals("Microsoft.AspNetCore.All"))
@@ -371,8 +354,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                     targetFramework: "netcoreapp2.0",
                     sdk: "Microsoft.NET.Sdk.Web",
                     projectCreator: creator => creator
-                        .ItemPackageReference("Microsoft.AspNetCore.App")
-                        .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.targets")))
+                        .ItemPackageReference("Microsoft.AspNetCore.App"))
                 .TryGetItems("PackageReference", out IReadOnlyCollection<ProjectItem> items);
 
             items.Where(i => i.EvaluatedInclude.Equals("Microsoft.AspNetCore.App"))
@@ -398,8 +380,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                     }),
                     projectCreator: creator => creator
                         .ItemPackageReference("Foo")
-                        .ItemPackageReference("Bar")
-                        .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.targets")))
+                        .ItemPackageReference("Bar"))
                 .Project
                 .GetItems("PackageReference")
                     .Where(i => !i.EvaluatedInclude.Equals("FSharp.Core"))
@@ -410,6 +391,20 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                     { "Bar", "4.5.6" },
                     { "Global1", "1.0.0" },
                 });
+        }
+
+        [Theory]
+        [InlineData("UsingMicrosoftCentralPackageVersionsSdk", "true")]
+        public void PropertiesAreSet(string propertyName, string expectedValue)
+        {
+            WritePackagesProps();
+
+            ProjectCreator.Templates
+                .SdkCsproj()
+                    .Save(GetTempFileWithExtension(".csproj"))
+                    .TryGetPropertyValue(propertyName, out string actualValue);
+
+            actualValue.ShouldBe(expectedValue);
         }
 
         [Theory]
@@ -434,8 +429,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                             metadata: new Dictionary<string, string>
                             {
                                 ["VersionOverride"] = "1.0.0",
-                            })
-                        .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.targets")))
+                            }))
                 .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeTrue(buildOutput.GetConsoleLog());
@@ -463,8 +457,7 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
                             metadata: new Dictionary<string, string>
                             {
                                 ["VersionOverride"] = "1.0.0",
-                            })
-                        .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.targets")))
+                            }))
                 .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeFalse(buildOutput.GetConsoleLog());
@@ -474,6 +467,14 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
 
         private ProjectCreator WritePackagesProps()
         {
+            ProjectCreator.Create()
+                .Save(Path.Combine(TestRootPath, "Directory.Build.props"));
+
+            ProjectCreator.Create()
+                .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.props"))
+                .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.targets"))
+                .Save(Path.Combine(TestRootPath, "Directory.Build.targets"));
+
             return ProjectCreator.Templates
                 .PackagesProps(
                     path: Path.Combine(TestRootPath, "Packages.props"),
