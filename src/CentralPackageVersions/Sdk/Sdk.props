@@ -12,7 +12,5 @@
     <UsingMicrosoftCentralPackageVersionsSdk>true</UsingMicrosoftCentralPackageVersionsSdk>
   </PropertyGroup>
 
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition=" '$(MicrosoftCommonPropsHasBeenImported)' != 'true' And Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props') "/>
-
   <Import Project="$(CustomAfterCentralPackageVersionsProps)" Condition=" '$(CustomAfterCentralPackageVersionsProps)' != '' And Exists('$(CustomAfterCentralPackageVersionsProps)') " />
 </Project>
