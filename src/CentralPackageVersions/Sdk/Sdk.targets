@@ -14,6 +14,10 @@
 
   <PropertyGroup Condition=" '$(EnableCentralPackageVersions)' != 'false' ">
     <!--
+      Keep track if this file was imported before Directory.Build.targets
+    -->
+    <_WasMicrosoftCentralPackageVersionsSdkImportedInDirectoryBuildTargets Condition="'$(_WasMicrosoftCentralPackageVersionsSdkImportedInDirectoryBuildTargets)' == '' And '$(DirectoryBuildTargetsPath)' == ''">false</_WasMicrosoftCentralPackageVersionsSdkImportedInDirectoryBuildTargets>
+    <!--
       Walk up the directory tree looking for a Packages.props, unless a user has already specified a path.
     -->
     <CentralPackagesFile Condition=" '$(CentralPackagesFile)' == '' ">$([MSBuild]::GetPathOfFileAbove('Packages.props', $(MSBuildProjectDirectory)))</CentralPackagesFile>
@@ -151,7 +155,13 @@
       <_DuplicateGlobalPackageReference Include="@(_OriginalPackageReference)"
                                         Condition=" '@(GlobalPackageReference)' == '@(_OriginalPackageReference)' and '%(Identity)' != '' " />
     </ItemGroup>
-
+    
+    <!--
+      Log an error if this was imported before Directory.Build.targets
+    -->
+    <Error Text="Microsoft.Build.CentralPackageVersions was not imported in Directory.Build.targets.  See https://github.com/microsoft/MSBuildSdks/tree/main/src/CentralPackageVersions for more information on how to include this SDK."
+           Condition="'$(_WasMicrosoftCentralPackageVersionsSdkImportedInDirectoryBuildTargets)' == 'false'"
+           File="$(MSBuildProjectFullPath)" />
     <!--
       Log an error if there are any duplicate <PackageReference /> items where a <GlobalPackageReference /> is already defined.
     -->
