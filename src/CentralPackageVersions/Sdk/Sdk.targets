@@ -16,7 +16,7 @@
     <!--
       Keep track if this file was imported before Directory.Build.targets
     -->
-    <_WasMicrosoftCentralPackageVersionsSdkImportedInDirectoryBuildTargets Condition="'$(_WasMicrosoftCentralPackageVersionsSdkImportedInDirectoryBuildTargets)' == '' And '$(CommonTargetsPath)' == ''">false</_WasMicrosoftCentralPackageVersionsSdkImportedInDirectoryBuildTargets>
+    <_WasMicrosoftCentralPackageVersionsSdkImportedInDirectoryBuildTargets Condition="'$(_WasMicrosoftCentralPackageVersionsSdkImportedInDirectoryBuildTargets)' == '' And '$(DirectoryBuildTargetsPath)' == ''">false</_WasMicrosoftCentralPackageVersionsSdkImportedInDirectoryBuildTargets>
     <!--
       Walk up the directory tree looking for a Packages.props, unless a user has already specified a path.
     -->
