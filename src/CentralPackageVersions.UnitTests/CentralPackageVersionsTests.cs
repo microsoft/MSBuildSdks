@@ -236,37 +236,6 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
             enableCentralPackageVersions.ShouldBe("false");
         }
 
-        [Fact]
-        public void LogErrorIfImportedInDirectoryBuildProps()
-        {
-            ProjectCreator.Create()
-                .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.props"))
-                .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.targets"))
-                .Save(GetTempFile("Directory.Build.props"));
-
-            ProjectCreator.Create()
-                .Save(GetTempFile("Directory.Build.targets"));
-
-            ProjectCreator.Templates
-                .PackagesProps(
-                    path: GetTempFile("Packages.props"),
-                    packageReferences: new Dictionary<string, string>
-                    {
-                        ["Foo"] = "1.2.3",
-                    })
-                .Save();
-
-            ProjectCreator.Templates
-                .SdkCsproj(projectCreator: creator => creator
-                    .ItemPackageReference("Foo"))
-                .Save(GetTempFile("Test.csproj"))
-                .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput);
-
-            result.ShouldBeFalse(buildOutput.GetConsoleLog());
-
-            buildOutput.Errors.ShouldBe(new[] { "Microsoft.Build.CentralPackageVersions was not imported in Directory.Build.targets.  See https://github.com/microsoft/MSBuildSdks/tree/main/src/CentralPackageVersions for more information on how to include this SDK." }, buildOutput.GetConsoleLog());
-        }
-
         [Theory]
         [InlineData(".csproj")]
         [InlineData(".fsproj")]
@@ -496,44 +465,15 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
             buildOutput.Errors.ShouldBe(new[] { $"The package reference \'Orphan\' must have a version defined in \'{packagesProps.FullPath}\'." });
         }
 
-        [Fact]
-        public void WorksWithCustomImportPattern()
+        private ProjectCreator WritePackagesProps()
         {
-            WritePackagesProps(writeDirectoryBuildPropsTargets: false);
-
-            ProjectCreator customProps = ProjectCreator.Create()
-                    .ImportSdk("Sdk.props", "Microsoft.NET.Sdk")
-                    .Save(Path.Combine(TestRootPath, "Custom.props"));
-
-            ProjectCreator customTargets = ProjectCreator.Create()
-                .ImportSdk("Sdk.targets", "Microsoft.NET.Sdk")
-                .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.props"))
-                .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.targets"))
-                .Save(Path.Combine(TestRootPath, "Custom.targets"));
+            ProjectCreator.Create()
+                .Save(Path.Combine(TestRootPath, "Directory.Build.props"));
 
             ProjectCreator.Create()
-                .Import(customProps)
-                .Property("TargetFramework", "net45")
-                .ItemPackageReference("Foo")
-                .Import(customTargets)
-                .Save(GetTempFileWithExtension(".csproj"))
-                .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput);
-
-            result.ShouldBeTrue(buildOutput.GetConsoleLog());
-        }
-
-        private ProjectCreator WritePackagesProps(bool writeDirectoryBuildPropsTargets = true)
-        {
-            if (writeDirectoryBuildPropsTargets)
-            {
-                ProjectCreator.Create()
-                    .Save(Path.Combine(TestRootPath, "Directory.Build.props"));
-
-                ProjectCreator.Create()
-                    .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.props"))
-                    .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.targets"))
-                    .Save(Path.Combine(TestRootPath, "Directory.Build.targets"));
-            }
+                .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.props"))
+                .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.targets"))
+                .Save(Path.Combine(TestRootPath, "Directory.Build.targets"));
 
             return ProjectCreator.Templates
                 .PackagesProps(
