@@ -236,37 +236,6 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
             enableCentralPackageVersions.ShouldBe("false");
         }
 
-        [Fact]
-        public void LogErrorIfImportedInDirectoryBuildProps()
-        {
-            ProjectCreator.Create()
-                .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.props"))
-                .Import(Path.Combine(ThisAssemblyDirectory, @"Sdk\Sdk.targets"))
-                .Save(GetTempFile("Directory.Build.props"));
-
-            ProjectCreator.Create()
-                .Save(GetTempFile("Directory.Build.targets"));
-
-            ProjectCreator.Templates
-                .PackagesProps(
-                    path: GetTempFile("Packages.props"),
-                    packageReferences: new Dictionary<string, string>
-                    {
-                        ["Foo"] = "1.2.3",
-                    })
-                .Save();
-
-            ProjectCreator.Templates
-                .SdkCsproj(projectCreator: creator => creator
-                    .ItemPackageReference("Foo"))
-                .Save(GetTempFile("Test.csproj"))
-                .TryBuild("CheckPackageReferences", out bool result, out BuildOutput buildOutput);
-
-            result.ShouldBeFalse(buildOutput.GetConsoleLog());
-
-            buildOutput.Errors.ShouldBe(new[] { "Microsoft.Build.CentralPackageVersions was not imported in Directory.Build.targets.  See https://github.com/microsoft/MSBuildSdks/tree/main/src/CentralPackageVersions for more information on how to include this SDK." }, buildOutput.GetConsoleLog());
-        }
-
         [Theory]
         [InlineData(".csproj")]
         [InlineData(".fsproj")]
