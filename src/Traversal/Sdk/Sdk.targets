@@ -235,6 +235,11 @@
              StopOnFirstFailure="$(StopOnFirstFailure)"
              ContinueOnError="$([MSBuild]::ValueOrDefault('$(PublishContinueOnError)', '$(ContinueOnError)'))" />
   </Target>
+  
+  <!--
+    Traversal projects do not build an assembly so dependent projects shouldn't get a path to the target.  Override the GetTargetPath to do nothing.
+  -->
+  <Target Name="GetTargetPath" />
 
   <!--
     Traversal projects do not build anything and should not check for invalid configuration/platform.
