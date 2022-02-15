@@ -96,9 +96,7 @@
     <PublishDependsOn Condition="'$(NoBuild)' == 'true'">
     </PublishDependsOn>
     
-    <GetTargetPathDependsOn>
-      ResolveP2PReferences;
-    </GetTargetPathDependsOn>
+    <GetTargetPathDependsOn></GetTargetPathDependsOn>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TraversalTranslateProjectFileItems)' != 'false' ">
