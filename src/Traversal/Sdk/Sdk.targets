@@ -95,6 +95,10 @@
 
     <PublishDependsOn Condition="'$(NoBuild)' == 'true'">
     </PublishDependsOn>
+    
+    <GetTargetPathDependsOn>
+      ResolveP2PReferences;
+    </GetTargetPathDependsOn>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TraversalTranslateProjectFileItems)' != 'false' ">
@@ -236,10 +240,23 @@
              ContinueOnError="$([MSBuild]::ValueOrDefault('$(PublishContinueOnError)', '$(ContinueOnError)'))" />
   </Target>
   
-  <!--
-    Traversal projects do not build an assembly so dependent projects shouldn't get a path to the target.  Override the GetTargetPath to do nothing.
-  -->
-  <Target Name="GetTargetPath" />
+  <Target Name="GetTargetPath"
+          DependsOnTargets="$(GetTargetPathDependsOn)"
+          Returns="@(CollectedBuildOutput)">
+    <MSBuild Projects="@(ProjectReference)"
+             Condition="'%(ProjectReference.Build)' != 'false'"
+             Targets="GetTargetPath"
+             BuildInParallel="$([MSBuild]::ValueOrDefault('%(ProjectReference.BuildInParallel)', '$(BuildInParallel)'))"
+             SkipNonexistentProjects="$(SkipNonexistentProjects)"
+             SkipNonexistentTargets="$(SkipNonexistentTargets)"
+             StopOnFirstFailure="$(StopOnFirstFailure)"
+             Properties="%(ProjectReference.SetConfiguration); %(ProjectReference.SetPlatform); %(ProjectReference.SetTargetFramework)"
+             ContinueOnError="$(ContinueOnError)">
+      <Output TaskParameter="TargetOutputs" ItemName="CollectedBuildOutput" />
+    </MSBuild>
+  </Target>
+
+  <Target Name="GetTargetPathWithTargetPlatformMoniker" />
 
   <!--
     Traversal projects do not build anything and should not check for invalid configuration/platform.
