@@ -67,6 +67,7 @@ stages:
       inputs:
         signType: '$(SignType)'
         zipSources: false
+        version: '1.1.445'
 
     - task: DotNetCoreCLI@2
       displayName: 'Build Solution'
