@@ -62,7 +62,7 @@ stages:
       inputs:
         version: '$(DotNetVersion)'
 
-    - task: MicroBuildSigningPlugin@1
+    - task: MicroBuildSigningPlugin@4
       displayName: 'Install MicroBuild Signing Plugin'
       inputs:
         signType: '$(SignType)'
