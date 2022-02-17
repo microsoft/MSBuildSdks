@@ -13,6 +13,21 @@ namespace Microsoft.Build.Traversal.UnitTests
     {
         private static readonly string ThisAssemblyDirectory = Path.GetDirectoryName(typeof(CustomProjectCreatorTemplates).Assembly.Location);
 
+        public static ProjectCreator ProjectWithBuildOutput(
+            this ProjectCreatorTemplates templates,
+            string target,
+            ProjectCollection projectCollection = null,
+            Action<ProjectCreator> customAction = null)
+        {
+            return ProjectCreator.Templates.SdkCsproj(
+                    sdk: String.Empty,
+                    projectCreator: customAction,
+                    projectCollection: projectCollection)
+                .Target(target, returns: "@(CollectedBuildOutput)")
+                    .TargetItemInclude("CollectedBuildOutput", Path.Combine("bin", "$(MSBuildThisFileName).dll"))
+                .Target("Clean");
+        }
+
         public static ProjectCreator TraversalProject(
             this ProjectCreatorTemplates templates,
             string[] projectReferences = null,
