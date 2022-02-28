@@ -19,6 +19,7 @@ namespace Microsoft.Build.Traversal.UnitTests
     public class TraversalTests : MSBuildSdkTestBase
     {
         [Theory]
+        [InlineData("Rebuild")]
         [InlineData("Build")]
         [InlineData("GetTargetPath")]
         public void CollectsProjectReferenceBuildTargetOutputs(string target)
