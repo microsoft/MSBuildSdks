@@ -48,6 +48,10 @@
     
     <!-- Don't log the high priority message mentioning this project's name (or copy the product we didn't build). -->
     <SkipCopyBuildProduct Condition="'$(SkipCopyBuildProduct)' == ''">true</SkipCopyBuildProduct>
+
+    <!-- Don't automatically reference assembly packages since NoTargets don't need reference assemblies -->
+    <AutomaticallyUseReferenceAssemblyPackages Condition="'$(AutomaticallyUseReferenceAssemblyPackages)' == ''">false</AutomaticallyUseReferenceAssemblyPackages>
+    <NoCompilerStandardLib Condition="'$(NoCompilerStandardLib)' == ''">false</NoCompilerStandardLib>
   </PropertyGroup>
 
   <ItemDefinitionGroup Condition=" '$(NoTargetsDoNotReferenceOutputAssemblies)' != 'false' ">

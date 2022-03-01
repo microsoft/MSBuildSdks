@@ -163,6 +163,8 @@ namespace Microsoft.Build.NoTargets.UnitTests
         [InlineData("IncludeBuildOutput", "false")]
         [InlineData("ProduceReferenceAssembly", "false")]
         [InlineData("SkipCopyBuildProduct", "true")]
+        [InlineData("AutomaticallyUseReferenceAssemblyPackages", "false")]
+        [InlineData("NoCompilerStandardLib", "false")]
         public void PropertiesHaveExpectedValues(string propertyName, string expectedValue)
         {
             ProjectCreator.Templates.NoTargetsProject(
