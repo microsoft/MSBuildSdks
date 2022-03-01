@@ -81,6 +81,12 @@
   -->
   <Target Name="GetTargetPathWithTargetPlatformMoniker" />
 
+  <!--
+    The GetReferenceAssemblyPaths does not need to run since reference assemblies aren't needed.
+  -->
+  <Target Name="GetFrameworkPaths" DependsOnTargets="$(GetFrameworkPathsDependsOn)" />
+  <Target Name="GetReferenceAssemblyPaths" DependsOnTargets="$(GetReferenceAssemblyPathsDependsOn)" />
+
   <Import Project="$(CustomAfterNoTargets)" Condition="'$(CustomAfterNoTargets)' != '' and Exists('$(CustomAfterNoTargets)')" />
 
   <!-- 
