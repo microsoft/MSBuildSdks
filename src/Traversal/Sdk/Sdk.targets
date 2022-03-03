@@ -158,6 +158,7 @@
                                 $([MSBuild]::ValueOrDefault('$(CleanInParallel)', '$(BuildInParallel)'))
                                 ))
                                ))"
+             Properties="%(ProjectReference.SetConfiguration); %(ProjectReference.SetPlatform); %(ProjectReference.SetTargetFramework)"
              SkipNonexistentProjects="$(SkipNonexistentProjects)"
              SkipNonexistentTargets="$(SkipNonexistentTargets)"
              StopOnFirstFailure="$(StopOnFirstFailure)"
@@ -180,6 +181,7 @@
                                 $([MSBuild]::ValueOrDefault('$(TestInParallel)', '$(BuildInParallel)'))
                                 ))
                                ))"
+             Properties="%(ProjectReference.SetConfiguration); %(ProjectReference.SetPlatform); %(ProjectReference.SetTargetFramework)"
              SkipNonexistentProjects="$(SkipNonexistentProjects)"
              SkipNonexistentTargets="$(SkipNonexistentTargets)"
              StopOnFirstFailure="$(StopOnFirstFailure)"
@@ -197,6 +199,7 @@
                                 $([MSBuild]::ValueOrDefault('$(TestInParallel)', '$(BuildInParallel)'))
                                 ))
                                ))"
+             Properties="%(ProjectReference.SetConfiguration); %(ProjectReference.SetPlatform); %(ProjectReference.SetTargetFramework)"
              SkipNonexistentProjects="$(SkipNonexistentProjects)"
              SkipNonexistentTargets="$(SkipNonexistentTargets)"
              StopOnFirstFailure="$(StopOnFirstFailure)"
