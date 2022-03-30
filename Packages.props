@@ -3,7 +3,6 @@
     <MicrosoftBuildPackageVersion>17.0.0</MicrosoftBuildPackageVersion>
     <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'netcoreapp3.1'">16.9.0</MicrosoftBuildPackageVersion>
     <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'net46'">15.9.20</MicrosoftBuildPackageVersion>
-    <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'net5.0'">16.11.0</MicrosoftBuildPackageVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Update="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildPackageVersion)" />
