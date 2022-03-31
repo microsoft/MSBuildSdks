@@ -236,6 +236,34 @@ namespace Microsoft.Build.CentralPackageVersions.UnitTests
             enableCentralPackageVersions.ShouldBe("false");
         }
 
+        [Fact]
+        public void IsDisabledIfUsingNuGetBuiltInCentralPackageManagement()
+        {
+            WritePackagesProps();
+
+            ProjectCreator.Create()
+                .Property("ManagePackageVersionsCentrally", bool.TrueString)
+                .ItemInclude("PackageVersion", "Foo", metadata: new Dictionary<string, string> { ["Version"] = "1.2.4" })
+                .Save(Path.Combine(TestRootPath, "Directory.Packages.props"));
+
+            ProjectCreator.Templates
+                .SdkCsproj()
+                    .ItemPackageReference("Foo")
+                .Save(Path.Combine(TestRootPath, $"test.csproj"))
+                .TryGetPropertyValue("EnableCentralPackageVersions", out string enableCentralPackageVersions)
+                .TryGetItems("PackageReference", out IReadOnlyCollection<ProjectItem> packageReferences)
+                .TryGetItems("PackageVersion", out IReadOnlyCollection<ProjectItem> packageVersions);
+
+            enableCentralPackageVersions.ShouldBe(bool.FalseString, StringCompareShould.IgnoreCase);
+
+            packageReferences.Where(i => !string.Equals(i.GetMetadataValue("IsImplicitlyDefined"), bool.TrueString, System.StringComparison.OrdinalIgnoreCase)).Select(i => i.GetMetadataValue("Version")).ShouldAllBe(i => string.Equals(i, string.Empty));
+
+            packageVersions.ToDictionary(i => i.EvaluatedInclude, i => i.GetMetadataValue("Version")).ShouldBe(new Dictionary<string, string>
+            {
+                ["Foo"] = "1.2.4",
+            });
+        }
+
         [Theory]
         [InlineData(".csproj")]
         [InlineData(".fsproj")]
