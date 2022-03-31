@@ -6,6 +6,13 @@
 -->
 <Project InitialTargets="CheckPackageReferences" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <PropertyGroup>
+    <!--
+      Disable Microsoft.Build.CentralPackageVersions if NuGet's built in central package management is in use
+    -->
+    <EnableCentralPackageVersions Condition="'$(ManagePackageVersionsCentrally)' == 'true'">false</EnableCentralPackageVersions>
+  </PropertyGroup>
+
   <!--
     Import a user extension if specified.
   -->
