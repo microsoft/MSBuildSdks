@@ -52,6 +52,13 @@
     <!-- Don't automatically reference assembly packages since NoTargets don't need reference assemblies -->
     <AutomaticallyUseReferenceAssemblyPackages Condition="'$(AutomaticallyUseReferenceAssemblyPackages)' == ''">false</AutomaticallyUseReferenceAssemblyPackages>
     <NoCompilerStandardLib Condition="'$(NoCompilerStandardLib)' == ''">false</NoCompilerStandardLib>
+    
+    <!-- Indicate no symbols will be generated -->
+    <DebugType Condition="'$(DebugType)' == ''">None</DebugType>
+    <DebugSymbols Condition="'$(DebugSymbols)' == ''">false</DebugSymbols>
+    
+    <!-- Disable Visual Studio's Fast Up-to-date Check and rely on MSBuild to determine -->
+    <DisableFastUpToDateCheck Condition="'$(DisableFastUpToDateCheck )' == ''">true</DisableFastUpToDateCheck>
   </PropertyGroup>
 
   <ItemDefinitionGroup Condition=" '$(NoTargetsDoNotReferenceOutputAssemblies)' != 'false' ">

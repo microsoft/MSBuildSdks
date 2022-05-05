@@ -165,6 +165,9 @@ namespace Microsoft.Build.NoTargets.UnitTests
         [InlineData("SkipCopyBuildProduct", "true")]
         [InlineData("AutomaticallyUseReferenceAssemblyPackages", "false")]
         [InlineData("NoCompilerStandardLib", "false")]
+        [InlineData("DebugType", "None")]
+        [InlineData("DebugSymbols", "false")]
+        [InlineData("DisableFastUpToDateCheck", "true")]
         public void PropertiesHaveExpectedValues(string propertyName, string expectedValue)
         {
             ProjectCreator.Templates.NoTargetsProject(
