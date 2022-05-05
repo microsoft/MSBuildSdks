@@ -5,14 +5,21 @@
   Licensed under the MIT license.
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(CustomBeforeCentralPackageVersionsProps)" Condition=" '$(CustomBeforeCentralPackageVersionsProps)' != '' And Exists('$(CustomBeforeCentralPackageVersionsProps)') " />
-
   <PropertyGroup>
+    <!--
+      Disable Microsoft.Build.CentralPackageVersions if NuGet's built in central package management is in use
+    -->
+    <EnableCentralPackageVersions Condition="'$(ManagePackageVersionsCentrally)' == 'true'">false</EnableCentralPackageVersions>
+  </PropertyGroup>
+  
+  <Import Project="$(CustomBeforeCentralPackageVersionsProps)" Condition="'$(EnableCentralPackageVersions)' != 'false' And '$(CustomBeforeCentralPackageVersionsProps)' != '' And Exists('$(CustomBeforeCentralPackageVersionsProps)')" />
+
+  <PropertyGroup Condition="'$(EnableCentralPackageVersions)' != 'false'">
     <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
     <UsingMicrosoftCentralPackageVersionsSdk>true</UsingMicrosoftCentralPackageVersionsSdk>
   </PropertyGroup>
 
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition=" '$(MicrosoftCommonPropsHasBeenImported)' != 'true' And Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props') "/>
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="'$(EnableCentralPackageVersions)' != 'false' And '$(MicrosoftCommonPropsHasBeenImported)' != 'true' And Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')"/>
 
-  <Import Project="$(CustomAfterCentralPackageVersionsProps)" Condition=" '$(CustomAfterCentralPackageVersionsProps)' != '' And Exists('$(CustomAfterCentralPackageVersionsProps)') " />
+  <Import Project="$(CustomAfterCentralPackageVersionsProps)" Condition="'$(EnableCentralPackageVersions)' != 'false' And '$(CustomAfterCentralPackageVersionsProps)' != '' And Exists('$(CustomAfterCentralPackageVersionsProps)')" />
 </Project>

@@ -62,18 +62,17 @@ stages:
       inputs:
         version: '$(DotNetVersion)'
 
-    - task: MicroBuildSigningPlugin@1
+    - task: MicroBuildSigningPlugin@4
       displayName: 'Install MicroBuild Signing Plugin'
       inputs:
         signType: '$(SignType)'
         zipSources: false
 
-    - task: DotNetCoreCLI@2
+    - task: VSBuild@1
       displayName: 'Build Solution'
       inputs:
-        command: 'build'
         projects: 'MSBuildSdks.sln'
-        arguments: '$(MSBuildArgs)'
+        msbuildArgs: '$(MSBuildArgs)'
 
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifacts'

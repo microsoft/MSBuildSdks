@@ -19,57 +19,35 @@ namespace Microsoft.Build.Traversal.UnitTests
     public class TraversalTests : MSBuildSdkTestBase
     {
         [Theory]
-        [InlineData(null)]
-        [InlineData("Build")]
         [InlineData("Rebuild")]
+        [InlineData("Build")]
+        [InlineData("GetTargetPath")]
         public void CollectsProjectReferenceBuildTargetOutputs(string target)
         {
-            string[] projects = new[]
-            {
-                GetSkeletonCSProjWithTargetOutputs(@"A\A"),
-                GetSkeletonCSProjWithTargetOutputs(@"B\B"),
-            }.Select(i => i.FullPath).ToArray();
-
-            var subTraversalProject = ProjectCreator
-                .Templates
-                .TraversalProject(projects, path: GetTempFile(@"dirs\dirs.proj"))
-                .Save();
-
-            ProjectCreator
-                .Create(path: GetTempFile("root.proj"))
-                .Target("BuildTraversalProject")
-                .Task(
-                    "MSBuild",
-                    parameters: new Dictionary<string, string>
+            ProjectCreator traversalProject = ProjectCreator.Templates.TraversalProject(
+                    projectReferences: new string[]
                     {
-                        ["Projects"] = subTraversalProject.FullPath,
-                        ["Targets"] = "Restore",
-                        ["Properties"] = $"MSBuildRestoreSessionId={Guid.NewGuid():N}",
+                        ProjectCreator.Templates.ProjectWithBuildOutput(target)
+                            .Save(GetTempFile(Path.Combine("A", "A.csproj"))),
+                        ProjectCreator.Templates.ProjectWithBuildOutput(target)
+                            .Save(GetTempFile(Path.Combine("B", "B.csproj"))),
                     })
-                .Task(
-                    "MSBuild",
-                    parameters: new Dictionary<string, string>
-                    {
-                        ["Projects"] = subTraversalProject.FullPath,
-                        ["Targets"] = target,
-                    })
-                .TaskOutputItem("TargetOutputs", "CollectedOutputs")
-                .TaskMessage("%(CollectedOutputs.Identity)", MessageImportance.High)
-                .Save()
-                .TryBuild("BuildTraversalProject", out bool _, out BuildOutput buildOutput);
+                .Property("SkipResolvePackageAssets", bool.TrueString)
+                .Target("ResolvePackageAssets")
+                .Save(GetTempFile("dirs.proj"))
+                .TryBuild(target, out bool result, out BuildOutput buildOutput, out IDictionary<string, TargetResult> targetOutputs);
 
-            buildOutput.Messages.High.ShouldContain("A.dll", buildOutput.GetConsoleLog());
-            buildOutput.Messages.High.ShouldContain("B.dll", buildOutput.GetConsoleLog());
+            result.ShouldBeTrue(buildOutput.GetConsoleLog());
 
-            ProjectCreator GetSkeletonCSProjWithTargetOutputs(string projectName)
-            {
-                return ProjectCreator.Templates.SdkCsproj(path: GetTempFile($"{projectName}.csproj"), sdk: string.Empty)
-                                    .Target("Build", returns: "@(TestReturnItem)")
-                                    .TargetItemGroup()
-                                    .TargetItemInclude("TestReturnItem", "$(MSBuildThisFileName).dll")
-                                    .Target("Clean")
-                                    .Save();
-            }
+            targetOutputs.ShouldContainKey(target, buildOutput.GetConsoleLog());
+
+            targetOutputs[target].Items.Select(i => i.ItemSpec).ShouldBe(
+                new[]
+                {
+                    Path.Combine("bin", "A.dll"),
+                    Path.Combine("bin", "B.dll"),
+                },
+                buildOutput.GetConsoleLog());
         }
 
         [Fact]

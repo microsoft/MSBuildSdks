@@ -1,9 +1,9 @@
 <Project>
   <ItemGroup>
-    <PackageReference Update="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Update="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="3.2.31" Condition="'$(EnableGitVersioning)' != 'false'" />
+    <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="3.5.103" Condition="'$(EnableGitVersioning)' != 'false'" />
   </ItemGroup>
 </Project>

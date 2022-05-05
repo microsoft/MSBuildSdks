@@ -95,6 +95,8 @@
 
     <PublishDependsOn Condition="'$(NoBuild)' == 'true'">
     </PublishDependsOn>
+    
+    <GetTargetPathDependsOn></GetTargetPathDependsOn>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TraversalTranslateProjectFileItems)' != 'false' ">
@@ -156,6 +158,7 @@
                                 $([MSBuild]::ValueOrDefault('$(CleanInParallel)', '$(BuildInParallel)'))
                                 ))
                                ))"
+             Properties="%(ProjectReference.SetConfiguration); %(ProjectReference.SetPlatform); %(ProjectReference.SetTargetFramework)"
              SkipNonexistentProjects="$(SkipNonexistentProjects)"
              SkipNonexistentTargets="$(SkipNonexistentTargets)"
              StopOnFirstFailure="$(StopOnFirstFailure)"
@@ -178,6 +181,7 @@
                                 $([MSBuild]::ValueOrDefault('$(TestInParallel)', '$(BuildInParallel)'))
                                 ))
                                ))"
+             Properties="%(ProjectReference.SetConfiguration); %(ProjectReference.SetPlatform); %(ProjectReference.SetTargetFramework)"
              SkipNonexistentProjects="$(SkipNonexistentProjects)"
              SkipNonexistentTargets="$(SkipNonexistentTargets)"
              StopOnFirstFailure="$(StopOnFirstFailure)"
@@ -195,6 +199,7 @@
                                 $([MSBuild]::ValueOrDefault('$(TestInParallel)', '$(BuildInParallel)'))
                                 ))
                                ))"
+             Properties="%(ProjectReference.SetConfiguration); %(ProjectReference.SetPlatform); %(ProjectReference.SetTargetFramework)"
              SkipNonexistentProjects="$(SkipNonexistentProjects)"
              SkipNonexistentTargets="$(SkipNonexistentTargets)"
              StopOnFirstFailure="$(StopOnFirstFailure)"
@@ -235,6 +240,24 @@
              StopOnFirstFailure="$(StopOnFirstFailure)"
              ContinueOnError="$([MSBuild]::ValueOrDefault('$(PublishContinueOnError)', '$(ContinueOnError)'))" />
   </Target>
+  
+  <Target Name="GetTargetPath"
+          DependsOnTargets="$(GetTargetPathDependsOn)"
+          Returns="@(CollectedBuildOutput)">
+    <MSBuild Projects="@(ProjectReference)"
+             Condition="'%(ProjectReference.Build)' != 'false'"
+             Targets="GetTargetPath"
+             BuildInParallel="$([MSBuild]::ValueOrDefault('%(ProjectReference.BuildInParallel)', '$(BuildInParallel)'))"
+             SkipNonexistentProjects="$(SkipNonexistentProjects)"
+             SkipNonexistentTargets="$(SkipNonexistentTargets)"
+             StopOnFirstFailure="$(StopOnFirstFailure)"
+             Properties="%(ProjectReference.SetConfiguration); %(ProjectReference.SetPlatform); %(ProjectReference.SetTargetFramework)"
+             ContinueOnError="$(ContinueOnError)">
+      <Output TaskParameter="TargetOutputs" ItemName="CollectedBuildOutput" />
+    </MSBuild>
+  </Target>
+
+  <Target Name="GetTargetPathWithTargetPlatformMoniker" />
 
   <!--
     Traversal projects do not build anything and should not check for invalid configuration/platform.
