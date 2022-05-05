@@ -11,7 +11,7 @@
     <PackageReference Update="MSBuild.ProjectCreation" Version="8.0.0-preview" />
     <PackageReference Update="Shouldly" Version="4.0.3" />
     <PackageReference Update="xunit" Version="2.4.1" />
-    <PackageReference Update="xunit.runner.visualstudio" Version="2.4.3" />
+    <PackageReference Update="xunit.runner.visualstudio" Version="2.4.4" />
   </ItemGroup>
 
   <ItemGroup>
