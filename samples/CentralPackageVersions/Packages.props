@@ -4,6 +4,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="3.4.255" Condition="'$(EnableGitVersioning)' != 'false'" />
+    <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="3.5.103" Condition="'$(EnableGitVersioning)' != 'false'" />
   </ItemGroup>
 </Project>
