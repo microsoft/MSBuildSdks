@@ -58,7 +58,7 @@
     <DebugSymbols Condition="'$(DebugSymbols)' == ''">false</DebugSymbols>
     
     <!-- Disable Visual Studio's Fast Up-to-date Check and rely on MSBuild to determine -->
-    <DisableFastUpToDateCheck Condition="'$(DisableFastUpToDateCheck )' == ''">true</DisableFastUpToDateCheck>
+    <DisableFastUpToDateCheck Condition="'$(DisableFastUpToDateCheck)' == ''">true</DisableFastUpToDateCheck>
   </PropertyGroup>
 
   <ItemDefinitionGroup Condition=" '$(NoTargetsDoNotReferenceOutputAssemblies)' != 'false' ">
