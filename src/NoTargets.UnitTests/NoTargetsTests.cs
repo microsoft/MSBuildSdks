@@ -177,7 +177,7 @@ namespace Microsoft.Build.NoTargets.UnitTests
         [InlineData("IncludeBuildOutput", null, "false")]
         [InlineData("NoCompilerStandardLib", "true", "true")]
         [InlineData("NoCompilerStandardLib", null, "false")]
-        [InlineData("ProduceReferenceAssembly", "true", "true")]
+        [InlineData("ProduceReferenceAssembly", "true", "false")]
         [InlineData("ProduceReferenceAssembly", null, "false")]
         [InlineData("SkipCopyBuildProduct", "false", "false")]
         [InlineData("SkipCopyBuildProduct", null, "true")]
