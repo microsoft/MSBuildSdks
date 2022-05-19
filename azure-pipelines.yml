@@ -6,7 +6,7 @@ variables:
   BuildConfiguration: 'Debug'
   BuildPlatform: 'Any CPU'
   DotNet3Version: '3.x'
-  DotNet6Version: '6.x'
+  DotNet6Version: '6.0.203'
   MSBuildArgs: '"/p:Platform=$(BuildPlatform)" "/p:Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
   SignType: 'Test'
 

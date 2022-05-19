@@ -155,23 +155,37 @@ namespace Microsoft.Build.NoTargets.UnitTests
         }
 
         [Theory]
-        [InlineData("DisableImplicitFrameworkReferences", "true")]
-        [InlineData("EnableDefaultCompileItems", "false")]
-        [InlineData("EnableDefaultEmbeddedResourceItems", "false")]
-        [InlineData("GenerateAssemblyInfo", "false")]
-        [InlineData("GenerateMSBuildEditorConfigFile", "false")]
-        [InlineData("IncludeBuildOutput", "false")]
-        [InlineData("ProduceReferenceAssembly", "false")]
-        [InlineData("SkipCopyBuildProduct", "true")]
-        [InlineData("AutomaticallyUseReferenceAssemblyPackages", "false")]
-        [InlineData("NoCompilerStandardLib", "false")]
-        [InlineData("DebugType", "None")]
-        [InlineData("DebugSymbols", "false")]
-        [InlineData("DisableFastUpToDateCheck", "true")]
-        public void PropertiesHaveExpectedValues(string propertyName, string expectedValue)
+        [InlineData("AutomaticallyUseReferenceAssemblyPackages", "true", "true")]
+        [InlineData("AutomaticallyUseReferenceAssemblyPackages", null, "false")]
+        [InlineData("DebugSymbols", "true", "false")]
+        [InlineData("DebugSymbols", null, "false")]
+        [InlineData("DebugType", "Full", "None")]
+        [InlineData("DebugType", null, "None")]
+        [InlineData("DisableFastUpToDateCheck", "false", "false")]
+        [InlineData("DisableFastUpToDateCheck", null, "true")]
+        [InlineData("DisableImplicitFrameworkReferences", "false", "false")]
+        [InlineData("DisableImplicitFrameworkReferences", null, "true")]
+        [InlineData("EnableDefaultCompileItems", "true", "true")]
+        [InlineData("EnableDefaultCompileItems", null, "false")]
+        [InlineData("EnableDefaultEmbeddedResourceItems", "true", "true")]
+        [InlineData("EnableDefaultEmbeddedResourceItems", null, "false")]
+        [InlineData("GenerateAssemblyInfo", "true", "true")]
+        [InlineData("GenerateAssemblyInfo", null, "false")]
+        [InlineData("GenerateMSBuildEditorConfigFile", "true", "true")]
+        [InlineData("GenerateMSBuildEditorConfigFile", null, "false")]
+        [InlineData("IncludeBuildOutput", "true", "true")]
+        [InlineData("IncludeBuildOutput", null, "false")]
+        [InlineData("NoCompilerStandardLib", "true", "true")]
+        [InlineData("NoCompilerStandardLib", null, "false")]
+        [InlineData("ProduceReferenceAssembly", "true", "false")]
+        [InlineData("ProduceReferenceAssembly", null, "false")]
+        [InlineData("SkipCopyBuildProduct", "false", "false")]
+        [InlineData("SkipCopyBuildProduct", null, "true")]
+        public void PropertiesHaveExpectedValues(string propertyName, string value, string expectedValue)
         {
             ProjectCreator.Templates.NoTargetsProject(
                 path: GetTempFileWithExtension(".csproj"))
+                .Property(propertyName, value)
                 .Save()
                 .TryGetPropertyValue(propertyName, out string actualValue);
 
