@@ -72,12 +72,6 @@
 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" Condition=" '$(MicrosoftCommonPropsHasBeenImported)' != 'true' "/>
 
-  <!-- Indicate no symbols will be generated. Setting this in .props allows projects to redefine if needed. -->
-  <PropertyGroup>
-    <DebugType>None</DebugType>
-    <DebugSymbols>false</DebugSymbols>
-  </PropertyGroup>
-
   <Import Project="$(CustomAfterNoTargetsProps)" Condition=" '$(CustomAfterNoTargetsProps)' != '' And Exists('$(CustomAfterNoTargetsProps)') " />
 
   <!-- For CPS/VS support. Importing in .props allows any subsequent targets to redefine this if needed -->

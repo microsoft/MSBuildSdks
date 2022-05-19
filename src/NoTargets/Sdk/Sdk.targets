@@ -29,25 +29,7 @@
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" Condition=" '$(CommonTargetsPath)' == '' " />
 
   <PropertyGroup>
-    <!-- Don't emit a reference assembly -->
-    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <IntermediateAssembly Remove="@(IntermediateAssembly)" />
-    <IntermediateRefAssembly Remove="@(IntermediateRefAssembly)" />
-  </ItemGroup>
-
-  <!-- Clear output group items which are read by the IDE and NuGet. -->
-  <ItemGroup>
-    <BuiltProjectOutputGroupKeyOutput Remove="@(BuiltProjectOutputGroupKeyOutput)" />
-    <DebugSymbolsProjectOutputGroupOutput Remove="@(DebugSymbolsProjectOutputGroupOutput)" />
-  </ItemGroup>
-
-  <PropertyGroup>
-    <!--
-      This property must be overridden to remove a few targets that compile assemblies
-    -->
+    <!-- This property must be overridden to remove a few targets that compile assemblies -->
     <CoreBuildDependsOn>
       BuildOnlySettings;
       PrepareForBuild;
@@ -59,7 +41,22 @@
       IncrementalClean;
       PostBuildEvent
     </CoreBuildDependsOn>
+    
+    <!-- Disable symbol generation -->
+    <DebugType>None</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    
+    <!-- Don't emit a reference assembly -->
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
   </PropertyGroup>
+
+  <!-- Clear output group items which are read by the IDE and NuGet. -->
+  <ItemGroup>
+    <BuiltProjectOutputGroupKeyOutput Remove="@(BuiltProjectOutputGroupKeyOutput)" />
+    <DebugSymbolsProjectOutputGroupOutput Remove="@(DebugSymbolsProjectOutputGroupOutput)" />
+    <IntermediateAssembly Remove="@(IntermediateAssembly)" />
+    <IntermediateRefAssembly Remove="@(IntermediateRefAssembly)" />
+  </ItemGroup>
 
   <!--
     The CopyFilesToOutputDirectory target is hard coded to depend on ComputeIntermediateSatelliteAssemblies.  NoTargets projects do no generate resource assemblies
