@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <MicrosoftBuildPackageVersion>17.1.0</MicrosoftBuildPackageVersion>
+    <MicrosoftBuildPackageVersion>17.2.0</MicrosoftBuildPackageVersion>
     <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'netcoreapp3.1'">16.9.0</MicrosoftBuildPackageVersion>
     <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'net46'">15.9.20</MicrosoftBuildPackageVersion>
   </PropertyGroup>
