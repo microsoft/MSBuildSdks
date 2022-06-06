@@ -52,6 +52,7 @@
     <!-- Don't automatically reference assembly packages since NoTargets don't need reference assemblies -->
     <AutomaticallyUseReferenceAssemblyPackages Condition="'$(AutomaticallyUseReferenceAssemblyPackages)' == ''">false</AutomaticallyUseReferenceAssemblyPackages>
     <NoCompilerStandardLib Condition="'$(NoCompilerStandardLib)' == ''">false</NoCompilerStandardLib>
+    <NoStdLib Condition="'$(NoStdLib)' == ''">true</NoStdLib>
     
     <!-- Disable Visual Studio's Fast Up-to-date Check and rely on MSBuild to determine -->
     <DisableFastUpToDateCheck Condition="'$(DisableFastUpToDateCheck)' == ''">true</DisableFastUpToDateCheck>
