@@ -14,8 +14,7 @@ In this example, packages like `Newtonsoft.Json` are set to use version `10.0.1`
 
 **Packages.props**
 ```xml
-<?xml version="1.0" encoding="utf-8"?>
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project>
   <ItemGroup>
     <PackageReference Update="Microsoft.NET.Test.Sdk"   Version="15.5.0" />
     <PackageReference Update="MSTest.TestAdapter"       Version="1.1.18" />
@@ -30,7 +29,7 @@ Then create a [`Directory.Build.targets`](https://docs.microsoft.com/en-us/visua
 **Directory.Build.targets**
 ```xml
 <Project>
-  <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.1" />
+  <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.1.3" />
 </Project>
 ```
 Now all projects will use `Microsoft.Build.CentralPackageVersions`, still have a `PackageReference`, but must not specify a version.  This ensures that the correct packages are referenced for each project.
