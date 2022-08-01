@@ -17,7 +17,7 @@
   <ItemGroup>
     <GlobalPackageReference Include="Microsoft.Build.Artifacts" Version="4.0.4" Condition="'$(EnableArtifacts)' != 'false'" />
     <GlobalPackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" Version="1.0.0" Condition="'$(EnableMicroBuild)' != 'false'" />
-    <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="3.5.107" Condition="'$(EnableGitVersioning)' != 'false'" />
+    <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="3.5.108" Condition="'$(EnableGitVersioning)' != 'false'" />
     <GlobalPackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" />
   </ItemGroup>
 
