@@ -37,7 +37,13 @@
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
   <ItemGroup>
-    <ProjectReferenceTargets Remove="@(ProjectReferenceTargets)" />
+    <ProjectReferenceTargets Remove="Build" />
+    <ProjectReferenceTargets Remove="Clean" />
+    <ProjectReferenceTargets Remove="Rebuild" />
+    <ProjectReferenceTargets Remove="Test" />
+    <ProjectReferenceTargets Remove="VSTest" />
+    <ProjectReferenceTargets Remove="Publish" />
+    <ProjectReferenceTargets Remove="Pack" />
 
     <ProjectReferenceTargets Include="Build" Targets=".default" />
     <ProjectReferenceTargets Include="Clean" Targets="Clean" />
