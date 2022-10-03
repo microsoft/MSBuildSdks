@@ -1,24 +1,24 @@
 <Project>
   <PropertyGroup>
-    <MicrosoftBuildPackageVersion>17.2.0</MicrosoftBuildPackageVersion>
+    <MicrosoftBuildPackageVersion>17.3.1</MicrosoftBuildPackageVersion>
     <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'netcoreapp3.1'">16.9.0</MicrosoftBuildPackageVersion>
     <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'net46'">15.9.20</MicrosoftBuildPackageVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Update="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildPackageVersion)" />
-    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="17.2.0" />
+    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="17.3.2" />
     <PackageReference Update="Microsoft.Win32.Registry" Version="4.7.0" />
-    <PackageReference Update="MSBuild.ProjectCreation" Version="8.2.1" />
-    <PackageReference Update="Shouldly" Version="4.0.3" />
-    <PackageReference Update="xunit" Version="2.4.1" />
+    <PackageReference Update="MSBuild.ProjectCreation" Version="8.3.0" />
+    <PackageReference Update="Shouldly" Version="4.1.0" />
+    <PackageReference Update="xunit" Version="2.4.2" />
     <PackageReference Update="xunit.runner.visualstudio" Version="2.4.5" />
   </ItemGroup>
 
   <ItemGroup>
     <GlobalPackageReference Include="Microsoft.Build.Artifacts" Version="4.0.4" Condition="'$(EnableArtifacts)' != 'false'" />
     <GlobalPackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" Version="1.0.0" Condition="'$(EnableMicroBuild)' != 'false'" />
-    <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="3.5.108" Condition="'$(EnableGitVersioning)' != 'false'" />
-    <GlobalPackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" />
+    <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="3.5.113" Condition="'$(EnableGitVersioning)' != 'false'" />
+    <GlobalPackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(EnableStyleCop)' != 'false' ">
