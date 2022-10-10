@@ -7,6 +7,7 @@ using Microsoft.Build.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -98,7 +99,7 @@ namespace Microsoft.Build.Artifacts.Tasks
                 OnlyNewer = item.GetMetadataBoolean(nameof(OnlyNewer), defaultValue: false),
             };
 
-            foreach (string destination in item.GetMetadata("DestinationFolder").Split(DestinationSplitter, StringSplitOptions.RemoveEmptyEntries))
+            foreach (string destination in item.GetMetadata("DestinationFolder").Split(DestinationSplitter, StringSplitOptions.RemoveEmptyEntries).Select(d => d.Trim()))
             {
                 if (destination.StartsWith(@"\") && !destination.StartsWith(@"\\"))
                 {
