@@ -225,7 +225,6 @@ namespace Microsoft.Build.Artifacts.UnitTests
                     ignoreOrder: true);
         }
 
-
         [Fact]
         public void InvalidDestinationFolderShouldLogAnErrorRegardingDestinationFolder()
         {
