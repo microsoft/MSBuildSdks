@@ -6,6 +6,7 @@ using Microsoft.Build.Evaluation;
 using Microsoft.Build.UnitTests.Common;
 using Microsoft.Build.Utilities.ProjectCreation;
 using Shouldly;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -137,6 +138,60 @@ namespace Microsoft.Build.Artifacts.UnitTests
                         "foo.exe.config",
                     }.Select(i => Path.Combine(artifactsPath.FullName, i)),
                     ignoreOrder: true);
+        }
+
+        [Fact]
+        public void ArtifactsShouldTrimDestinationFolder()
+        {
+            DirectoryInfo baseOutputPath = CreateFiles(
+                    Path.Combine("bin", "Debug"),
+                    "foo.exe",
+                    "foo.pdb",
+                    "foo.exe.config",
+                    "bar.dll",
+                    "bar.pdb",
+                    "bar.cs");
+
+            CreateFiles(
+                Path.Combine(baseOutputPath.FullName, "ref"),
+                "bar.dll");
+
+            DirectoryInfo artifactsPath = new DirectoryInfo(Path.Combine(TestRootPath, "artifacts"));
+            DirectoryInfo artifactsPath2 = new DirectoryInfo(Path.Combine(TestRootPath, "artifacts2"));
+            string artifactPathes = string.Concat(artifactsPath.FullName, ";", Environment.NewLine, artifactsPath2.FullName);
+
+            string outputPath = $"{Path.Combine("bin", "Debug")}{Path.DirectorySeparatorChar}";
+
+            ProjectCreator.Templates.ProjectWithArtifacts(
+                outputPath: outputPath,
+                appendTargetFrameworkToOutputPath: false,
+                artifactsPath: artifactPathes)
+                .TryGetItems("Artifact", out IReadOnlyCollection<ProjectItem> artifactItems)
+                .TryGetPropertyValue("DefaultArtifactsSource", out string defaultArtifactsSource)
+                .TryBuild(out bool result, out BuildOutput buildOutput);
+
+            result.ShouldBeTrue(buildOutput.GetConsoleLog());
+
+            defaultArtifactsSource.ShouldBe(outputPath);
+
+            ProjectItem artifactItem = artifactItems.ShouldHaveSingleItem();
+
+            artifactItem.EvaluatedInclude.ShouldBe(defaultArtifactsSource);
+            artifactItem.GetMetadataValue("DestinationFolder").ShouldBe(artifactPathes);
+
+            foreach (DirectoryInfo d in new[] { artifactsPath, artifactsPath2 })
+            {
+                d.GetFiles("*", SearchOption.AllDirectories)
+                    .Select(i => i.FullName)
+                    .ShouldBe(
+                        new[]
+                        {
+                        "bar.dll",
+                        "foo.exe",
+                        "foo.exe.config",
+                        }.Select(i => Path.Combine(d.FullName, i)),
+                        ignoreOrder: true);
+            }
         }
 
         [Theory]
