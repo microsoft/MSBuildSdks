@@ -279,7 +279,6 @@ namespace Microsoft.Build.Artifacts.UnitTests
                     }.Select(i => Path.Combine(artifactsPath.FullName, i)),
                     ignoreOrder: true);
         }
-
         [Fact]
         public void InvalidDestinationFolderShouldLogAnErrorRegardingDestinationFolder()
         {
