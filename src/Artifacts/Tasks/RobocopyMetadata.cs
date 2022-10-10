@@ -112,7 +112,7 @@ namespace Microsoft.Build.Artifacts.Tasks
                 }
                 catch (Exception e)
                 {
-                    log.LogError("Failed to expand the path \"{0}\".", item.ItemSpec);
+                    log.LogError("Failed to expand the path \"{0}\".", destination);
                     log.LogErrorFromException(e);
 
                     return false;
