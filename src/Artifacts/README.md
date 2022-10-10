@@ -167,7 +167,7 @@ The `<Artifact />` items specify collections of artifacts to stage.  These items
 
 | Metadata | Description | Default |
 | -- | -- | -- |
-| `DestinationFolder` |  A list of one or more paths separated by a space or semicolon to stage artifacts to |  |
+| `DestinationFolder` |  A list of one or more paths separated by a semicolon to stage artifacts to |  |
 | `IsRecursive` | Enables a recursive path search for artifacts to stage | `true` |
 | `VerifyExists`  | Enables a check that the file exists before copying | `true` |
 | `AlwaysCopy` | Enables copies even if the destination already exists | `false` |
