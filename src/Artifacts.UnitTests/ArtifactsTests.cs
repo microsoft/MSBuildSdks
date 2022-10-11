@@ -296,7 +296,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
                 Path.Combine(baseOutputPath.FullName, "ref"),
                 "bar.dll");
 
-            string artifactPathes = "Foo\"Bar";
+            string artifactPathes = "Foo" + Path.DirectorySeparatorChar + new string(Path.GetInvalidPathChars().Where(i => !char.IsWhiteSpace(i)).ToArray());
 
             string outputPath = $"{Path.Combine("bin", "Debug")}{Path.DirectorySeparatorChar}";
 
@@ -310,7 +310,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
 
             string consoleLog = buildOutput.GetConsoleLog();
             result.ShouldBeFalse(consoleLog);
-            Assert.Contains("Failed to expand the path \"Foo\"Bar\"", consoleLog);
+            Assert.Contains($"Failed to expand the path \"{artifactPathes}", consoleLog);
         }
     }
 }
