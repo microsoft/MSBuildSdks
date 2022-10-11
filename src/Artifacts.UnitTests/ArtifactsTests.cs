@@ -279,5 +279,38 @@ namespace Microsoft.Build.Artifacts.UnitTests
                     }.Select(i => Path.Combine(artifactsPath.FullName, i)),
                     ignoreOrder: true);
         }
+
+        [Fact]
+        public void InvalidDestinationFolderShouldLogAnErrorRegardingDestinationFolder()
+        {
+            DirectoryInfo baseOutputPath = CreateFiles(
+                    Path.Combine("bin", "Debug"),
+                    "foo.exe",
+                    "foo.pdb",
+                    "foo.exe.config",
+                    "bar.dll",
+                    "bar.pdb",
+                    "bar.cs");
+
+            CreateFiles(
+                Path.Combine(baseOutputPath.FullName, "ref"),
+                "bar.dll");
+
+            string artifactPathes = "Foo" + Path.DirectorySeparatorChar + new string(Path.GetInvalidPathChars().Where(i => !char.IsWhiteSpace(i)).ToArray());
+
+            string outputPath = $"{Path.Combine("bin", "Debug")}{Path.DirectorySeparatorChar}";
+
+            ProjectCreator.Templates.ProjectWithArtifacts(
+                outputPath: outputPath,
+                appendTargetFrameworkToOutputPath: false,
+                artifactsPath: artifactPathes)
+                .TryGetItems("Artifact", out IReadOnlyCollection<ProjectItem> _)
+                .TryGetPropertyValue("DefaultArtifactsSource", out string _)
+                .TryBuild(out bool result, out BuildOutput buildOutput);
+
+            string consoleLog = buildOutput.GetConsoleLog();
+            result.ShouldBeFalse(consoleLog);
+            Assert.Contains($"Failed to expand the path \"{artifactPathes}", consoleLog);
+        }
     }
 }
