@@ -78,6 +78,9 @@
     The GetTargetPathWithTargetPlatformMoniker target uses a BeforeTargets so the only way to disable it is to override it with an empty target.
   -->
   <Target Name="GetTargetPathWithTargetPlatformMoniker" />
+  
+  <!-- Override CopyFilesMarkedCopyLocal target to not copy references when NoTargetsDoNotReferenceOutputAssemblies is set to false. -->
+  <Target Name="_CopyFilesMarkedCopyLocal" />
 
   <!--
     The GetReferenceAssemblyPaths does not need to run since reference assemblies aren't needed.
