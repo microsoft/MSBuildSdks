@@ -79,8 +79,8 @@
   -->
   <Target Name="GetTargetPathWithTargetPlatformMoniker" />
   
-  <!-- Override CopyFilesMarkedCopyLocal target to not copy references when NoTargetsDoNotReferenceOutputAssemblies is set to false. -->
-  <Target Name="_CopyFilesMarkedCopyLocal" />
+  <!-- Override CopyFilesToOutputDirectory target to not copy references when NoTargetsDoNotReferenceOutputAssemblies is set to false. -->
+  <Target Name="CopyFilesToOutputDirectory" />
 
   <!--
     The GetReferenceAssemblyPaths does not need to run since reference assemblies aren't needed.
