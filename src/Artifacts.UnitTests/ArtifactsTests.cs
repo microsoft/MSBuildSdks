@@ -40,6 +40,60 @@ namespace Microsoft.Build.Artifacts.UnitTests
         }
 
         [Fact]
+        public void ArtifactsShouldTrimDestinationFolder()
+        {
+            DirectoryInfo baseOutputPath = CreateFiles(
+                    Path.Combine("bin", "Debug"),
+                    "foo.exe",
+                    "foo.pdb",
+                    "foo.exe.config",
+                    "bar.dll",
+                    "bar.pdb",
+                    "bar.cs");
+
+            CreateFiles(
+                Path.Combine(baseOutputPath.FullName, "ref"),
+                "bar.dll");
+
+            DirectoryInfo artifactsPath = new DirectoryInfo(Path.Combine(TestRootPath, "artifacts"));
+            DirectoryInfo artifactsPath2 = new DirectoryInfo(Path.Combine(TestRootPath, "artifacts2"));
+            string artifactPaths = string.Concat(artifactsPath.FullName, ";", Environment.NewLine, artifactsPath2.FullName);
+
+            string outputPath = $"{Path.Combine("bin", "Debug")}{Path.DirectorySeparatorChar}";
+
+            ProjectCreator.Templates.ProjectWithArtifacts(
+                outputPath: outputPath,
+                appendTargetFrameworkToOutputPath: false,
+                artifactsPath: artifactPaths)
+                .TryGetItems("Artifact", out IReadOnlyCollection<ProjectItem> artifactItems)
+                .TryGetPropertyValue("DefaultArtifactsSource", out string defaultArtifactsSource)
+                .TryBuild(out bool result, out BuildOutput buildOutput);
+
+            result.ShouldBeTrue(buildOutput.GetConsoleLog());
+
+            defaultArtifactsSource.ShouldBe(outputPath);
+
+            ProjectItem artifactItem = artifactItems.ShouldHaveSingleItem();
+
+            artifactItem.EvaluatedInclude.ShouldBe(defaultArtifactsSource);
+            artifactItem.GetMetadataValue("DestinationFolder").ShouldBe(artifactPaths);
+
+            foreach (DirectoryInfo d in new[] { artifactsPath, artifactsPath2 })
+            {
+                d.GetFiles("*", SearchOption.AllDirectories)
+                    .Select(i => i.FullName)
+                    .ShouldBe(
+                        new[]
+                        {
+                        "bar.dll",
+                        "foo.exe",
+                        "foo.exe.config",
+                        }.Select(i => Path.Combine(d.FullName, i)),
+                        ignoreOrder: true);
+            }
+        }
+
+        [Fact]
         public void BackCompatWithRobocopyItems()
         {
             DirectoryInfo outputPath = CreateFiles(
@@ -140,8 +194,52 @@ namespace Microsoft.Build.Artifacts.UnitTests
                     ignoreOrder: true);
         }
 
+        [Theory]
+        [InlineData(" ")]
+        [InlineData(",")]
+        [InlineData(";")]
+        [InlineData("\t")]
+        [InlineData("\r")]
+        [InlineData("\n")]
+        public void DirExcludeUsesCorrectSeparators(string separator)
+        {
+            DirectoryInfo outputPath = CreateFiles(
+                Path.Combine("bin", "Debug"),
+                "foo.exe",
+                "foo.pdb",
+                "foo.exe.config",
+                "bar.dll",
+                "bar.pdb",
+                "bar.cs");
+
+            CreateFiles(Path.Combine("bin", "Debug", "one"), "one.exe");
+            CreateFiles(Path.Combine("bin", "Debug", "two"), "two.exe");
+
+            DirectoryInfo artifactsPath = new DirectoryInfo(Path.Combine(TestRootPath, "artifacts"));
+
+            ProjectCreator.Templates.ProjectWithArtifacts(
+                outputPath: outputPath.FullName,
+                artifactsPath: artifactsPath.FullName)
+                .Property("DefaultArtifactsDirExclude", string.Join(separator, new[] { "one", "two" }))
+                .TryGetItems("Artifact", out IReadOnlyCollection<ProjectItem> artifactItems)
+                .TryBuild(out bool result, out BuildOutput buildOutput);
+
+            result.ShouldBeTrue(buildOutput.GetConsoleLog());
+
+            artifactsPath.GetFiles("*", SearchOption.AllDirectories)
+                .Select(i => i.FullName)
+                .ShouldBe(
+                    new[]
+                    {
+                        "bar.dll",
+                        "foo.exe",
+                        "foo.exe.config",
+                    }.Select(i => Path.Combine(artifactsPath.FullName, i)),
+                    ignoreOrder: true);
+        }
+
         [Fact]
-        public void ArtifactsShouldTrimDestinationFolder()
+        public void InvalidDestinationFolderShouldLogAnErrorRegardingDestinationFolder()
         {
             DirectoryInfo baseOutputPath = CreateFiles(
                     Path.Combine("bin", "Debug"),
@@ -156,42 +254,21 @@ namespace Microsoft.Build.Artifacts.UnitTests
                 Path.Combine(baseOutputPath.FullName, "ref"),
                 "bar.dll");
 
-            DirectoryInfo artifactsPath = new DirectoryInfo(Path.Combine(TestRootPath, "artifacts"));
-            DirectoryInfo artifactsPath2 = new DirectoryInfo(Path.Combine(TestRootPath, "artifacts2"));
-            string artifactPathes = string.Concat(artifactsPath.FullName, ";", Environment.NewLine, artifactsPath2.FullName);
+            string artifactPaths = "Foo" + Path.DirectorySeparatorChar + new string(Path.GetInvalidPathChars().Where(i => !char.IsWhiteSpace(i)).ToArray());
 
             string outputPath = $"{Path.Combine("bin", "Debug")}{Path.DirectorySeparatorChar}";
 
             ProjectCreator.Templates.ProjectWithArtifacts(
                 outputPath: outputPath,
                 appendTargetFrameworkToOutputPath: false,
-                artifactsPath: artifactPathes)
-                .TryGetItems("Artifact", out IReadOnlyCollection<ProjectItem> artifactItems)
-                .TryGetPropertyValue("DefaultArtifactsSource", out string defaultArtifactsSource)
+                artifactsPath: artifactPaths)
+                .TryGetItems("Artifact", out IReadOnlyCollection<ProjectItem> _)
+                .TryGetPropertyValue("DefaultArtifactsSource", out string _)
                 .TryBuild(out bool result, out BuildOutput buildOutput);
 
-            result.ShouldBeTrue(buildOutput.GetConsoleLog());
-
-            defaultArtifactsSource.ShouldBe(outputPath);
-
-            ProjectItem artifactItem = artifactItems.ShouldHaveSingleItem();
-
-            artifactItem.EvaluatedInclude.ShouldBe(defaultArtifactsSource);
-            artifactItem.GetMetadataValue("DestinationFolder").ShouldBe(artifactPathes);
-
-            foreach (DirectoryInfo d in new[] { artifactsPath, artifactsPath2 })
-            {
-                d.GetFiles("*", SearchOption.AllDirectories)
-                    .Select(i => i.FullName)
-                    .ShouldBe(
-                        new[]
-                        {
-                        "bar.dll",
-                        "foo.exe",
-                        "foo.exe.config",
-                        }.Select(i => Path.Combine(d.FullName, i)),
-                        ignoreOrder: true);
-            }
+            string consoleLog = buildOutput.GetConsoleLog();
+            result.ShouldBeFalse(consoleLog);
+            Assert.Contains($"Failed to expand the path \"{artifactPaths}", consoleLog);
         }
 
         [Theory]
@@ -278,39 +355,6 @@ namespace Microsoft.Build.Artifacts.UnitTests
                         "foo.exe.config",
                     }.Select(i => Path.Combine(artifactsPath.FullName, i)),
                     ignoreOrder: true);
-        }
-
-        [Fact]
-        public void InvalidDestinationFolderShouldLogAnErrorRegardingDestinationFolder()
-        {
-            DirectoryInfo baseOutputPath = CreateFiles(
-                    Path.Combine("bin", "Debug"),
-                    "foo.exe",
-                    "foo.pdb",
-                    "foo.exe.config",
-                    "bar.dll",
-                    "bar.pdb",
-                    "bar.cs");
-
-            CreateFiles(
-                Path.Combine(baseOutputPath.FullName, "ref"),
-                "bar.dll");
-
-            string artifactPathes = "Foo" + Path.DirectorySeparatorChar + new string(Path.GetInvalidPathChars().Where(i => !char.IsWhiteSpace(i)).ToArray());
-
-            string outputPath = $"{Path.Combine("bin", "Debug")}{Path.DirectorySeparatorChar}";
-
-            ProjectCreator.Templates.ProjectWithArtifacts(
-                outputPath: outputPath,
-                appendTargetFrameworkToOutputPath: false,
-                artifactsPath: artifactPathes)
-                .TryGetItems("Artifact", out IReadOnlyCollection<ProjectItem> _)
-                .TryGetPropertyValue("DefaultArtifactsSource", out string _)
-                .TryBuild(out bool result, out BuildOutput buildOutput);
-
-            string consoleLog = buildOutput.GetConsoleLog();
-            result.ShouldBeFalse(consoleLog);
-            Assert.Contains($"Failed to expand the path \"{artifactPathes}", consoleLog);
         }
     }
 }
