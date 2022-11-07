@@ -13,12 +13,25 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Xunit;
 
 namespace Microsoft.Build.NoTargets.UnitTests
 {
     public class NoTargetsTests : MSBuildSdkTestBase
     {
+        [Fact]
+        public void CanDisableCopyFilesMarkedCopyLocal()
+        {
+            ProjectCreator.Templates.NoTargetsProject(
+                path: GetTempFileWithExtension(".csproj"))
+                .Property("SkipCopyFilesMarkedCopyLocal", bool.TrueString)
+                .ItemInclude("ReferenceCopyLocalPaths", Assembly.GetExecutingAssembly().Location)
+                .TryBuild("_CopyFilesMarkedCopyLocal", out bool result, out BuildOutput buildOutput);
+
+            result.ShouldBeTrue(buildOutput.GetConsoleLog());
+        }
+
         [Theory]
         [InlineData("BeforeCompile")]
         [InlineData("AfterCompile")]
@@ -181,6 +194,9 @@ namespace Microsoft.Build.NoTargets.UnitTests
         [InlineData("ProduceReferenceAssembly", null, "false")]
         [InlineData("SkipCopyBuildProduct", "false", "false")]
         [InlineData("SkipCopyBuildProduct", null, "true")]
+        [InlineData("SkipCopyFilesMarkedCopyLocal", "false", "false")]
+        [InlineData("SkipCopyFilesMarkedCopyLocal", "true", "true")]
+        [InlineData("SkipCopyFilesMarkedCopyLocal", null, "")]
         public void PropertiesHaveExpectedValues(string propertyName, string value, string expectedValue)
         {
             ProjectCreator.Templates.NoTargetsProject(
