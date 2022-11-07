@@ -16,7 +16,7 @@ namespace Microsoft.Build.Artifacts.Tasks
     internal sealed class RobocopyMetadata
     {
         private static readonly char[] DestinationSplitter = { ';' };
-        private static readonly char[] MultiSplits = { '\t', ' ', '\n', '\r' };
+        private static readonly char[] MultiSplits = { '\t', ' ', '\n', '\r', ';', ',' };
         private static readonly char[] Wildcards = { '?', '*' };
 
         private RobocopyMetadata()
