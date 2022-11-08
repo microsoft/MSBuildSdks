@@ -15,9 +15,15 @@ namespace Microsoft.Build.Artifacts.Tasks
 {
     internal sealed class RobocopyMetadata
     {
-        private static readonly char[] DestinationSplitter = { ';' };
-        private static readonly char[] MultiSplits = { '\t', ' ', '\n', '\r', ';', ',' };
-        private static readonly char[] Wildcards = { '?', '*' };
+        public const string DestinationFolder = nameof(DestinationFolder);
+        public const string DirExclude = nameof(DirExclude);
+        public const string FileExclude = nameof(FileExclude);
+        public const string FileMatch = nameof(FileMatch);
+
+        public static readonly char[] DestinationSplitter = { ';' };
+        public static readonly char[] MultiSplits = { '\t', ' ', '\n', '\r', ';', ',' };
+        public static readonly Regex SplitMetadataRegex = new Regex(@"((?<=\"")[^\""]*(?=\""(,|;|\s|$)+)|(?<=,|;|\s|^)[^,;\s\""]*(?=,|;|\s|$))", RegexOptions.Multiline);
+        public static readonly char[] Wildcards = { '?', '*' };
 
         private RobocopyMetadata()
         {
@@ -65,9 +71,11 @@ namespace Microsoft.Build.Artifacts.Tasks
         {
             metadata = null;
 
-            if (string.IsNullOrEmpty(item.GetMetadata("DestinationFolder")))
+            string destinationFolder = item.GetMetadata(DestinationFolder);
+
+            if (string.IsNullOrEmpty(destinationFolder))
             {
-                log.LogError("A value for \"DestinationFolder\" is required for the item \"{0}\".", item.ItemSpec);
+                log.LogError("A value for \"{0}\" is required for the item \"{1}\".", DestinationFolder, item.ItemSpec);
                 return false;
             }
 
@@ -123,9 +131,9 @@ namespace Microsoft.Build.Artifacts.Tasks
             if (directoryExists(source))
             {
                 metadata.SourceFolder = source;
-                metadata.SplitItems("FileMatch", item);
-                metadata.SplitItems("FileExclude", item);
-                metadata.SplitItems("DirExclude", item);
+                metadata.SplitItems(FileMatch, item);
+                metadata.SplitItems(FileExclude, item);
+                metadata.SplitItems(DirExclude, item);
                 metadata.HasWildcardMatches = metadata.FileRegexMatches != null || metadata.FileRegexExcludes != null || metadata.DirRegexExcludes != null;
             }
             else
@@ -277,6 +285,17 @@ namespace Microsoft.Build.Artifacts.Tasks
             return shouldCopy;
         }
 
+        internal static IEnumerable<string> SplitMetadata(string value)
+        {
+            foreach (Match match in SplitMetadataRegex.Matches(value))
+            {
+                if (match.Success && !string.IsNullOrEmpty(match.Value))
+                {
+                    yield return match.Value.Trim();
+                }
+            }
+        }
+
         private string DumpString(string[] noWild, Regex[] wild)
         {
             StringBuilder builder = new StringBuilder();
@@ -309,16 +328,21 @@ namespace Microsoft.Build.Artifacts.Tasks
             return builder.ToString();
         }
 
-        private void SplitItems(string metadata, ITaskItem taskItem)
+        private void SplitItems(string metadataName, ITaskItem taskItem)
         {
-            string items = taskItem.GetMetadata(metadata);
+            string metadata = taskItem.GetMetadata(metadataName);
+
             List<string> strings = new List<string>();
+
             List<string> preRegex = new List<string>();
+
             List<Regex> regularExpressions = new List<Regex>();
+
             bool doMatchAll = false;
-            if (!string.IsNullOrEmpty(items))
+
+            if (!string.IsNullOrEmpty(metadata))
             {
-                foreach (string item in items.Split(MultiSplits, StringSplitOptions.RemoveEmptyEntries))
+                foreach (string item in SplitMetadata(metadata))
                 {
                     if (item == "*")
                     {
@@ -337,21 +361,21 @@ namespace Microsoft.Build.Artifacts.Tasks
                 }
             }
 
-            switch (metadata)
+            switch (metadataName)
             {
-                case "FileMatch":
+                case FileMatch:
                     DoMatchAll = doMatchAll;
                     FileMatches = strings.ToArray();
                     FileRegexMatches = regularExpressions.ToArray();
                     FileWildcardMatches = preRegex.ToArray();
                     break;
 
-                case "FileExclude":
+                case FileExclude:
                     FileExcludes = strings.ToArray();
                     FileRegexExcludes = regularExpressions.ToArray();
                     break;
 
-                case "DirExclude":
+                case DirExclude:
                     DirExcludes = strings.ToArray();
                     DirRegexExcludes = regularExpressions.ToArray();
                     break;

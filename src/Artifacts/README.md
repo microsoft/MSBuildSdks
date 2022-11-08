@@ -172,9 +172,9 @@ The `<Artifact />` items specify collections of artifacts to stage.  These items
 | `VerifyExists`  | Enables a check that the file exists before copying | `true` |
 | `AlwaysCopy` | Enables copies even if the destination already exists | `false` |
 | `OnlyNewer`  | Enables copies only if the destnation exist and the source is newer | `false` |
-| `FileMatch` | A list of one or more file filters seperated by a space or semicolon to include.  Wildcards include `*` and `?` | `*`|
-| `FileExclude`   | A list of one or more file filters seperated by a space or semicolon to exclude.  Wildcards include `*` and `?` | |
-| `DirExclude`   | A list of one or more directory filters seperated by a space or semicolon to exclude.  Wildcards include `*` and `?` | |
+| `FileMatch` | A list of one or more quoted file filters seperated by a semicolon, space, or comma to include.  Wildcards include `*` and `?` | `*`|
+| `FileExclude`   | A list of one or more quoted file filters seperated by a semicolon, space, or comma to exclude.  Wildcards include `*` and `?` | |
+| `DirExclude`   | A list of one or more directory quoted filters seperated by a semicolon, space, or comma to exclude.  Wildcards include `*` and `?` | |
 
 **Example**
 

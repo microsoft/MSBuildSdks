@@ -40,8 +40,8 @@ namespace Microsoft.Build.Artifacts.UnitTests
                 {
                     new MockTaskItem(source.FullName)
                     {
-                        ["DestinationFolder"] = destination.FullName,
-                        ["FileMatch"] = "*txt",
+                        [RobocopyMetadata.DestinationFolder] = destination.FullName,
+                        [RobocopyMetadata.FileMatch] = "*txt",
                         [nameof(RobocopyMetadata.IsRecursive)] = "false",
                     },
                 },
@@ -91,8 +91,8 @@ namespace Microsoft.Build.Artifacts.UnitTests
                 {
                     new MockTaskItem(source.FullName)
                     {
-                        ["DestinationFolder"] = destination.FullName,
-                        ["FileMatch"] = "*exe *dll *exe.config",
+                        [RobocopyMetadata.DestinationFolder] = destination.FullName,
+                        [RobocopyMetadata.FileMatch] = "*exe *dll *exe.config",
                     },
                 },
                 Sleep = duration => { },

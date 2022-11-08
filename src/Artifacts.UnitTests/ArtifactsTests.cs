@@ -266,9 +266,9 @@ namespace Microsoft.Build.Artifacts.UnitTests
                 .TryGetPropertyValue("DefaultArtifactsSource", out string _)
                 .TryBuild(out bool result, out BuildOutput buildOutput);
 
-            string consoleLog = buildOutput.GetConsoleLog();
-            result.ShouldBeFalse(consoleLog);
-            Assert.Contains($"Failed to expand the path \"{artifactPaths}", consoleLog);
+            result.ShouldBeFalse(buildOutput.GetConsoleLog());
+
+            buildOutput.Errors.ShouldContain(i => i.Contains($"Failed to expand the path \"{artifactPaths}"), buildOutput.GetConsoleLog());
         }
 
         [Theory]
