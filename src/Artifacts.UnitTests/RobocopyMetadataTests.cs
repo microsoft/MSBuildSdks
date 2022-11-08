@@ -21,7 +21,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
         }
 
         [Theory]
-        [MemberData("GetSplitSeperators")]
+        [MemberData(nameof(GetSplitSeperators))]
         public void SplitMetadataTest(string separator)
         {
             string actual = string.Join(
