@@ -13,6 +13,7 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.Build.Artifacts.Tasks
 {
+    // Do not merge - testing PR triggers
     internal sealed class RobocopyMetadata
     {
         private static readonly char[] DestinationSplitter = { ';' };
