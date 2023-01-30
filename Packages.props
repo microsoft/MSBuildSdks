@@ -6,17 +6,17 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Update="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildPackageVersion)" />
-    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="17.4.0" />
+    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="17.4.1" />
     <PackageReference Update="Microsoft.Win32.Registry" Version="4.7.0" />
     <PackageReference Update="MSBuild.ProjectCreation" Version="8.3.0" />
-    <PackageReference Update="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Update="Newtonsoft.Json" Version="13.0.2" />
     <PackageReference Update="Shouldly" Version="4.1.0" />
     <PackageReference Update="xunit" Version="2.4.2" />
     <PackageReference Update="xunit.runner.visualstudio" Version="2.4.5" />
   </ItemGroup>
 
   <ItemGroup>
-    <GlobalPackageReference Include="Microsoft.Build.Artifacts" Version="4.1.0" Condition="'$(EnableArtifacts)' != 'false'" />
+    <GlobalPackageReference Include="Microsoft.Build.Artifacts" Version="4.2.0" Condition="'$(EnableArtifacts)' != 'false'" />
     <GlobalPackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" Version="1.0.0" Condition="'$(EnableMicroBuild)' != 'false'" />
     <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="3.5.119" Condition="'$(EnableGitVersioning)' != 'false'" />
     <GlobalPackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" />
