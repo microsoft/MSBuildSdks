@@ -1,0 +1,52 @@
+# Many of the sources are copied from the MSBuild repo
+[*.cs]
+dotnet_diagnostic.SA1028.severity = none
+dotnet_diagnostic.SA1120.severity = none
+dotnet_diagnostic.SA1513.severity = none
+dotnet_diagnostic.SA1507.severity = none
+dotnet_diagnostic.SA1000.severity = none
+dotnet_diagnostic.SA1117.severity = none
+dotnet_diagnostic.SA1515.severity = none
+dotnet_diagnostic.SA1111.severity = none
+dotnet_diagnostic.SA1636.severity = none
+dotnet_diagnostic.SA1009.severity = none
+dotnet_diagnostic.SA1129.severity = none
+dotnet_diagnostic.SA1413.severity = none
+dotnet_diagnostic.SA1025.severity = none
+dotnet_diagnostic.SA1116.severity = none
+dotnet_diagnostic.SA1512.severity = none
+dotnet_diagnostic.SA1110.severity = none
+dotnet_diagnostic.SA1131.severity = none
+dotnet_diagnostic.SA1310.severity = none
+dotnet_diagnostic.SA1201.severity = none
+dotnet_diagnostic.SA1308.severity = none
+dotnet_diagnostic.SA1401.severity = none
+dotnet_diagnostic.SA1202.severity = none
+dotnet_diagnostic.SA1124.severity = none
+dotnet_diagnostic.SA1307.severity = none
+dotnet_diagnostic.SA1214.severity = none
+dotnet_diagnostic.SA1210.severity = none
+dotnet_diagnostic.SA1516.severity = none
+dotnet_diagnostic.SA1400.severity = none
+dotnet_diagnostic.SA1003.severity = none
+dotnet_diagnostic.SA1503.severity = none
+dotnet_diagnostic.SA1119.severity = none
+dotnet_diagnostic.SA1203.severity = none
+dotnet_diagnostic.SA1204.severity = none
+dotnet_diagnostic.SA1311.severity = none
+dotnet_diagnostic.SA1005.severity = none
+dotnet_diagnostic.SA1306.severity = none
+dotnet_diagnostic.SA1311.severity = none
+dotnet_diagnostic.SA1500.severity = none
+dotnet_diagnostic.SA1629.severity = none
+dotnet_diagnostic.SA1642.severity = none
+dotnet_diagnostic.SA1616.severity = none
+dotnet_diagnostic.SA1615.severity = none
+dotnet_diagnostic.SA1600.severity = none
+dotnet_diagnostic.SA1623.severity = none
+dotnet_diagnostic.SA1201.severity = none
+
+
+
+
+
