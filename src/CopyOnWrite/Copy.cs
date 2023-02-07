@@ -296,7 +296,7 @@ namespace Microsoft.Build.Tasks
                 Log.LogMessage(MessageImportance.Normal, FileComment, sourceFilePath, destinationFilePath);
 
                 bool cloned = false;
-                if (GuessCopyOnWriteSupported(sourceFilePath, destinationFilePath))
+                if (IsCopyOnWriteSupported(sourceFilePath, destinationFilePath))
                 {
                     cloned = TryCopyOnWrite(sourceFilePath, destinationFilePath);
                 }
@@ -1000,7 +1000,7 @@ namespace Microsoft.Build.Tasks
             return true;
         }
 
-        private static readonly Dictionary<string, bool> _reFsDrives = new(StringComparer.OrdinalIgnoreCase);
+        private static readonly ConcurrentDictionary<string, bool> _reFsDrives = new(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Check for CopyOnWrite support. Result is cached by drive root.
@@ -1008,7 +1008,7 @@ namespace Microsoft.Build.Tasks
         /// <param name="source">Full path to source file.</param>
         /// <param name="dest">Full path to destination file.</param>
         /// <returns>True when CopyOnWrite appears to be supported.</returns>
-        private bool GuessCopyOnWriteSupported(string source, string dest)
+        private bool IsCopyOnWriteSupported(string source, string dest)
         {
             if (source.StartsWith(@"\\", StringComparison.OrdinalIgnoreCase) || dest.StartsWith(@"\\"))
             {
@@ -1023,21 +1023,17 @@ namespace Microsoft.Build.Tasks
                 return false;
             }
 
-            lock (_reFsDrives)
-            {
-                if (!_reFsDrives.ContainsKey(sourceDrive))
+            return _reFsDrives.GetOrAdd(
+                source,
+                (key) =>
                 {
-                    var supportsCloneFile = _cow.CopyOnWriteLinkSupportedInDirectoryTree(sourceDrive);
+                    var supportsCloneFile = _cow.CopyOnWriteLinkSupportedInDirectoryTree(key);
                     Log.LogMessage(MessageImportance.Low,
                         supportsCloneFile
                             ? $"Drive {sourceDrive} has support for CloneFile. All copies will attempt to use CloneFile."
                             : $"Drive {sourceDrive} does not have support for CloneFile. File.Copy will be used.");
-
-                    _reFsDrives.Add(sourceDrive, supportsCloneFile);
-                }
-            }
-
-            return _reFsDrives[sourceDrive];
+                    return supportsCloneFile;
+                });
         }
         #endregion
     }
