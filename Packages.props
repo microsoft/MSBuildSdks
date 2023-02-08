@@ -15,7 +15,7 @@
     <PackageReference Update="Shouldly" Version="4.1.0" />
     <PackageReference Update="xunit" Version="2.4.2" />
     <PackageReference Update="xunit.runner.visualstudio" Version="2.4.5" />
-    <PackageReference Update="CopyOnWrite" Version="0.3.0" />
+    <PackageReference Update="CopyOnWrite" Version="0.3.1" />
   </ItemGroup>
 
   <ItemGroup>
