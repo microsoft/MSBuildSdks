@@ -19,7 +19,9 @@
     </None>
     <None Include=".editorconfig" />
   </ItemGroup>
-
+  <ItemGroup>
+    <FilesToSign Include="$(TargetPath)" Authenticode="Microsoft400" StrongName="StrongName" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CopyOnWrite" GeneratePathProperty="True" PrivateAssets="All" />
 	  <PackageReference Include="Microsoft.Build.Tasks.Core" PrivateAssets="all" ExcludeAssets="Runtime">
