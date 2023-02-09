@@ -1,4 +1,6 @@
 # Microsoft.Build.CopyOnWrite
+[![NuGet](https://img.shields.io/nuget/v/Microsoft.Build.CopyOnWrite.svg)](https://www.nuget.org/packages/Microsoft.Build.CopyOnWrite)
+ [![NuGet](https://img.shields.io/nuget/dt/Microsoft.Build.CopyOnWrite.svg)](https://www.nuget.org/packages/Microsoft.Build.CopyOnWrite)
 
 The `Microsoft.Build.CopyOnWrite` MSBuild SDK overrides the native MSBuild Copy task to add support for ReFS CloneFile (Copy on Write). It is designed to be as backwards compatible as possible and should directly replace all usages of Copy in MSBuild.
 

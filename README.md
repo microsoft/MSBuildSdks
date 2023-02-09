@@ -29,6 +29,12 @@ Supports utility projects that do not compile an assembly.
 
 Supports staging artifacts from build outputs.
 
+### [Microsoft.Build.CopyOnWrite](src/CopyOnWrite)
+[![NuGet](https://img.shields.io/nuget/v/Microsoft.Build.CopyOnWrite.svg)](https://www.nuget.org/packages/Microsoft.Build.CopyOnWrite)
+ [![NuGet](https://img.shields.io/nuget/dt/Microsoft.Build.CopyOnWrite.svg)](https://www.nuget.org/packages/Microsoft.Build.CopyOnWrite)
+
+Enables Copy on Write for faster file copies.
+
 ## How can I use these SDKs?
 
 When using an MSBuild Project SDK obtained via NuGet (such as the SDKs in this repo) a specific version **must** be specified.
