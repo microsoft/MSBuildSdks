@@ -1000,7 +1000,7 @@ namespace Microsoft.Build.Tasks
             return true;
         }
 
-        private static readonly ConcurrentDictionary<string, bool> _reFsDrives = new(StringComparer.OrdinalIgnoreCase);
+        private static readonly ConcurrentDictionary<string, Lazy<bool>> _reFsDrives = new(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Check for CopyOnWrite support. Result is cached by drive root.
@@ -1024,16 +1024,16 @@ namespace Microsoft.Build.Tasks
             }
 
             return _reFsDrives.GetOrAdd(
-                source,
-                (key) =>
+                sourceDrive,
+                (key) => new Lazy<bool>(() =>
                 {
                     var supportsCloneFile = _cow.CopyOnWriteLinkSupportedInDirectoryTree(key);
                     Log.LogMessage(MessageImportance.Low,
                         supportsCloneFile
-                            ? $"Drive {sourceDrive} has support for CloneFile. All copies will attempt to use CloneFile."
-                            : $"Drive {sourceDrive} does not have support for CloneFile. File.Copy will be used.");
+                            ? $"Drive {key} has support for CloneFile. All copies will attempt to use CloneFile."
+                            : $"Drive {key} does not have support for CloneFile. File.Copy will be used.");
                     return supportsCloneFile;
-                });
+                })).Value;
         }
         #endregion
     }
