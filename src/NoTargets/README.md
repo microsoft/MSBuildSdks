@@ -18,7 +18,7 @@ To have a project that just copies a file:
     <FilesToCopy Include="files\**" />
   </ItemGroup>
 
-  <Target Name="CopyFiles" BeforeTargets="AfterBuild">
+  <Target Name="CopyFiles" BeforeTargets="PrepareForRun">
     <Copy
         SourceFiles="@(FilesToCopy)"
         DestinationFolder="$(OutDir)"
@@ -33,6 +33,7 @@ To have a project that just copies a file:
   </Target>
 </Project>
 ```
+Note: to leverage build incrementalism through `FileWrites`, ensure the custom target runs `BeforeTargets="PrepareForRun"` as above.
 
 Or a project that runs a tool:
 
