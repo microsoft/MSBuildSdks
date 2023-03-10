@@ -6,7 +6,8 @@ variables:
   BuildConfiguration: 'Debug'
   BuildPlatform: 'Any CPU'
   DotNet3Version: '3.x'
-  DotNet6Version: '6.0.203'
+  DotNet6Version: '6.x'
+  DotNet7Version: '7.x'
   MSBuildArgs: '"/p:Platform=$(BuildPlatform)" "/p:Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
   SignType: 'Test'
 
@@ -44,6 +45,11 @@ jobs:
     displayName: 'Install .NET $(DotNet6Version)'
     inputs:
       version: '$(DotNet6Version)'
+
+  - task: UseDotNet@2
+    displayName: 'Install .NET $(DotNet7Version)'
+    inputs:
+      version: '$(DotNet7Version)'
 
   - task: DotNetCoreCLI@2
     displayName: 'Build Solution'
@@ -93,6 +99,11 @@ jobs:
     inputs:
       version: '$(DotNet6Version)'
 
+  - task: UseDotNet@2
+    displayName: 'Install .NET $(DotNet7Version)'
+    inputs:
+      version: '$(DotNet7Version)'
+
   - task: DotNetCoreCLI@2
     displayName: 'dotnet build'
     inputs:
@@ -124,6 +135,11 @@ jobs:
     displayName: 'Install .NET $(DotNet6Version)'
     inputs:
       version: '$(DotNet6Version)'
+
+  - task: UseDotNet@2
+    displayName: 'Install .NET $(DotNet7Version)'
+    inputs:
+      version: '$(DotNet7Version)'
 
   - task: DotNetCoreCLI@2
     displayName: 'dotnet build'
