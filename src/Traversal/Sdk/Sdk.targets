@@ -45,7 +45,9 @@
     <ProjectReferenceTargets Remove="Publish" />
     <ProjectReferenceTargets Remove="Pack" />
 
+    <ProjectReferenceTargets Include="Build" Targets=".default" OuterBuild="true" />
     <ProjectReferenceTargets Include="Build" Targets=".default" />
+    <ProjectReferenceTargets Include="Clean" Targets="Clean" OuterBuild="true" />
     <ProjectReferenceTargets Include="Clean" Targets="Clean" />
     <ProjectReferenceTargets Include="Rebuild" Targets="Rebuild" />
     <ProjectReferenceTargets Include="Test" Targets="Test" />
