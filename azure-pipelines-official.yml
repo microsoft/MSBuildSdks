@@ -5,7 +5,7 @@ variables:
   ArtifactsDirectoryName: 'artifacts'
   BuildConfiguration: 'Release'
   BuildPlatform: 'Any CPU'
-  DotNetVersion: '6.x'
+  DotNetVersion: '7.x'
   MSBuildArgs: '"/p:Platform=$(BuildPlatform)" "/p:Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
   SignType: 'Test'
 

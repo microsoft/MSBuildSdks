@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <!-- Disable NuGet central package management -->
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+</Project>

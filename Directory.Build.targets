@@ -1,6 +1,4 @@
 <Project>
-  <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.1.3" />
-
   <PropertyGroup>
     <MicroBuild_NuPkgSigningEnabled Condition="'$(SignType)' == 'Test'">false</MicroBuild_NuPkgSigningEnabled>
     <NoWarn Condition="'$(IsTestProject)' == 'true'">$(NoWarn);SA1600</NoWarn>
