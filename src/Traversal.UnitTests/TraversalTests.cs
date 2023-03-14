@@ -253,14 +253,21 @@ namespace Microsoft.Build.Traversal.UnitTests
                 .TraversalProject(
                     null,
                     GetTempFile("dirs.proj"))
-                .Save().TryGetItems("ProjectReferenceTargets", "Targets", out IReadOnlyDictionary<string, string> items);
-
-            items.Keys.ShouldContain(target);
-
-            items[target].ShouldBe(
-                target == "Build"
-                    ? ".default"
-                    : target);
+                .Save()
+                .TryGetItems("ProjectReferenceTargets", out IReadOnlyCollection<ProjectItem> items);
+            if (target.Equals("Build") || target.Equals("Clean"))
+            {
+                string expectedTargetsMetadatumValue = target.Equals("Build") ? ".default" : target;
+                IEnumerable<ProjectItem> filteredItems = items.Where(item => item.EvaluatedInclude.Equals(target));
+                filteredItems.Where(item => item.GetMetadataValue("OuterBuild").Equals("true")
+                    && item.GetMetadataValue("Targets").Equals(expectedTargetsMetadatumValue)).ShouldNotBeEmpty();
+                filteredItems.Where(item => item.GetMetadataValue("OuterBuild").Equals(string.Empty)
+                    && item.GetMetadataValue("Targets").Equals(expectedTargetsMetadatumValue)).ShouldNotBeEmpty();
+            }
+            else
+            {
+                items.Where(item => item.GetMetadataValue("Targets").Equals(target)).ShouldNotBeEmpty();
+            }
         }
 
         [Fact]
