@@ -8,6 +8,9 @@
 
   <PropertyGroup>
     <UsingMicrosoftTraversalSdk>true</UsingMicrosoftTraversalSdk>
+    
+    <!-- Don't automatically reference assembly packages since NoTargets don't need reference assemblies -->
+    <AutomaticallyUseReferenceAssemblyPackages Condition="'$(AutomaticallyUseReferenceAssemblyPackages)' == ''">false</AutomaticallyUseReferenceAssemblyPackages>
   </PropertyGroup>
 
   <Import Project="$(CustomBeforeTraversalProps)" Condition=" '$(CustomBeforeTraversalProps)' != '' And Exists('$(CustomBeforeTraversalProps)') " />
@@ -31,9 +34,6 @@
     
     <!-- Targeting packs shouldn't be referenced as traversal projects don't compile. -->
     <DisableImplicitFrameworkReferences Condition="'$(DisableImplicitFrameworkReferences)' == ''">true</DisableImplicitFrameworkReferences>
-    
-    <!-- Don't automatically reference assembly packages since NoTargets don't need reference assemblies -->
-    <AutomaticallyUseReferenceAssemblyPackages Condition="'$(AutomaticallyUseReferenceAssemblyPackages)' == ''">false</AutomaticallyUseReferenceAssemblyPackages>
   </PropertyGroup>
 
   <ItemDefinitionGroup Condition=" '$(TraversalDoNotReferenceOutputAssemblies)' != 'false' ">
