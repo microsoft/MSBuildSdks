@@ -8,6 +8,9 @@
 
   <PropertyGroup>
     <UsingMicrosoftTraversalSdk>true</UsingMicrosoftTraversalSdk>
+    
+    <!-- Don't automatically reference assembly packages since NoTargets don't need reference assemblies -->
+    <AutomaticallyUseReferenceAssemblyPackages Condition="'$(AutomaticallyUseReferenceAssemblyPackages)' == ''">false</AutomaticallyUseReferenceAssemblyPackages>
   </PropertyGroup>
 
   <Import Project="$(CustomBeforeTraversalProps)" Condition=" '$(CustomBeforeTraversalProps)' != '' And Exists('$(CustomBeforeTraversalProps)') " />

@@ -186,6 +186,36 @@ namespace Microsoft.Build.Traversal.UnitTests
                 buildOutput.GetConsoleLog());
         }
 
+        [Theory]
+        [InlineData("AutomaticallyUseReferenceAssemblyPackages", "true", "true")]
+        [InlineData("AutomaticallyUseReferenceAssemblyPackages", null, "false")]
+        [InlineData("BuildInParallel", "false", "false")]
+        [InlineData("BuildInParallel", null, "true")]
+        [InlineData("ContinueOnError", "true", "true")]
+        [InlineData("ContinueOnError", null, "false")]
+        [InlineData("DisableImplicitFrameworkReferences", "false", "false")]
+        [InlineData("DisableImplicitFrameworkReferences", null, "true")]
+        [InlineData("EnableDefaultItems", null, "false")]
+        [InlineData("IsTraversal", null, "true")]
+        [InlineData("RestoreProjectStyle", null, "PackageReference")]
+        [InlineData("StopOnFirstFailure", "false", "false")]
+        [InlineData("StopOnFirstFailure", null, "true")]
+        [InlineData("TargetFramework", "net6.0", "net6.0")]
+        [InlineData("TargetFramework", null, "net45")]
+        [InlineData("TraversalProjectNames", "custom.proj", "custom.proj")]
+        [InlineData("TraversalProjectNames", null, "dirs.proj")]
+        [InlineData("UsingMicrosoftTraversalSdk", null, "true")]
+        public void PropertiesHaveExpectedValues(string propertyName, string value, string expectedValue)
+        {
+            ProjectCreator.Templates.TraversalProject(
+                path: GetTempFile("dirs.proj"))
+                .Property(propertyName, value)
+                .Save()
+                .TryGetPropertyValue(propertyName, out string actualValue);
+
+            actualValue.ShouldBe(expectedValue, StringComparer.OrdinalIgnoreCase, customMessage: $"Property {propertyName} should have a value of \"{expectedValue}\" but its value was \"{actualValue}\"");
+        }
+
         [Fact]
         public void PublishRespectsNoBuild()
         {
