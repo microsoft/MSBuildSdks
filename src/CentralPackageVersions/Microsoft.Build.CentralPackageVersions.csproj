@@ -6,5 +6,6 @@
     <ArtifactsPath>$(BaseArtifactsPath)\$(MSBuildProjectName)\</ArtifactsPath>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageType>MSBuildSdk</PackageType>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
   </PropertyGroup>
 </Project>
