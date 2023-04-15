@@ -90,7 +90,7 @@ namespace Microsoft.Build.Artifacts.Tasks
             if (hasWildcards || isRecursive)
             {
                 string match = GetMatchString(items);
-                CopySearch(items, isRecursive, match, source, null);
+                CopySearch(items, isRecursive, match, source, subDirectory: null);
             }
             else
             {
@@ -111,8 +111,8 @@ namespace Microsoft.Build.Artifacts.Tasks
                     {
                         foreach (string destination in item.DestinationFolders)
                         {
-                            FileInfo destFile = new FileInfo(Path.Combine(destination, file));
-                            if (Verify(destFile, false, false))
+                            FileInfo destFile = new FileInfo(Path.Combine(destination, item.RenamedFile ?? file));
+                            if (Verify(destFile, shouldExist: false, verifyExists: false))
                             {
                                 CopyFile(sourceFile, destFile, createDirs, item);
                             }
@@ -191,9 +191,29 @@ namespace Microsoft.Build.Artifacts.Tasks
             IList<RobocopyMetadata> allSources = new List<RobocopyMetadata>();
             IList<IList<RobocopyMetadata>> allBuckets = new List<IList<RobocopyMetadata>>();
 
-            foreach (ITaskItem item in Sources ?? Enumerable.Empty<ITaskItem>())
+            int sourceLength = Sources?.Length ?? 0;
+            List<string> renamedFiles;
+            if (sourceLength != 0)
             {
-                if (RobocopyMetadata.TryParse(item, Log, FileSystem.DirectoryExists, out RobocopyMetadata metadata))
+                renamedFiles = Sources[0].GetMetadata("RenamedFiles").Split(RobocopyMetadata.DestinationSplitter, StringSplitOptions.RemoveEmptyEntries).Select(d => d.Trim()).ToList();
+                if (renamedFiles.Count == 0)
+                {
+                    renamedFiles = null;
+                }
+                else if (renamedFiles.Count != sourceLength)
+                {
+                    Log.LogError($"Artifact Include '{string.Join(";", Sources.Select(s => s.ItemSpec))}' length does not match with RenamedFiles '{string.Join(";", renamedFiles)}'");
+                    return allBuckets;
+                }
+            }
+            else
+            {
+                renamedFiles = null;
+            }
+
+            for (int i = 0; i < sourceLength; i++)
+            {
+                if (RobocopyMetadata.TryParse(Sources[i], Log, renamedFiles?[i], FileSystem.DirectoryExists, out RobocopyMetadata metadata))
                 {
                     allSources.Add(metadata);
                 }

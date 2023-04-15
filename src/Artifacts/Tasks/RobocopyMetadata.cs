@@ -15,7 +15,7 @@ namespace Microsoft.Build.Artifacts.Tasks
 {
     internal sealed class RobocopyMetadata
     {
-        private static readonly char[] DestinationSplitter = { ';' };
+        internal static readonly char[] DestinationSplitter = { ';' };
         private static readonly char[] MultiSplits = { '\t', ' ', '\n', '\r', ';', ',' };
         private static readonly char[] Wildcards = { '?', '*' };
 
@@ -36,6 +36,8 @@ namespace Microsoft.Build.Artifacts.Tasks
         public string[] FileExcludes { get; private set; }
 
         public string[] FileMatches { get; private set; }
+
+        public string RenamedFile { get; private set; }
 
         public Regex[] FileRegexExcludes { get; private set; }
 
@@ -61,7 +63,7 @@ namespace Microsoft.Build.Artifacts.Tasks
 
         private bool OnlyNewer { get; set; }
 
-        public static bool TryParse(ITaskItem item, TaskLoggingHelper log, Func<string, bool> directoryExists, out RobocopyMetadata metadata)
+        public static bool TryParse(ITaskItem item, TaskLoggingHelper log, string renamedFile, Func<string, bool> directoryExists, out RobocopyMetadata metadata)
         {
             metadata = null;
 
@@ -97,6 +99,7 @@ namespace Microsoft.Build.Artifacts.Tasks
                 VerifyExists = item.GetMetadataBoolean(nameof(VerifyExists)),
                 AlwaysCopy = item.GetMetadataBoolean(nameof(AlwaysCopy), defaultValue: false),
                 OnlyNewer = item.GetMetadataBoolean(nameof(OnlyNewer), defaultValue: false),
+                RenamedFile = renamedFile,
             };
 
             foreach (string destination in item.GetMetadata("DestinationFolder").Split(DestinationSplitter, StringSplitOptions.RemoveEmptyEntries).Select(d => d.Trim()))

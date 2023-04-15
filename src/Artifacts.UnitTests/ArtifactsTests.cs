@@ -356,5 +356,81 @@ namespace Microsoft.Build.Artifacts.UnitTests
                     }.Select(i => Path.Combine(artifactsPath.FullName, i)),
                     ignoreOrder: true);
         }
+
+        [Fact]
+        public void RenamedFiles()
+        {
+            CreateFiles(
+                Path.Combine("bin", "Debug"),
+                "foo.exe",
+                "foo.pdb",
+                "foo.exe.config",
+                "bar.dll",
+                "bar.pdb",
+                "bar.cs");
+
+            DirectoryInfo artifactsPath = new DirectoryInfo(Path.Combine(TestRootPath, "artifacts"));
+            DirectoryInfo artifactsPath2 = new DirectoryInfo(Path.Combine(TestRootPath, "artifacts2"));
+            string artifactPaths = string.Concat(artifactsPath.FullName, ";", Environment.NewLine, artifactsPath2.FullName);
+
+            ProjectCreator.Templates.SdkProjectWithArtifacts(
+                    outputPath: Path.Combine("bin", "Debug"),
+                    artifactsPath: artifactPaths,
+                    defaultArtifactSource: @"bin\Debug\foo.exe;bin\Debug\bar.dll",
+                    renamedFiles: "foo.test.exe;bar.test.dll")
+                .TryGetItems("Artifact", out IReadOnlyCollection<ProjectItem> artifactItems)
+                .TryGetPropertyValue("DefaultArtifactsSource", out string defaultArtifactsSource)
+                .TryBuild(out bool result, out BuildOutput buildOutput);
+
+            result.ShouldBeTrue(buildOutput.GetConsoleLog());
+
+            artifactsPath.GetFiles("*", SearchOption.AllDirectories)
+                .Select(i => i.FullName)
+                .ShouldBe(
+                    new[]
+                    {
+                        "foo.test.exe",
+                        "bar.test.dll",
+                    }.Select(i => Path.Combine(artifactsPath.FullName, i)),
+                    ignoreOrder: true);
+            artifactsPath2.GetFiles("*", SearchOption.AllDirectories)
+                .Select(i => i.FullName)
+                .ShouldBe(
+                    new[]
+                    {
+                        "foo.test.exe",
+                        "bar.test.dll",
+                    }.Select(i => Path.Combine(artifactsPath2.FullName, i)),
+                    ignoreOrder: true);
+        }
+
+        [Fact]
+        public void RenamedFilesWithIncorrectNumberShouldFail()
+        {
+            CreateFiles(
+                Path.Combine("bin", "Debug"),
+                "foo.exe",
+                "foo.pdb",
+                "foo.exe.config",
+                "bar.dll",
+                "bar.pdb",
+                "bar.cs");
+
+            DirectoryInfo artifactsPath = new DirectoryInfo(Path.Combine(TestRootPath, "artifacts"));
+
+            ProjectCreator.Templates.SdkProjectWithArtifacts(
+                    outputPath: Path.Combine("bin", "Debug"),
+                    artifactsPath: artifactsPath.FullName,
+                    defaultArtifactSource: @"bin\Debug\foo.exe;bin\Debug\bar.dll",
+                    renamedFiles: "foo.test.exe")
+                .TryGetItems("Artifact", out IReadOnlyCollection<ProjectItem> artifactItems)
+                .TryGetPropertyValue("DefaultArtifactsSource", out string defaultArtifactsSource)
+                .TryBuild(out bool result, out BuildOutput buildOutput);
+
+            result.ShouldBeFalse(buildOutput.GetConsoleLog());
+            const string expectedMessage = @"Artifact Include 'bin\Debug\foo.exe;bin\Debug\bar.dll' length does not match with RenamedFiles 'foo.test.exe'";
+            string errorMessage = buildOutput.ErrorEvents.Single().Message;
+            (errorMessage == expectedMessage || errorMessage == expectedMessage.Replace('\\', '/')).ShouldBeTrue(errorMessage);
+        }
     }
 }
