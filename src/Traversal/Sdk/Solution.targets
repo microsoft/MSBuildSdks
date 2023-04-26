@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (c) Microsoft Corporation. All rights reserved.
+  
+  Licensed under the MIT license.
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Target Name="GetProjectsToSkip"
+            Returns="@(ProjectToSkip)">
+    <MSBuild BuildInParallel="True"
+             Properties="BuildingSolutionFile=true; CurrentSolutionConfigurationContents=$(CurrentSolutionConfigurationContents); SolutionDir=$(SolutionDir); SolutionExt=$(SolutionExt); SolutionFileName=$(SolutionFileName); SolutionName=$(SolutionName); SolutionPath=$(SolutionPath);"
+             SkipNonexistentProjects="$([MSBuild]::ValueOrDefault('%(ProjectReference.SkipNonexistentProjects)', $([MSBuild]::ValueOrDefault('$(SkipNonexistentProjects)', 'true'))))"
+             SkipNonexistentTargets="$([MSBuild]::ValueOrDefault('%(ProjectReference.SkipNonexistentTargets)', $([MSBuild]::ValueOrDefault('$(SkipNonexistentTargets)', 'true'))))"
+             Projects="@(ProjectReference)"
+             Targets="ShouldSkipProject">
+      <Output TaskParameter="TargetOutputs"
+              ItemName="ProjectToSkip" />
+    </MSBuild>
+  </Target>
+</Project>
