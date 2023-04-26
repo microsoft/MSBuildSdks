@@ -415,6 +415,36 @@ namespace Microsoft.Build.Traversal.UnitTests
             }
         }
 
+        [Fact]
+        public void TraversalsCanSkipProjects()
+        {
+            ProjectCreator projectA = ProjectCreator.Templates
+                .ProjectWithBuildOutput("Build")
+                .Target("ShouldSkipProject", returns: "@(ProjectToSkip)")
+                    .ItemInclude("ProjectToSkip", "$(MSBuildProjectFullPath)", condition: "false", metadata: new Dictionary<string, string> { ["Message"] = "Project A is not skipped!" })
+                .Save(Path.Combine(TestRootPath, "ProjectA", "ProjectA.csproj"));
+
+            ProjectCreator projectB = ProjectCreator.Templates
+                .ProjectWithBuildOutput("Build")
+                .Target("ShouldSkipProject", returns: "@(ProjectToSkip)")
+                    .ItemInclude("ProjectToSkip", "$(MSBuildProjectFullPath)", condition: "true", metadata: new Dictionary<string, string> { ["Message"] = "Project B is skipped!" })
+                .Save(Path.Combine(TestRootPath, "ProjectB", "ProjectB.csproj"));
+
+            ProjectCreator.Templates
+                .TraversalProject(new string[] { projectA, projectB }, path: GetTempFile("dirs.proj"))
+                .TryBuild("Build", out bool result, out BuildOutput buildOutput, out IDictionary<string, TargetResult> targetOutputs);
+
+            result.ShouldBeTrue();
+
+            buildOutput.Messages.High.ShouldHaveSingleItem()
+                .ShouldContain("Project B is skipped!");
+
+            targetOutputs.TryGetValue("Build", out TargetResult buildTargetResult).ShouldBeTrue();
+
+            buildTargetResult.Items.ShouldHaveSingleItem()
+                .ItemSpec.ShouldBe(Path.Combine("bin", "ProjectA.dll"));
+        }
+
         [Theory]
         [InlineData("Build")]
         [InlineData("Clean")]

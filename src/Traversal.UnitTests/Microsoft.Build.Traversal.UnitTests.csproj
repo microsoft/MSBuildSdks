@@ -15,7 +15,6 @@
     <ProjectReference Include="..\Traversal\Microsoft.Build.Traversal.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Traversal\Sdk\Sdk.props" Link="Sdk\Sdk.props" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="..\Traversal\Sdk\Sdk.targets" Link="Sdk\Sdk.targets" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\Traversal\Sdk\**" Link="Sdk\$(RelativeDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
