@@ -32,12 +32,12 @@ namespace Microsoft.Build.Traversal.UnitTests
             ProjectCreator.Templates.SolutionMetaproj(
                 TestRootPath,
                 new[] { projectA, projectB })
+                .Property("TraversalSkipUnsupportedProjects", bool.TrueString)
                 .TryBuild("Build", out bool result, out BuildOutput buildOutput, out IDictionary<string, TargetResult> targetOutputs);
 
             result.ShouldBeTrue();
 
-            buildOutput.Messages.High.ShouldHaveSingleItem()
-                .ShouldContain("Project B is skipped!");
+            buildOutput.Messages.High.ShouldContain(i => i.Contains("Project B is skipped!"));
 
             targetOutputs.TryGetValue("Build", out TargetResult buildTargetResult).ShouldBeTrue();
 

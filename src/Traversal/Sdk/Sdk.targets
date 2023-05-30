@@ -13,7 +13,7 @@
 
   <Target Name="SkipProjects"
           DependsOnTargets="GetProjectsToSkip"
-          Condition="'$(SkipProjects)' != 'false'">
+          Condition="'$(TraversalSkipUnsupportedProjects)' == 'true'">
     <ItemGroup>
       <_NonExistentProjectToSkip Include="@(ProjectToSkip)" Condition="!Exists('%(ProjectToSkip.Identity)')"/>
       <ProjectReference Remove="%(ProjectToSkip.OriginalItemSpec)" />

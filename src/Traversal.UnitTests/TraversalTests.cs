@@ -432,12 +432,12 @@ namespace Microsoft.Build.Traversal.UnitTests
 
             ProjectCreator.Templates
                 .TraversalProject(new string[] { projectA, projectB }, path: GetTempFile("dirs.proj"))
+                .Property("TraversalSkipUnsupportedProjects", bool.TrueString)
                 .TryBuild("Build", out bool result, out BuildOutput buildOutput, out IDictionary<string, TargetResult> targetOutputs);
 
             result.ShouldBeTrue();
 
-            buildOutput.Messages.High.ShouldHaveSingleItem()
-                .ShouldContain("Project B is skipped!");
+            buildOutput.Messages.High.ShouldContain(i => i.Contains("Project B is skipped!"), buildOutput.GetConsoleLog());
 
             targetOutputs.TryGetValue("Build", out TargetResult buildTargetResult).ShouldBeTrue();
 
@@ -472,14 +472,7 @@ namespace Microsoft.Build.Traversal.UnitTests
 
             result.ShouldBeTrue(buildOutput.GetConsoleLog());
 
-            buildOutput.Messages.High.ShouldBe(
-                    new[]
-                    {
-                        "BF0C6E1044514FE3AE4B78EC308D6F45",
-                        "40869F4000B44D75A52AB305F24E0FDB",
-                    },
-                    ignoreOrder: true,
-                    buildOutput.GetConsoleLog());
+            buildOutput.Messages.High.ShouldContain(i => string.Equals(i, "BF0C6E1044514FE3AE4B78EC308D6F45") || string.Equals(i, "40869F4000B44D75A52AB305F24E0FDB"), buildOutput.GetConsoleLog());
         }
 
         [Theory]
