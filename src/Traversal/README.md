@@ -59,8 +59,15 @@ This allows you to pass MSBuild global properties to skip a particular project:
 msbuild /Property:DoNotBuildWebApp=true
 ```
 
-Another method is to add a `ShouldSkipProject` target to your `Directory.Build.targets`.  Use the target below as a template:
+Another method is to enable skipping of unsupported projects by setting the `TraversalSkipUnsupportedProjects` MSBuild property in `Directory.Build.props`:
 
+```xml
+<PropertyGroup>
+  <TraversalSkipUnsupportedProjects>true</TraversalSkipUnsupportedProjects>
+</PropertyGroup>
+```
+
+Then you define a `ShouldSkipProject` target to your `Directory.Build.targets` that skips projects if they are unsupported.  Use the target below as a template:
 ```xml
 <Target Name="ShouldSkipProject" Returns="@(ProjectToSkip)">
   <ItemGroup>
@@ -89,6 +96,9 @@ in the same folder of any solution with the following contents:
 Directory.Solution.props:
 ```xml
 <Project>
+  <PropertyGroup>
+    <TraversalSkipUnsupportedProjects>true</TraversalSkipUnsupportedProjects>
+  </PropertyGroup>
   <Import Project="Microsoft.Build.Traversal" Project="Sdk.props" />
 </Project>
 ```
