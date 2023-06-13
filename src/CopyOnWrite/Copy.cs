@@ -1023,17 +1023,25 @@ namespace Microsoft.Build.Tasks
                 return false;
             }
 
-            return _reFsDrives.GetOrAdd(
-                sourceDrive,
-                (key) => new Lazy<bool>(() =>
-                {
-                    var supportsCloneFile = _cow.CopyOnWriteLinkSupportedInDirectoryTree(key);
-                    Log.LogMessage(MessageImportance.Low,
-                        supportsCloneFile
-                            ? $"Drive {key} has support for CloneFile. All copies will attempt to use CloneFile."
-                            : $"Drive {key} does not have support for CloneFile. File.Copy will be used.");
-                    return supportsCloneFile;
-                })).Value;
+            try
+            {
+                return _reFsDrives.GetOrAdd(
+                    sourceDrive,
+                    (key) => new Lazy<bool>(() =>
+                    {
+                        var supportsCloneFile = _cow.CopyOnWriteLinkSupportedInDirectoryTree(key);
+                        Log.LogMessage(MessageImportance.Low,
+                            supportsCloneFile
+                                ? $"Drive {key} has support for CloneFile. All copies will attempt to use CloneFile."
+                                : $"Drive {key} does not have support for CloneFile. File.Copy will be used.");
+                        return supportsCloneFile;
+                    })).Value;
+            }
+            catch (Exception ex)
+            {
+                Log.LogMessage(MessageImportance.Low, $"Couldn't determine if CloneFile is supported for {sourceDrive} : {ex}");
+                return false;
+            }
         }
         #endregion
     }
