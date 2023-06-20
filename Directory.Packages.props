@@ -2,13 +2,14 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <MicrosoftBuildPackageVersion>17.6.3</MicrosoftBuildPackageVersion>
-    <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'netcoreapp3.1'">16.9.0</MicrosoftBuildPackageVersion>
-    <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'netstandard2.0'">16.9.0</MicrosoftBuildPackageVersion>
-    <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'net46'">15.9.20</MicrosoftBuildPackageVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildPackageVersion)" />
+    <PackageVersion Update="Microsoft.Build.Utilities.Core" Version="16.9.0" Condition="'$(TargetFramework)' == 'netcoreapp3.1' Or '$(TargetFramework)' == 'netstandard2.0'" />
+    <PackageVersion Update="Microsoft.Build.Utilities.Core" Version="15.9.20" Condition="'$(TargetFramework)' == 'net46'" />
     <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildPackageVersion)" />
+    <PackageVersion Update="Microsoft.Build.Tasks.Core" Version="16.9.0" Condition="'$(TargetFramework)' == 'netcoreapp3.1' Or '$(TargetFramework)' == 'netstandard2.0'" />
+    <PackageVersion Update="Microsoft.Build.Tasks.Core" Version="15.9.20" Condition="'$(TargetFramework)' == 'net46'" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.6.0" />
     <PackageVersion Include="Microsoft.Win32.Registry" Version="4.7.0" />
     <PackageVersion Include="MSBuild.ProjectCreation" Version="10.0.0" />
