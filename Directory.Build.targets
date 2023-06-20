@@ -1,6 +1,4 @@
 <Project>
-  <Import Project="Directory.Packages.targets" />
-  
   <PropertyGroup>
     <MicroBuild_NuPkgSigningEnabled Condition="'$(SignType)' == 'Test'">false</MicroBuild_NuPkgSigningEnabled>
     <NoWarn Condition="'$(IsTestProject)' == 'true'">$(NoWarn);SA1600</NoWarn>
