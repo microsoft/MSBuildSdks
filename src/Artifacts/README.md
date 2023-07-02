@@ -151,6 +151,7 @@ The following properties control artifacts staging:
 | `CustomAfterArtifactsProps` | A list of custom MSBuild projects to import **after** Artifacts properties are declared.|
 | `CustomBeforeArtifactsTargets` | A list of custom MSBuild projects to import **before** Artifacts targets are declared.|
 | `CustomAfterArtifactsTargets` | A list of custom MSBuild projects to import **after** Artifacts targets are declared.|
+| `RenamedFiles` | Specifies the list of files to rename on copy | |
 
 **Example**
 
@@ -175,6 +176,7 @@ The `<Artifact />` items specify collections of artifacts to stage.  These items
 | `FileMatch` | A list of one or more file filters seperated by a space or semicolon to include.  Wildcards include `*` and `?` | `*`|
 | `FileExclude`   | A list of one or more file filters seperated by a space or semicolon to exclude.  Wildcards include `*` and `?` | |
 | `DirExclude`   | A list of one or more directory filters seperated by a space or semicolon to exclude.  Wildcards include `*` and `?` | |
+| `RenamedFiles`   | A list of files separated by a semicolon matching Include length to rename source files on copy. RenamedFiles should not contain directory as it is provided through DestinationFolder | |
 
 **Example**
 

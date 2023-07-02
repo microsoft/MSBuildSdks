@@ -90,7 +90,9 @@ namespace Microsoft.Build.Artifacts.UnitTests
             string toolsVersion = null,
             string treatAsLocalProperty = null,
             ProjectCollection projectCollection = null,
-            NewProjectFileOptions? projectFileOptions = null)
+            NewProjectFileOptions? projectFileOptions = null,
+            string defaultArtifactSource = null,
+            string renamedFiles = null)
         {
             return ProjectCreator.Create(
                     path,
@@ -108,6 +110,8 @@ namespace Microsoft.Build.Artifacts.UnitTests
                 .Property("AppendTargetFrameworkToOutputPath", appendTargetFrameworkToOutputPath.HasValue ? appendTargetFrameworkToOutputPath.ToString() : null)
                 .Property("OutputPath", $"$(OutputPath)$(TargetFramework.ToLowerInvariant()){Path.DirectorySeparatorChar}", condition: "'$(AppendTargetFrameworkToOutputPath)' == 'true'")
                 .Property("ArtifactsPath", artifactsPath)
+                .Property("DefaultArtifactsSource", defaultArtifactSource)
+                .Property("RenamedFiles", renamedFiles)
                 .CustomAction(customAction)
                 .Target("Build")
                 .Target("AfterBuild", afterTargets: "Build")

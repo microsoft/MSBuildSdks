@@ -34,6 +34,7 @@
        * $(TargetFramworks) is specified in which case the artifacts are copied in the outer build
     -->
     <Artifact Include="$(DefaultArtifactsSource)"
+              RenamedFiles="$(RenamedFiles)"
               DestinationFolder="$(ArtifactsPath)"
               FileMatch="$([MSBuild]::ValueOrDefault($(DefaultArtifactsFileMatch), '*exe *dll *exe.config *nupkg'))"
               FileExclude="$(DefaultArtifactsFileExclude)"
