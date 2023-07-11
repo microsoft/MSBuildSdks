@@ -147,6 +147,7 @@ The following properties control artifacts staging:
 | `ArtifactsCopyRetryDelayMilliseconds` | The number of milliseconds to wait in between retries | `$(CopyRetryDelayMilliseconds)` |
 | `ArtifactsShowDiagnostics` | Enables additional logging that can be used to troubleshoot why artifacts are not being staged | `false` |
 | `ArtifactsShowErrorOnRetry` | Logs an error if a retry was attempted.  Disable this to suppress issues while copying files | `true` |
+| `DisableCopyOnWrite` | Disables use of copy-on-write links (file cloning) even if the filesystem allows it. | `false` |
 | `CustomBeforeArtifactsProps ` | A list of custom MSBuild projects to import **before** artifacts properties are declared. |
 | `CustomAfterArtifactsProps` | A list of custom MSBuild projects to import **after** Artifacts properties are declared.|
 | `CustomBeforeArtifactsTargets` | A list of custom MSBuild projects to import **before** Artifacts targets are declared.|
