@@ -25,7 +25,7 @@ namespace Microsoft.Build.Artifacts.Tasks
 
         public bool AlwaysCopy { get; private set; }
 
-        public List<string> DestinationFolders { get; } = new List<string>();
+        public List<string> DestinationFolders { get; } = new ();
 
         public string[] DirExcludes { get; private set; }
 
@@ -103,7 +103,7 @@ namespace Microsoft.Build.Artifacts.Tasks
             {
                 if (destination.StartsWith(@"\") && !destination.StartsWith(@"\\"))
                 {
-                    log.LogError("The specified destination \"{0}\" cannot start with '{1}'", destination, Path.DirectorySeparatorChar);
+                    log.LogError("The specified destination \"{0}\" cannot start with '\\'", destination);
                     return false;
                 }
 
@@ -190,8 +190,8 @@ namespace Microsoft.Build.Artifacts.Tasks
                     foreach (string match in FileMatches)
                     {
                         bool isRooted = Path.IsPathRooted(match);
-                        if (isRooted && string.Equals(match, rootedItem, StringComparison.OrdinalIgnoreCase) ||
-                           !isRooted && string.Equals(match, item, StringComparison.OrdinalIgnoreCase))
+                        if (isRooted && string.Equals(match, rootedItem, FileSystem.PathComparison) ||
+                           !isRooted && string.Equals(match, item, FileSystem.PathComparison))
                         {
                             isMatch = true;
                             break;
@@ -215,8 +215,8 @@ namespace Microsoft.Build.Artifacts.Tasks
                 foreach (string exclude in FileExcludes)
                 {
                     bool isRooted = Path.IsPathRooted(exclude);
-                    if (isRooted && rootedItem.Equals(exclude, StringComparison.OrdinalIgnoreCase) ||
-                       !isRooted && item.Equals(exclude, StringComparison.OrdinalIgnoreCase))
+                    if (isRooted && rootedItem.Equals(exclude, FileSystem.PathComparison) ||
+                       !isRooted && item.Equals(exclude, FileSystem.PathComparison))
                     {
                         return false;
                     }
@@ -243,7 +243,7 @@ namespace Microsoft.Build.Artifacts.Tasks
                 foreach (string exclude in DirExcludes)
                 {
                     // Exclude directories with matching sub-directory
-                    if (rootedItem.EndsWith(exclude, StringComparison.OrdinalIgnoreCase))
+                    if (rootedItem.EndsWith(exclude, FileSystem.PathComparison))
                     {
                         return false;
                     }
@@ -279,7 +279,7 @@ namespace Microsoft.Build.Artifacts.Tasks
 
         private string DumpString(string[] noWild, Regex[] wild)
         {
-            StringBuilder builder = new StringBuilder();
+            StringBuilder builder = new StringBuilder(128);
             if (noWild != null)
             {
                 foreach (string item in noWild)

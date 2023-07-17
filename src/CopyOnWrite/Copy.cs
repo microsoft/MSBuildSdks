@@ -530,7 +530,8 @@ namespace Microsoft.Build.Tasks
             var actionBlockOptions = new ExecutionDataflowBlockOptions
             {
                 MaxDegreeOfParallelism = parallelism,
-                CancellationToken = _cancellationTokenSource.Token
+                CancellationToken = _cancellationTokenSource.Token,
+                EnsureOrdered = parallelism == 1,
             };
             var partitionCopyActionBlock = new ActionBlock<List<int>>(
                 async (List<int> partition) =>
@@ -976,7 +977,7 @@ namespace Microsoft.Build.Tasks
         }
 
         #region CopyOnWrite functionality
-        private static readonly ICopyOnWriteFilesystem _cow = CopyOnWriteFilesystemFactory.GetInstance();
+        private static readonly ICopyOnWriteFilesystem CoW = CopyOnWriteFilesystemFactory.GetInstance();
 
         /// <summary>
         /// Attempt to clone source file to destination.
@@ -988,7 +989,7 @@ namespace Microsoft.Build.Tasks
         {
             try
             {
-                _cow.CloneFile(source, dest, CloneFlags.PathIsFullyResolved);
+                CoW.CloneFile(source, dest, CloneFlags.PathIsFullyResolved);
                 Log.LogMessage(MessageImportance.Low, $"CloneFile '{source}' to '{dest}'.");
             }
             catch (Exception e)
@@ -1000,8 +1001,6 @@ namespace Microsoft.Build.Tasks
             return true;
         }
 
-        private static readonly ConcurrentDictionary<string, Lazy<bool>> _reFsDrives = new(StringComparer.OrdinalIgnoreCase);
-
         /// <summary>
         /// Check for CopyOnWrite support. Result is cached by drive root.
         /// </summary>
@@ -1010,36 +1009,18 @@ namespace Microsoft.Build.Tasks
         /// <returns>True when CopyOnWrite appears to be supported.</returns>
         private bool IsCopyOnWriteSupported(string source, string dest)
         {
-            if (source.StartsWith(@"\\", StringComparison.OrdinalIgnoreCase) || dest.StartsWith(@"\\"))
-            {
-                return false;
-            }
-
-            var sourceDrive = Path.GetPathRoot(source);
-            var destDrive = Path.GetPathRoot(dest);
-
-            if (!sourceDrive.Equals(destDrive, StringComparison.OrdinalIgnoreCase))
+            if (source.StartsWith(@"\\", StringComparison.Ordinal) || dest.StartsWith(@"\\", StringComparison.Ordinal))
             {
                 return false;
             }
 
             try
             {
-                return _reFsDrives.GetOrAdd(
-                    sourceDrive,
-                    (key) => new Lazy<bool>(() =>
-                    {
-                        var supportsCloneFile = _cow.CopyOnWriteLinkSupportedInDirectoryTree(key);
-                        Log.LogMessage(MessageImportance.Low,
-                            supportsCloneFile
-                                ? $"Drive {key} has support for CloneFile. All copies will attempt to use CloneFile."
-                                : $"Drive {key} does not have support for CloneFile. File.Copy will be used.");
-                        return supportsCloneFile;
-                    })).Value;
+                return CoW.CopyOnWriteLinkSupportedBetweenPaths(source, dest);
             }
             catch (Exception ex)
             {
-                Log.LogMessage(MessageImportance.Low, $"Couldn't determine if CloneFile is supported for {sourceDrive} : {ex}");
+                Log.LogMessage(MessageImportance.Low, $"Couldn't determine if CloneFile is supported for {source} : {ex}");
                 return false;
             }
         }

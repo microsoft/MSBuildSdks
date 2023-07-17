@@ -12,7 +12,9 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="CopyOnWrite" Condition="'$(TargetFramework)' != 'net46'" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" PrivateAssets="All" />
+    <PackageReference Include="System.Threading.Tasks.Dataflow" />
   </ItemGroup>
   <ItemGroup>
     <None Include="build\*" Pack="true" PackagePath="build\" />

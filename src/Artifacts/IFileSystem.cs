@@ -2,12 +2,15 @@
 //
 // Licensed under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 
+#nullable enable
+
 namespace Microsoft.Build.Artifacts
 {
-    internal interface IFileSystem
+    public interface IFileSystem
     {
         FileInfo CopyFile(FileInfo source, string destination, bool overwrite);
 
@@ -26,5 +29,11 @@ namespace Microsoft.Build.Artifacts
         bool FileExists(string path);
 
         bool FileExists(FileInfo file);
+
+        /// <summary>
+        /// Attempts to create a copy-on-write link (file clone) if supported.
+        /// </summary>
+        /// <returns>True if the clone was created, false if unsupported.</returns>
+        bool TryCloneFile(FileInfo sourceFile, FileInfo destinationFile);
     }
 }
