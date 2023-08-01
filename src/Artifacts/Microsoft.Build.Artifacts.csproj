@@ -10,9 +10,10 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);GetMyPackageFiles</TargetsForTfmSpecificContentInPackage>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="CopyOnWrite" Condition="'$(TargetFramework)' != 'net46'" />
+    <PackageReference Include="CopyOnWrite" GeneratePathProperty="True" PrivateAssets="All" Condition="'$(TargetFramework)' != 'net46'" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" PrivateAssets="All" />
     <PackageReference Include="System.Threading.Tasks.Dataflow" />
   </ItemGroup>
@@ -27,6 +28,18 @@
     <FilesToSign Include="$(TargetPath)" Authenticode="Microsoft400" StrongName="StrongName" />
   </ItemGroup>
   <Target Name="SignNuGetPackage" />
+  <Target Name="GetMyPackageFiles" DependsOnTargets="ResolveProjectReferences" Condition=" '$(TargetFramework)' != 'net46' ">
+    <PropertyGroup>
+      <CoWFramework Condition=" '$(TargetFramework)' == 'net472' or '$(TargetFramework)' == 'netstandard2.0' ">netstandard2.0</CoWFramework>
+      <CoWFramework Condition=" '$(TargetFramework)' == 'net6.0' ">net6.0</CoWFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="$(PkgCopyOnWrite)\lib\$(CoWFramework)\CopyOnWrite.dll"
+                              Pack="true"
+                              PackagePath="\build\$(TargetFramework)" />
+    </ItemGroup>
+  </Target>
   <Target Name="CopyArtifacts"
           AfterTargets="Pack"
           DependsOnTargets="SignNuGetPackage"
