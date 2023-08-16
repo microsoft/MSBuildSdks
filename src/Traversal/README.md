@@ -175,7 +175,7 @@ Set some properties during build.
 </Project>
 ```
 
-The following properties control the invocation of the to traversed projects.
+The following properties control the invocation of the traversed projects.
 
 | Property                            | Description |
 |-------------------------------------|-------------|
