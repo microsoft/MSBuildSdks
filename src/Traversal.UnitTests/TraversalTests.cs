@@ -5,6 +5,8 @@
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
+using Microsoft.Build.Graph;
+using Microsoft.Build.Logging;
 using Microsoft.Build.UnitTests.Common;
 using Microsoft.Build.Utilities.ProjectCreation;
 using Shouldly;
@@ -13,6 +15,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.Build.Traversal.UnitTests
 {
@@ -534,6 +537,67 @@ namespace Microsoft.Build.Traversal.UnitTests
                 .TryBuild("Clean", out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeTrue(buildOutput.GetConsoleLog());
+        }
+
+        [Fact]
+        public void StaticGraphBuildAndRestoreSucceed()
+        {
+            string[] projects = new[]
+            {
+                ProjectCreator.Templates.SdkCsproj(
+                        path: Path.Combine(TestRootPath, "ProjectA", "ProjectA.csproj"))
+                    .Save(),
+            }.Select(i => i.FullPath).ToArray();
+
+            var traversalProject = ProjectCreator
+                .Templates
+                .TraversalProject(
+                    projects,
+                    path: GetTempFile("dirs.proj"),
+                    customAction: creator => creator.Property("TargetFrameworks", "netstandard2.1"))
+                .Save();
+
+            using (BuildManager buildManager = new BuildManager())
+            using (ProjectCollection projectCollection = new ProjectCollection())
+            {
+                try
+                {
+                    BuildOutput buildOutput = BuildOutput.Create();
+
+                    buildManager.BeginBuild(
+                        new BuildParameters(projectCollection)
+                        {
+                            Loggers = new ILogger[] { buildOutput },
+                            IsolateProjects = true,
+                        });
+
+                    var graphRestoreRequestData = new GraphBuildRequestData(
+                        projectGraphEntryPoints: new[]
+                        {
+                            new ProjectGraphEntryPoint(
+                                traversalProject.FullPath,
+                                globalProperties: new Dictionary<string, string>
+                                {
+                                    ["RestoreUseStaticGraphEvaluation"] = "true",
+                                }),
+                        },
+                        targetsToBuild: new[] { "Restore" });
+
+                    var graphBuildRequestData = new GraphBuildRequestData(
+                        projectGraphEntryPoints: new[] { new ProjectGraphEntryPoint(traversalProject.FullPath) },
+                        targetsToBuild: new[] { "Build" });
+
+                    var graphRestoreResult = buildManager.BuildRequest(graphRestoreRequestData);
+                    var graphBuildResult = buildManager.BuildRequest(graphBuildRequestData);
+
+                    graphRestoreResult.OverallResult.ShouldBe(BuildResultCode.Success, buildOutput.GetConsoleLog());
+                    graphBuildResult.OverallResult.ShouldBe(BuildResultCode.Success, buildOutput.GetConsoleLog());
+                }
+                finally
+                {
+                    buildManager.EndBuild();
+                }
+            }
         }
     }
 }
