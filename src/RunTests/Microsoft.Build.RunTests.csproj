@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFrameworks>netstandard2.0</TargetFrameworks>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<PackageId>Microsoft.Build.RunTests</PackageId>
+		<Description>Runs VS Test Console</Description>
+		<NoDefaultExcludes>true</NoDefaultExcludes>
+		<BuildOutputTargetFolder>build\</BuildOutputTargetFolder>
+		<AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
+		<DevelopmentDependency>true</DevelopmentDependency>
+		<LangVersion>latest</LangVersion>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Build.Utilities.Core" />
+		<PackageReference Include="Microsoft.TestPlatform" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="build\Microsoft.Build.RunTests.props">
+			<PackagePath>build\</PackagePath>
+			<Pack>true</Pack>
+		</None>
+		<None Include="build\Microsoft.Build.RunTests.targets">
+			<PackagePath>build\</PackagePath>
+			<Pack>true</Pack>
+		</None>
+	</ItemGroup>
+	<ItemGroup>
+		<FilesToSign Include="$(TargetPath)" Authenticode="Microsoft400" StrongName="StrongName" />
+	</ItemGroup>
+</Project>

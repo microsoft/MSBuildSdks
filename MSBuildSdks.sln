@@ -82,6 +82,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SampleNoTargets", "SampleNo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.CopyOnWrite", "src\CopyOnWrite\Microsoft.Build.CopyOnWrite.csproj", "{153D1183-2953-4D4D-A5AD-AA2CF99B0DE3}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.RunTests", "src\RunTests\Microsoft.Build.RunTests.csproj", "{B4CA4749-4CDE-499F-8372-C71966C6DB16}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -140,6 +142,10 @@ Global
 		{153D1183-2953-4D4D-A5AD-AA2CF99B0DE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{153D1183-2953-4D4D-A5AD-AA2CF99B0DE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{153D1183-2953-4D4D-A5AD-AA2CF99B0DE3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4CA4749-4CDE-499F-8372-C71966C6DB16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4CA4749-4CDE-499F-8372-C71966C6DB16}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4CA4749-4CDE-499F-8372-C71966C6DB16}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4CA4749-4CDE-499F-8372-C71966C6DB16}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
