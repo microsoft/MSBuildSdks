@@ -15,62 +15,154 @@ namespace Microsoft.Build
         private const string CodeCoverageString = "Code Coverage";
 
         // Allows the execution of the test to be skipped. This is useful when the task is invoked from a target and the condition for running the target is not met or if test caching is enabled.
+
+        /// <summary>
+        /// Gets or Sets a value indicating whether to Skip Execution.
+        /// </summary>
         public bool SkipExecution { get; set; }
 
+        /// <summary>
+        /// Gets or Sets Full path to the test file.
+        /// </summary>
         public string TestFileFullPath { get; set; }
 
+        /// <summary>
+        /// Gets or Sets Settings for VSTest.
+        /// </summary>
         public string VSTestSetting { get; set; }
 
+        /// <summary>
+        /// Gets or Sets Paths to test adapter DLLs.
+        /// </summary>
         public string[] VSTestTestAdapterPath { get; set; }
 
+        /// <summary>
+        /// Gets or Sets Framework for VSTest.
+        /// </summary>
         public string VSTestFramework { get; set; }
 
+        /// <summary>
+        /// Gets or Sets Platform for VSTest.
+        /// </summary>
         public string VSTestPlatform { get; set; }
 
+        /// <summary>
+        /// Gets or Sets Filter used to select test cases.
+        /// </summary>
         public string VSTestTestCaseFilter { get; set; }
 
+        /// <summary>
+        /// Gets or Sets Logger used for VSTest.
+        /// </summary>
         public string[] VSTestLogger { get; set; }
 
+        /// <summary>
+        /// Gets or Sets Indicates whether to list test cases.
+        /// </summary>
         public string VSTestListTests { get; set; }
 
+        /// <summary>
+        /// Gets or Sets Diagnostic data for VSTest.
+        /// </summary>
         public string VSTestDiag { get; set; }
 
+        /// <summary>
+        /// Gets or Sets Command line options for VSTest.
+        /// </summary>
         public string[] VSTestCLIRunSettings { get; set; }
 
         // Initialized to empty string to allow declaring as non-nullable, the property is marked as
         // required so we can ensure that the property is set to non-null before the task is executed.
+
+        /// <summary>
+        /// Gets or Sets Path to VSTest console executable.
+        /// </summary>
         public string VSTestConsolePath { get; set; } = string.Empty;
 
+        /// <summary>
+        /// Gets or Sets Directory where VSTest results are saved.
+        /// </summary>
         public string VSTestResultsDirectory { get; set; }
 
+        /// <summary>
+        /// Gets or Sets Verbosity level of VSTest output.
+        /// </summary>
         public string VSTestVerbosity { get; set; }
 
+        /// <summary>
+        /// Gets or Sets Collectors for VSTest run.
+        /// </summary>
         public string[] VSTestCollect { get; set; }
 
+        /// <summary>
+        /// Gets or Sets source blame on test failure.
+        /// </summary>
         public string VSTestBlame { get; set; }
 
+        /// <summary>
+        /// Gets or Sets source blame on test crash.
+        /// </summary>
         public string VSTestBlameCrash { get; set; }
 
+        /// <summary>
+        /// Gets or Sets Dumptype used for crash source blame.
+        /// </summary>
         public string VSTestBlameCrashDumpType { get; set; }
 
+        /// <summary>
+        /// Gets or Sets source blame on test crash even if test pass.
+        /// </summary>
         public string VSTestBlameCrashCollectAlways { get; set; }
 
+        /// <summary>
+        /// Gets or Sets source blame on test hang.
+        /// </summary>
         public string VSTestBlameHang { get; set; }
 
+        /// <summary>
+        /// Gets or Sets Dumptype used for hang source blame.
+        /// </summary>
         public string VSTestBlameHangDumpType { get; set; }
 
+        /// <summary>
+        /// Gets or Sets Time out for hang source blame.
+        /// </summary>
         public string VSTestBlameHangTimeout { get; set; }
 
+        /// <summary>
+        /// Gets or Sets The directory path where trace data collector is.
+        /// </summary>
         public string VSTestTraceDataCollectorDirectoryPath { get; set; }
 
+        /// <summary>
+        /// Gets or Sets disabling Microsoft logo while running test through VSTest.
+        /// </summary>
         public string VSTestNoLogo { get; set; }
 
+        /// <summary>
+        /// Gets or Sets Test artifacts processing mode which is applicable for .NET 5.0 or later versions.
+        /// </summary>
         public string VSTestArtifactsProcessingMode { get; set; }
 
+        /// <summary>
+        /// Gets or Sets Correlation Id of test session.
+        /// </summary>
         public string VSTestSessionCorrelationId { get; set; }
 
+        /// <summary>
+        /// Gets or Sets Runner version of VSTest.
+        /// </summary>
         public string VSTestRunnerVersion { get; set; }
 
+        /// <summary>
+        /// Gets or Sets Path to nuget package cache.
+        /// </summary>
+        public string NugetPath { get; set; }
+
+        /// <summary>
+        /// Executes the test. Skips execution if specified.
+        /// </summary>
+        /// <returns>Returns true if the test was executed, otherwise false.</returns>
         public override bool Execute()
         {
             var traceEnabledValue = Environment.GetEnvironmentVariable("VSTEST_BUILD_TRACE");
@@ -328,8 +420,11 @@ namespace Microsoft.Build
 
         private Task<int> ExecuteTest()
         {
-            string packagePath = $@"{Environment.GetEnvironmentVariable("NugetPath")}\packages\microsoft.testplatform\{VSTestRunnerVersion}\tools\netstandard2.0\Common7\IDE\Extensions\TestPlatform\";
-
+#if NET6_0_OR_GREATER
+            string packagePath = $@"{NugetPath}\packages\microsoft.testplatform\{VSTestRunnerVersion}\tools\net6.0\Common7\IDE\Extensions\TestPlatform\";
+#else
+            string packagePath = $@"{NugetPath}\packages\microsoft.testplatform\{VSTestRunnerVersion}\tools\net462\Common7\IDE\Extensions\TestPlatform\";
+#endif
             var processInfo = new ProcessStartInfo
             {
                 FileName = $"{packagePath}vstest.console.exe",

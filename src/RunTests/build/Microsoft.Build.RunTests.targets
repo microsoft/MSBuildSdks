@@ -7,6 +7,6 @@
 						 VSTestBlameCrash="$(VSTestBlameCrash)" VSTestBlameCrashDumpType="$(VSTestBlameCrashDumpType)" VSTestBlameCrashCollectAlways="$(VSTestBlameCrashCollectAlways)"
 						 VSTestBlameHang="$(VSTestBlameHang)" VSTestBlameHangDumpType="$(VSTestBlameHangDumpType)" VSTestTraceDataCollectorDirectoryPath="$(VSTestTraceDataCollectorDirectoryPath)"
 						 VSTestNoLogo="$(VSTestNoLogo)" VSTestArtifactsProcessingMode="$(VSTestArtifactsProcessingMode)" VSTestSessionCorrelationId="$(VSTestSessionCorrelationId)"
-						 SkipExecution="$(CacheHit)" />
+						 SkipExecution="$(CacheHit)" NugetPath="$(NugetPath)" />
 	</Target>
 </Project>
