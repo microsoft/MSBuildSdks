@@ -1,12 +1,12 @@
 <Project>
-	<UsingTask TaskName="Microsoft.Build.RunTestsTask" AssemblyFile="$(MSBuildThisFileDirectory)netstandard2.0\Microsoft.Build.RunTests.dll" />
-	<Target Name="RunTests" AfterTargets="Test" Condition="$(IsTestProject)==true">
-		<RunTestsTask VSTestRunnerVersion="$(VSTestRunnerVersion)" TestFileFullPath="$(TargetPath)" VSTestSetting="$(VSTestSetting)" VSTestTestAdapterPath="$(VSTestTestAdapterPath)"
-						 VSTestFramework="$(VSTestFramework)" VSTestPlatform="$(VSTestPlatform)" VSTestTestCaseFilter="$(VSTestTestCaseFilter)" VSTestLogger="$(VSTestLogger)"
-						 VSTestResultsDirectory="$(VSTestResultsDirectory)"	 VSTestVerbosity="$(VSTestVerbosity)" VSTestCollect="$(VSTestCollect)" VSTestBlame="$(VSTestBlame)"
-						 VSTestBlameCrash="$(VSTestBlameCrash)" VSTestBlameCrashDumpType="$(VSTestBlameCrashDumpType)" VSTestBlameCrashCollectAlways="$(VSTestBlameCrashCollectAlways)"
-						 VSTestBlameHang="$(VSTestBlameHang)" VSTestBlameHangDumpType="$(VSTestBlameHangDumpType)" VSTestTraceDataCollectorDirectoryPath="$(VSTestTraceDataCollectorDirectoryPath)"
-						 VSTestNoLogo="$(VSTestNoLogo)" VSTestArtifactsProcessingMode="$(VSTestArtifactsProcessingMode)" VSTestSessionCorrelationId="$(VSTestSessionCorrelationId)"
-						 SkipExecution="$(CacheHit)" NugetPath="$(NugetPath)" />
-	</Target>
+  <UsingTask TaskName="Microsoft.Build.RunTestsTask" AssemblyFile="$(MSBuildThisFileDirectory)netstandard2.0\Microsoft.Build.RunTests.dll" />
+  <Target Name="RunTests" AfterTargets="MSBuildRunTests" Condition="$(IsTestProject)==true">
+    <RunTestsTask VSTestRunnerVersion="$(VSTestRunnerVersion)" TestFileFullPath="$(TargetPath)" VSTestSetting="$(VSTestSetting)" VSTestTestAdapterPath="$(VSTestTestAdapterPath)"
+      VSTestFramework="$(VSTestFramework)" VSTestPlatform="$(VSTestPlatform)" VSTestTestCaseFilter="$(VSTestTestCaseFilter)" VSTestLogger="$(VSTestLogger)"
+      VSTestResultsDirectory="$(VSTestResultsDirectory)" VSTestVerbosity="$(VSTestVerbosity)" VSTestCollect="$(VSTestCollect)" VSTestBlame="$(VSTestBlame)"
+      VSTestBlameCrash="$(VSTestBlameCrash)" VSTestBlameCrashDumpType="$(VSTestBlameCrashDumpType)" VSTestBlameCrashCollectAlways="$(VSTestBlameCrashCollectAlways)"
+      VSTestBlameHang="$(VSTestBlameHang)" VSTestBlameHangDumpType="$(VSTestBlameHangDumpType)" VSTestTraceDataCollectorDirectoryPath="$(VSTestTraceDataCollectorDirectoryPath)"
+      VSTestNoLogo="$(VSTestNoLogo)" VSTestArtifactsProcessingMode="$(VSTestArtifactsProcessingMode)" VSTestSessionCorrelationId="$(VSTestSessionCorrelationId)"
+      SkipExecution="$(CacheHit)" NugetPath="$(NugetPath)" />
+  </Target>
 </Project>

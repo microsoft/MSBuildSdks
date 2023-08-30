@@ -197,7 +197,7 @@ namespace Microsoft.Build
             var allowfailureWithoutError = BuildEngine.GetType().GetProperty("AllowFailureWithoutError");
             allowfailureWithoutError?.SetValue(BuildEngine, true);
 
-            return ExecuteTest().GetAwaiter().GetResult() != 0 ? false : true;
+            return ExecuteTest().GetAwaiter().GetResult() == 0;
         }
 
         internal IEnumerable<string> CreateArgument()
