@@ -20,11 +20,11 @@ This example will include the `Microsoft.Build.RunTests` task for all NuGet-base
 To run tests
 ```
 $env:MSBUILDENSURESTDOUTFORTASKPROCESSES=1
-msbuild /nodereuse:false /t:Test
+msbuild /nodereuse:false /t:MSBuildRunTests
 ```
 
 To build and run tests
 ```
 $env:MSBUILDENSURESTDOUTFORTASKPROCESSES=1
-msbuild /nodereuse:false /t:Build;Test
+msbuild /nodereuse:false /t:Build;MSBuildRunTests
 ```
