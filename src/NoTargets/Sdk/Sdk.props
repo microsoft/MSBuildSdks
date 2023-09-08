@@ -33,6 +33,9 @@
     <!-- Targeting packs shouldn't be referenced as traversal projects don't compile. -->
     <DisableImplicitFrameworkReferences Condition="'$(DisableImplicitFrameworkReferences)' == ''">true</DisableImplicitFrameworkReferences>
 
+    <!-- Disable NuGet packing -->
+    <IsPackable Condition="'$(IsPackable)' == ''">false</IsPackable>
+
     <!-- Disable publish actions -->
     <CopyBuildOutputToPublishDirectory Condition="'$(CopyBuildOutputToPublishDirectory)' == ''">false</CopyBuildOutputToPublishDirectory>
     <CopyOutputSymbolsToPublishDirectory Condition="'$(CopyOutputSymbolsToPublishDirectory)' == ''">false</CopyOutputSymbolsToPublishDirectory>
