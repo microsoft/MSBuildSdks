@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <MicrosoftBuildPackageVersion>17.6.3</MicrosoftBuildPackageVersion>
+    <MicrosoftBuildPackageVersion>17.7.2</MicrosoftBuildPackageVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="CopyOnWrite" Version="0.3.7" Condition=" '$(TargetFramework)' != 'net46' " />

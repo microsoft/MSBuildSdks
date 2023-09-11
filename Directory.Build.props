@@ -7,5 +7,6 @@
     <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
     <NoWarn>$(NoWarn);NU5128;SA0001</NoWarn>
     <RestoreUseStaticGraphEvaluation>true</RestoreUseStaticGraphEvaluation>
+    <UseArtifactsOutput>false</UseArtifactsOutput>
   </PropertyGroup>
 </Project>
