@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <GlobalPackageReference Include="Microsoft.Build.Artifacts" Version="4.2.0" Condition="'$(EnableArtifacts)' != 'false'" />
+    <GlobalPackageReference Include="Microsoft.Build.Artifacts" Version="5.0.1" Condition="'$(EnableArtifacts)' != 'false'" />
     <GlobalPackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" Version="1.0.0" Condition="'$(EnableMicroBuild)' != 'false'" />
     <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="3.6.133" Condition="'$(EnableGitVersioning)' != 'false'" />
   </ItemGroup>
