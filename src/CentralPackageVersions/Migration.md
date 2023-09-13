@@ -5,7 +5,7 @@ Docs:
 
 This is not a comprehensive guide, but should get you started.
 
-I attempted to codify these steps here: [UpgradeRepo-prototype](https://github.com/AndyGerlicher/UpgradeRepo#upgrade-legacy-cpv)
+I attempted to codify these steps here: [UpgradeRepo-prototype](https://github.com/AndyGerlicher/UpgradeRepo#upgrade-legacy-cpv). Others have done so as well, see [ConvertTo-CentralPackageManagement.ps1](https://gist.github.com/axelheer/da455edebbd64f6c20bce962542d06bb). These are not supported tools but are likely to get you started.
 
 1. Remove existing reference to the old CPV MSBuild SDK. Usually that's an `<SDK>` element in your `Directory.Build.props` or `.targets` file. You can also remove the SDK version from `global.json` if you specified it there.
 2. Enable CPM in your repo. Easiest way is to set `ManagePackageVersionsCentrally` to true in your `Directory.Build.props` file. See the docs above for details.
