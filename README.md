@@ -74,7 +74,7 @@ MSBuild 15.0 introduced new project XML for .NET Core that we refer to as SDK-st
 At evaluation time, MSBuild adds implicit imports at the top and bottom of the project like this:
 
 ```xml
-<Project Sdk="Microsoft.Cpp.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
