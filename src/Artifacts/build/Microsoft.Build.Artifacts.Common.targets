@@ -37,7 +37,7 @@
       Condition="@(Artifact->Count()) > 0" />
   </Target>
 
-  <Target Name="RobocopyFiles"
+  <Target Name="RobocopyFilesInArtifactsSDK"
           Condition="'$(EnableArtifacts)' != 'false'"
           AfterTargets="$([MSBuild]::ValueOrDefault($(RobocopyFilesAfterTargets), 'AfterBuild'))"
           DependsOnTargets="$(RobocopyFilesDependsOn)">
