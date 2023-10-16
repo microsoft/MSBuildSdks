@@ -14,7 +14,7 @@
   <ItemGroup>
     <PackageReference Include="CopyOnWrite" GeneratePathProperty="True" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" PrivateAssets="All" />
-    <PackageReference Include="System.Threading.Tasks.Dataflow" />
+    <PackageReference Include="System.Threading.Tasks.Dataflow" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup>
     <None Include="build\*" Pack="true" PackagePath="build\" />
