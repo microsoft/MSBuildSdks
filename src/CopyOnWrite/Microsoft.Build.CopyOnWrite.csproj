@@ -14,6 +14,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\Shared\CopyExceptionHandling.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="build\Microsoft.Build.CopyOnWrite.targets">
       <PackagePath>build\</PackagePath>
       <Pack>true</Pack>
@@ -36,5 +40,9 @@
       <BuildOutputInPackage Include="@(RuntimeCopyLocalItems-&gt;WithMetadataValue('CopyLocal', 'true'))" TargetPath="%(RuntimeCopyLocalItems.DestinationSubDirectory)%(Filename)%(Extension)" />
     </ItemGroup>
   </Target>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Build.CopyOnWrite.UnitTests" />
+  </ItemGroup>
 
 </Project>

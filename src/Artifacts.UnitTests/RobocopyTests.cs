@@ -21,8 +21,6 @@ namespace Microsoft.Build.Artifacts.UnitTests
 {
     public class RobocopyTests : MSBuildSdkTestBase
     {
-        private static readonly bool IsWindows = Environment.OSVersion.Platform == PlatformID.Win32NT;
-
         [Fact]
         public void DedupKeyOsDifferences()
         {

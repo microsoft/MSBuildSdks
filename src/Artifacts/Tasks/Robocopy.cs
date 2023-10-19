@@ -3,6 +3,7 @@
 // Licensed under the MIT license.
 
 using Microsoft.Build.Framework;
+using Microsoft.Build.Shared;
 using Microsoft.Build.Utilities;
 using System;
 using System.Collections.Concurrent;
@@ -30,7 +31,6 @@ namespace Microsoft.Build.Artifacts.Tasks
         private static readonly ExecutionDataflowBlockOptions ActionBlockOptions = new () { MaxDegreeOfParallelism = MsBuildCopyParallelism, EnsureOrdered = MsBuildCopyParallelism == 1 };
 
         private readonly ConcurrentDictionary<string, bool> _dirsCreated = new (Artifacts.FileSystem.PathComparer);
-        private readonly Dictionary<string, string> _realDirPaths = new (Artifacts.FileSystem.PathComparer);  // Cache results of symlink resolution to avoid I/O.
         private readonly HashSet<string> _destinationPathsStarted = new (Artifacts.FileSystem.PathComparer);  // Destination paths that were dispatched to copy. Extra copies to the same destination are copied single-threaded in a second wave.
         private readonly List<CopyJob> _duplicateDestinationDelayedJobs = new ();  // Jobs that were delayed because they were to a destination path that was already dispatched to copy.
         private readonly ActionBlock<CopyJob> _copyFileBlock;
@@ -66,7 +66,7 @@ namespace Microsoft.Build.Artifacts.Tasks
         public bool ShowDiagnosticTrace { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether to log errors on retries
+        /// Gets or sets a value indicating whether to log errors on retries.
         /// </summary>
         public bool ShowErrorOnRetry { get; set; }
 
@@ -156,7 +156,7 @@ namespace Microsoft.Build.Artifacts.Tasks
             }
             else if (!_filesCopied.Contains(new CopyFileDedupKey(sourceFile.FullName, destFile.FullName)))
             {
-                Log.LogMessage("Delaying {0} to {1} as duplicate destination", sourceFile.FullName, destFile.FullName);
+                Log.LogMessage("Delaying copying {0} to {1} as duplicate destination", sourceFile.FullName, destFile.FullName);
                 _duplicateDestinationDelayedJobs.Add(new CopyJob(sourceFile, destFile, metadata));
             }
             else
@@ -216,7 +216,7 @@ namespace Microsoft.Build.Artifacts.Tasks
                     }
                     else
                     {
-                        Log.LogMessage(MessageImportance.Low, "Skipped copying {0} to {1}", sourceFile.FullName, destFile.FullName);
+                        Log.LogMessage(MessageImportance.Low, "Skipped copying {0} to {1}", sourcePath, destPath);
                         Interlocked.Increment(ref _numFilesSkipped);
                     }
 
@@ -224,7 +224,11 @@ namespace Microsoft.Build.Artifacts.Tasks
                 }
                 catch (IOException e)
                 {
-                    LogCopyFailureAndSleep(retry, "Failed to copy {0} to {1}. {2}", sourcePath, destPath, e.Message);
+                    // Avoid issuing an error if the paths are actually to the same file.
+                    if (!CopyExceptionHandling.FullPathsAreIdentical(sourcePath, destPath))
+                    {
+                        LogCopyFailureAndSleep(retry, "Failed to copy {0} to {1}. {2}", sourcePath, destPath, e.Message);
+                    }
                 }
             }
         }
@@ -257,19 +261,15 @@ namespace Microsoft.Build.Artifacts.Tasks
             {
                 foreach (string file in item.FileMatches)
                 {
-                    // Break down symlinks/junctions to their real paths to avoid duplicate copies.
                     string sourcePath = Path.Combine(sourceDir, file);
                     FileInfo sourceFile = new FileInfo(sourcePath);
-                    if (Verify(sourceFile, true, item.VerifyExists))
+                    if (Verify(sourceFile, item.VerifyExists))
                     {
                         foreach (string destDir in item.DestinationFolders)
                         {
                             string destPath = Path.Combine(destDir, file);
                             FileInfo destFile = new FileInfo(destPath);
-                            if (Verify(destFile, shouldExist: false, false))
-                            {
-                                CopyFile(sourceFile, destFile, item);
-                            }
+                            CopyFile(sourceFile, destFile, item);
                         }
                     }
                 }
@@ -278,8 +278,6 @@ namespace Microsoft.Build.Artifacts.Tasks
 
         private void CopySearch(IList<RobocopyMetadata> bucket, bool isRecursive, string match, DirectoryInfo source, string? subDirectory)
         {
-            string sourceDir = source.FullName;
-
             bool hasSubDirectory = !string.IsNullOrEmpty(subDirectory);
 
             foreach (FileInfo sourceFile in FileSystem.EnumerateFiles(source, match))
@@ -294,10 +292,7 @@ namespace Microsoft.Build.Artifacts.Tasks
                             string destDir = hasSubDirectory ? Path.Combine(destinationDir, subDirectory!) : destinationDir;
                             string destPath = Path.Combine(destDir, fileName);
                             FileInfo destFile = new FileInfo(destPath);
-                            if (Verify(destFile, shouldExist: false, false))
-                            {
-                                CopyFile(sourceFile, destFile, item);
-                            }
+                            CopyFile(sourceFile, destFile, item);
                         }
                     }
                 }
@@ -444,9 +439,9 @@ namespace Microsoft.Build.Artifacts.Tasks
             }
         }
 
-        private bool Verify(FileInfo file, bool shouldExist, bool verifyExists)
+        private bool Verify(FileInfo file, bool verifyExists)
         {
-            if (!shouldExist || FileSystem.FileExists(file))
+            if (FileSystem.FileExists(file))
             {
                 return true;
             }

@@ -41,7 +41,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(IsTestProject)' == 'true'">
-    <Compile Include="$(MSBuildThisFileDirectory)src\Shared\*.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)src\TestShared\*.cs" />
 
     <Content Include="$(MSBuildThisFileDirectory)xunit.runner.json"
              CopyToOutputDirectory="PreserveNewest" />

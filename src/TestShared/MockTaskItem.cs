@@ -7,6 +7,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
+#nullable enable
+
 namespace Microsoft.Build.UnitTests.Common
 {
     internal class MockTaskItem : Dictionary<string, string>, ITaskItem2
@@ -17,7 +19,7 @@ namespace Microsoft.Build.UnitTests.Common
             ItemSpec = itemSpec;
         }
 
-        public string EvaluatedIncludeEscaped { get; set; }
+        public string? EvaluatedIncludeEscaped { get; set; }
 
         public string ItemSpec { get; set; }
 
@@ -45,7 +47,7 @@ namespace Microsoft.Build.UnitTests.Common
 
         public string GetMetadata(string metadataName)
         {
-            if (TryGetValue(metadataName, out string value))
+            if (TryGetValue(metadataName, out string? value))
             {
                 return value;
             }
