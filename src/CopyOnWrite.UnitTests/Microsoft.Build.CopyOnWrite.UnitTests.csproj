@@ -9,6 +9,7 @@
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="MSBuild.ProjectCreation" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="System.Threading.Tasks.Dataflow" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
