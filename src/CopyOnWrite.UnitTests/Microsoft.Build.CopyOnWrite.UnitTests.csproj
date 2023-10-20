@@ -10,7 +10,6 @@
       <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="Microsoft.Win32.Registry" />
     <PackageReference Include="MSBuild.ProjectCreation" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="xunit" />
