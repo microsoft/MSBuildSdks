@@ -3,6 +3,9 @@
     <TargetFrameworks>net472;netcoreapp3.1;net6.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <Nullable>Enable</Nullable>
+
+    <!-- Suppress "Error : System.CodeDom 7.0.0 doesn't support netcoreapp3.1 and has not been tested with it." -->
+    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CopyOnWrite" />
