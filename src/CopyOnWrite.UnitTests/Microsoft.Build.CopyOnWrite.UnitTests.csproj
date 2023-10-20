@@ -5,13 +5,13 @@
     <Nullable>Enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="CopyOnWrite" GeneratePathProperty="True" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Build.Tasks.Core" PrivateAssets="all" ExcludeAssets="Runtime">
-      <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
+    <PackageReference Include="CopyOnWrite" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Microsoft.Win32.Registry" />
     <PackageReference Include="MSBuild.ProjectCreation" />
     <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="System.CodeDom" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
