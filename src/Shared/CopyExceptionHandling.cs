@@ -37,7 +37,7 @@ internal static class CopyExceptionHandling
 
     /// <summary>
     /// Compares two paths to see if they refer to the same file, regardless of different path canonicalization
-    /// (e.g. inclusion of '.' or '..' path segments in one or there other path) or symlinks.
+    /// (e.g. inclusion of '.' or '..' path segments in one or the other path) or symlinks.
     /// Because of slow performance, this method is intended for use in exception paths for IOException.
     /// </summary>
     /// <param name="source">The source file path.</param>
