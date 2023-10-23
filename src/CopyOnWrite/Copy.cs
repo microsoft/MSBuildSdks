@@ -24,6 +24,7 @@ namespace Microsoft.Build.Tasks
     {
         internal const string AlwaysRetryEnvVar = "MSBUILDALWAYSRETRY";
         internal const string AlwaysOverwriteReadOnlyFilesEnvVar = "MSBUILDALWAYSOVERWRITEREADONLYFILES";
+        private static readonly bool IsWindows = Environment.OSVersion.Platform == PlatformID.Win32NT;
 
         // Default parallelism determined empirically - times below are in seconds spent in the Copy task building this repo
         // with "build -skiptests -rebuild -configuration Release /ds" (with hack to build.ps1 to disable creating selfhost
@@ -57,6 +58,7 @@ namespace Microsoft.Build.Tasks
                 FileComment = "Copying file from \"{0}\" to \"{1}\".";
                 HardLinkComment = "Creating hard link to copy \"{0}\" to \"{1}\"";
                 RetryingAsFileCopy = "Could not use a link to copy \"{0}\" to \"{1}\". Copying the file instead. {2}";
+                RetryingAsSymbolicLink = "Could not use a hard link to copy \"{0}\" to \"{1}\". Copying the file with symbolic link instead. {2}";
                 RemovingReadOnlyAttribute = "Removing read-only attribute from \"{0}\".";
                 SymbolicLinkComment = "Creating symbolic link to copy \"{0}\" to \"{1}\"";
             }
@@ -67,6 +69,7 @@ namespace Microsoft.Build.Tasks
         private static string FileComment;
         private static string HardLinkComment;
         private static string RetryingAsFileCopy;
+        private static string RetryingAsSymbolicLink;
         private static string RemovingReadOnlyAttribute;
         private static string SymbolicLinkComment;
 
@@ -150,6 +153,8 @@ namespace Microsoft.Build.Tasks
         /// </summary>
         public bool OverwriteReadOnlyFiles { get; set; }
 
+        public bool FailIfNotIncremental { get; set; }
+
         #endregion
 
         /// <summary>
@@ -167,11 +172,9 @@ namespace Microsoft.Build.Tasks
         /// </summary>
         /// <param name="sourceFile">The source file</param>
         /// <param name="destinationFile">The destination file</param>
-        private static bool IsMatchingSizeAndTimeStamp
-        (
+        private static bool IsMatchingSizeAndTimeStamp(
             FileState sourceFile,
-            FileState destinationFile
-        )
+            FileState destinationFile)
         {
             // If the destination doesn't exist, then it is not a matching file.
             if (!destinationFile.FileExists)
@@ -200,7 +203,7 @@ namespace Microsoft.Build.Tasks
         {
             if (s_alwaysRetryCopy)
             {
-                Log.LogWarning(message, messageArgs);
+                LogWarning(message, messageArgs);
             }
         }
 
@@ -209,17 +212,13 @@ namespace Microsoft.Build.Tasks
         /// leave the file read-write.
         /// </summary>
         /// <returns>Return true to indicate success, return false to indicate failure and NO retry, return NULL to indicate retry.</returns>
-        private bool? CopyFileWithLogging
-        (
-            FileState sourceFileState,      // The source file
-            FileState destinationFileState  // The destination file
-        )
+        private bool? CopyFileWithLogging(
+            FileState sourceFileState,
+            FileState destinationFileState)
         {
-            bool destinationFileExists = false;
-
             if (destinationFileState.DirectoryExists)
             {
-                Log.LogError(
+                LogError(
                     "MSB3024: Could not copy the file \"{0}\" to the destination file \"{1}\", because the destination is a folder instead of a file. To copy the source file into a folder, consider using the DestinationFolder parameter instead of DestinationFiles.",
                     sourceFileState.Name, destinationFileState.Name);
                 return false;
@@ -231,7 +230,7 @@ namespace Microsoft.Build.Tasks
                 // error telling the user so.  Otherwise, .NET Framework's File.Copy method will throw
                 // an UnauthorizedAccessException saying "access is denied", which is not very useful
                 // to the user.
-                Log.LogError(
+                LogError(
                     "MSB3025: The source file \"{0}\" is actually a directory.  The \"Copy\" task does not support copying directories.",
                     sourceFileState.Name);
                 return false;
@@ -239,7 +238,7 @@ namespace Microsoft.Build.Tasks
 
             if (!sourceFileState.FileExists)
             {
-                Log.LogError("MSB3030: Could not copy the file \"{0}\" because it was not found.", sourceFileState.Name);
+                LogError("MSB3030: Could not copy the file \"{0}\" because it was not found.", sourceFileState.Name);
                 return false;
             }
 
@@ -249,8 +248,16 @@ namespace Microsoft.Build.Tasks
             {
                 if (!Directory.Exists(destinationFolder))
                 {
-                    Log.LogMessage(MessageImportance.Normal, CreatesDirectory, destinationFolder);
-                    Directory.CreateDirectory(destinationFolder);
+                    if (FailIfNotIncremental)
+                    {
+                        LogError(CreatesDirectory, destinationFolder);
+                        return false;
+                    }
+                    else
+                    {
+                        Log.LogMessage(MessageImportance.Normal, CreatesDirectory, destinationFolder);
+                        Directory.CreateDirectory(destinationFolder);
+                    }
                 }
 
                 // It's very common for a lot of files to be copied to the same folder. 
@@ -259,28 +266,63 @@ namespace Microsoft.Build.Tasks
                 _directoriesKnownToExist.TryAdd(destinationFolder, true);
             }
 
+            if (FailIfNotIncremental)
+            {
+                LogError(FileComment, sourceFileState.Name, destinationFileState.Name);
+                return false;
+            }
+
             if (OverwriteReadOnlyFiles)
             {
                 MakeFileWriteable(destinationFileState, true);
-                destinationFileExists = destinationFileState.FileExists;
             }
 
-            bool linkCreated = false;
+            if (destinationFileState.FileExists &&
+                !destinationFileState.IsReadOnly)
+            {
+                FileUtilities.DeleteNoThrow(destinationFileState.Name);
+            }
+
+            bool symbolicLinkCreated = false;
+            bool hardLinkCreated = false;
             string errorMessage = string.Empty;
 
-            // If we want to create hard or symbolic links, then try that first
+            // Create hard links if UseHardlinksIfPossible is true
             if (UseHardlinksIfPossible)
             {
-                TryCopyViaLink(HardLinkComment, MessageImportance.Normal, sourceFileState, destinationFileState, ref destinationFileExists, out linkCreated, ref errorMessage, (source, destination, errMessage) => NativeMethods.MakeHardLink(destination, source, ref errorMessage));
-            }
-            else if (UseSymboliclinksIfPossible)
-            {
-                TryCopyViaLink(SymbolicLinkComment, MessageImportance.Normal, sourceFileState, destinationFileState, ref destinationFileExists, out linkCreated, ref errorMessage, (source, destination, errMessage) => NativeMethods.MakeSymbolicLink(destination, source, ref errorMessage));
+                TryCopyViaLink(HardLinkComment, MessageImportance.Normal, sourceFileState, destinationFileState, out hardLinkCreated, ref errorMessage, (source, destination, errMessage) => NativeMethods.MakeHardLink(destination, source, ref errorMessage));
+                if (!hardLinkCreated)
+                {
+                    if (UseSymboliclinksIfPossible)
+                    {
+                        // This is a message for fallback to SymbolicLinks if HardLinks fail when UseHardlinksIfPossible and UseSymboliclinksIfPossible are true
+                        Log.LogMessage(MessageImportance.Normal, RetryingAsSymbolicLink, sourceFileState.Name, destinationFileState.Name, errorMessage);
+                    }
+                    else
+                    {
+                        Log.LogMessage(MessageImportance.Normal, RetryingAsFileCopy, sourceFileState.Name, destinationFileState.Name, errorMessage);
+                    }
+                }
             }
 
-            if (ErrorIfLinkFails && !linkCreated)
+            // Create symbolic link if UseSymboliclinksIfPossible is true and hard link is not created
+            if (!hardLinkCreated && UseSymboliclinksIfPossible)
             {
-                Log.LogError("MSB3893: Could not use a link to copy \"{0}\" to \"{1}\"",
+                TryCopyViaLink(SymbolicLinkComment, MessageImportance.Normal, sourceFileState, destinationFileState, out symbolicLinkCreated, ref errorMessage, (source, destination, errMessage) => NativeMethods.MakeSymbolicLink(destination, source, ref errorMessage));
+                if (!symbolicLinkCreated)
+                {
+                    if (!IsWindows)
+                    {
+                        errorMessage = $"The symlink() library call failed with the following error code: {errorMessage}";
+                    }
+
+                    Log.LogMessage(MessageImportance.Normal, RetryingAsFileCopy, sourceFileState.Name, destinationFileState.Name, errorMessage);
+                }
+            }
+
+            if (ErrorIfLinkFails && !hardLinkCreated && !symbolicLinkCreated)
+            {
+                LogError("MSB3893: Could not use a link to copy \"{0}\" to \"{1}\"",
                     sourceFileState.Name,
                     destinationFileState.Name);
                 return false;
@@ -288,7 +330,7 @@ namespace Microsoft.Build.Tasks
 
             // If the link was not created (either because the user didn't want one, or because it couldn't be created)
             // then let's copy the file
-            if (!linkCreated)
+            if (!hardLinkCreated && !symbolicLinkCreated)
             {
                 // Do not log a fake command line as well, as it's superfluous, and also potentially expensive
                 string sourceFilePath = FileUtilities.GetFullPathNoThrow(sourceFileState.Name);
@@ -307,9 +349,6 @@ namespace Microsoft.Build.Tasks
                 }
             }
 
-            // Files were successfully copied or linked. Those are equivalent here.
-            WroteAtLeastOneFile = true;
-
             destinationFileState.Reset();
 
             // If the destinationFile file exists, then make sure it's read-write.
@@ -320,25 +359,16 @@ namespace Microsoft.Build.Tasks
                 MakeFileWriteable(destinationFileState, false);
             }
 
+            // Files were successfully copied or linked. Those are equivalent here.
+            WroteAtLeastOneFile = true;
+
             return true;
         }
 
-        private void TryCopyViaLink(string linkComment, MessageImportance messageImportance, FileState sourceFileState, FileState destinationFileState, ref bool destinationFileExists, out bool linkCreated, ref string errorMessage, Func<string, string, string, bool> createLink)
+        private void TryCopyViaLink(string linkComment, MessageImportance messageImportance, FileState sourceFileState, FileState destinationFileState, out bool linkCreated, ref string errorMessage, Func<string, string, string, bool> createLink)
         {
             // Do not log a fake command line as well, as it's superfluous, and also potentially expensive
             Log.LogMessage(MessageImportance.Normal, linkComment, sourceFileState.Name, destinationFileState.Name);
-
-            if (!OverwriteReadOnlyFiles)
-            {
-                destinationFileExists = destinationFileState.FileExists;
-            }
-
-            // CreateHardLink and CreateSymbolicLink cannot overwrite an existing file or link
-            // so we need to delete the existing entry before we create the hard or symbolic link.
-            if (destinationFileExists)
-            {
-                FileUtilities.DeleteNoThrow(destinationFileState.Name);
-            }
 
             linkCreated = createLink(sourceFileState.Name, destinationFileState.Name, errorMessage);
 
@@ -377,14 +407,11 @@ namespace Microsoft.Build.Tasks
         /// <param name="parallelism">
         /// Thread parallelism allowed during copies. 1 uses the original algorithm, >1 uses newer algorithm.
         /// </param>
-        internal bool Execute
-        (
+        internal bool Execute(
             CopyFileWithState copyFile,
-            int parallelism
-        )
+            int parallelism)
         {
             // If there are no source files then just return success.
-            //Debugger.Launch();
             if (SourceFiles == null || SourceFiles.Length == 0)
             {
                 DestinationFiles = Array.Empty<ITaskItem>();
@@ -408,9 +435,17 @@ namespace Microsoft.Build.Tasks
 
             // Use single-threaded code path when requested or when there is only copy to make
             // (no need to create all the parallel infrastructure for that case).
-            bool success = parallelism == 1 || DestinationFiles.Length == 1
-                ? CopySingleThreaded(copyFile, out destinationFilesSuccessfullyCopied)
-                : CopyParallel(copyFile, parallelism, out destinationFilesSuccessfullyCopied);
+            bool success;
+            try
+            {
+                success = parallelism == 1 || DestinationFiles.Length == 1
+                    ? CopySingleThreaded(copyFile, out destinationFilesSuccessfullyCopied)
+                    : CopyParallel(copyFile, parallelism, out destinationFilesSuccessfullyCopied);
+            }
+            catch (OperationCanceledException)
+            {
+                return false;
+            }
 
             // copiedFiles contains only the copies that were successful.
             CopiedFiles = destinationFilesSuccessfullyCopied.ToArray();
@@ -588,7 +623,7 @@ namespace Microsoft.Build.Tasks
                 else if (!partitionAccepted)
                 {
                     // Retail assert...
-                    Log.LogError("Failed posting a file copy to an ActionBlock. Should not happen with block at max int capacity.");
+                    LogError("Failed posting a file copy to an ActionBlock. Should not happen with block at max int capacity.");
                 }
             }
 
@@ -616,13 +651,13 @@ namespace Microsoft.Build.Tasks
         {
             if (Retries < 0)
             {
-                Log.LogError("MSB3028: {0} is an invalid retry count. Value must not be negative.", Retries);
+                LogError("MSB3028: {0} is an invalid retry count. Value must not be negative.", Retries);
                 return false;
             }
 
             if (RetryDelayMilliseconds < 0)
             {
-                Log.LogError("MSB3029: {0} is an invalid retry delay. Value must not be negative.",
+                LogError("MSB3029: {0} is an invalid retry delay. Value must not be negative.",
                     RetryDelayMilliseconds);
                 return false;
             }
@@ -630,7 +665,7 @@ namespace Microsoft.Build.Tasks
             // There must be a destinationFolder (either files or directory).
             if (DestinationFiles == null && DestinationFolder == null)
             {
-                Log.LogError("MSB3023: No destination specified for Copy. Please supply either \"{0}\" or \"{1}\".",
+                LogError("MSB3023: No destination specified for Copy. Please supply either \"{0}\" or \"{1}\".",
                     "DestinationFiles", "DestinationFolder");
                 return false;
             }
@@ -638,7 +673,7 @@ namespace Microsoft.Build.Tasks
             // There can't be two kinds of destination.
             if (DestinationFiles != null && DestinationFolder != null)
             {
-                Log.LogError(
+                LogError(
                     "MSB3022: Both \"{0}\" and \"{1}\" were specified as input parameters in the project file. Please choose one or the other.",
                     "DestinationFiles", "DestinationFolder");
                 return false;
@@ -647,25 +682,15 @@ namespace Microsoft.Build.Tasks
             // If the caller passed in DestinationFiles, then its length must match SourceFiles.
             if (DestinationFiles != null && DestinationFiles.Length != SourceFiles.Length)
             {
-                Log.LogError(
+                LogError(
                     "MSB3094: \"{2}\" refers to {0} item(s), and \"{3}\" refers to {1} item(s). They must have the same number of items.",
                     DestinationFiles.Length, SourceFiles.Length, "DestinationFiles", "SourceFiles");
                 return false;
             }
 
-            // First check if create hard or symbolic link option is selected. If both then return an error
-            if (UseHardlinksIfPossible & UseSymboliclinksIfPossible)
-            {
-                Log.LogError(
-                    "CopyMSB3891: Both \"{0}\" and \"{1}\" were specified in the project file. Please choose one or the other.",
-                    "UseHardlinksIfPossible", "UseSymboliclinksIfPossible");
-                return false;
-            }
-
             if (ErrorIfLinkFails && !UseHardlinksIfPossible && !UseSymboliclinksIfPossible)
             {
-                Log.LogError(
-                    "MSB3892: ErrorIfLinkFails requires UseHardlinksIfPossible or UseSymbolicLinksIfPossible to be set.");
+                LogError("MSB3892: ErrorIfLinkFails requires UseHardlinksIfPossible or UseSymbolicLinksIfPossible to be set.");
                 return false;
             }
 
@@ -693,7 +718,7 @@ namespace Microsoft.Build.Tasks
                     }
                     catch (ArgumentException e)
                     {
-                        Log.LogError("MSB3021: Unable to copy file \"{0}\" to \"{1}\". {2}", SourceFiles[i].ItemSpec, DestinationFolder.ItemSpec, e.Message);
+                        LogError("MSB3021: Unable to copy file \"{0}\" to \"{1}\". {2}", SourceFiles[i].ItemSpec, DestinationFolder.ItemSpec, e.Message);
                         // Clear the outputs.
                         DestinationFiles = Array.Empty<ITaskItem>();
                         return false;
@@ -753,12 +778,12 @@ namespace Microsoft.Build.Tasks
             }
             catch (PathTooLongException e)
             {
-                Log.LogError("MSB3021: Unable to copy file \"{0}\" to \"{1}\". {2}", sourceFileState.Name, destinationFileState.Name, e.Message);
+                LogError("MSB3021: Unable to copy file \"{0}\" to \"{1}\". {2}", sourceFileState.Name, destinationFileState.Name, e.Message);
                 success = false;
             }
             catch (Exception e) when (ExceptionHandling.IsIoRelatedException(e))
             {
-                Log.LogError("MSB3021: Unable to copy file \"{0}\" to \"{1}\". {2}", sourceFileState.Name, destinationFileState.Name, e.Message);
+                LogError("MSB3021: Unable to copy file \"{0}\" to \"{1}\". {2}", sourceFileState.Name, destinationFileState.Name, e.Message);
                 success = false;
             }
 
@@ -798,7 +823,7 @@ namespace Microsoft.Build.Tasks
                         case IOException: // Not clear why we can get one and not the other
                             int code = Marshal.GetHRForException(e);
 
-                            LogDiagnostic("Got {0} copying {1} to {2} and HR is {3}", e.ToString(),
+                            LogDiagnostic("MSB3894: Got {0} copying {1} to {2} and HR is {3}", e.ToString(),
                                 sourceFileState.Name, destinationFileState.Name, code);
                             if (code == NativeMethods.ERROR_ACCESS_DENIED)
                             {
@@ -817,6 +842,11 @@ namespace Microsoft.Build.Tasks
                                 {
                                     LogDiagnostic("Retrying on ERROR_ACCESS_DENIED because MSBUILDALWAYSRETRY = 1");
                                 }
+                            }
+                            else if (code == NativeMethods.ERROR_INVALID_FILENAME)
+                            {
+                                // Invalid characters used in file name; no point retrying.
+                                throw;
                             }
 
                             if (e is UnauthorizedAccessException)
@@ -845,7 +875,7 @@ namespace Microsoft.Build.Tasks
                     if (retries < Retries)
                     {
                         retries++;
-                        Log.LogWarning(
+                        LogWarning(
                             "MSB3026: Could not copy \"{0}\" to \"{1}\". Beginning retry {2} in {3}ms. {4} {5}",
                             sourceFileState.Name,
                             destinationFileState.Name, retries, RetryDelayMilliseconds, e.Message,
@@ -860,7 +890,7 @@ namespace Microsoft.Build.Tasks
                     else if (Retries > 0)
                     {
                         // Exception message is logged in caller
-                        Log.LogError(
+                        LogError(
                             "MSB3027: Could not copy \"{0}\" to \"{1}\". Exceeded retry count of {2}. Failed. {3}",
                             sourceFileState.Name, destinationFileState.Name, Retries,
                             GetLockedFileMessage(destinationFileState.Name));
@@ -875,7 +905,7 @@ namespace Microsoft.Build.Tasks
                 if (retries < Retries)
                 {
                     retries++;
-                    Log.LogWarning("MSB3026: Could not copy \"{0}\" to \"{1}\". Beginning retry {2} in {3}ms. {4} {5}",
+                    LogWarning("MSB3026: Could not copy \"{0}\" to \"{1}\". Beginning retry {2} in {3}ms. {4} {5}",
                         sourceFileState.Name,
                         destinationFileState.Name, retries, RetryDelayMilliseconds, String.Empty /* no details */,
                         GetLockedFileMessage(destinationFileState.Name));
@@ -887,7 +917,7 @@ namespace Microsoft.Build.Tasks
                 }
                 else if (Retries > 0)
                 {
-                    Log.LogError("MSB3027: Could not copy \"{0}\" to \"{1}\". Exceeded retry count of {2}. Failed. {3}",
+                    LogError("MSB3027: Could not copy \"{0}\" to \"{1}\". Exceeded retry count of {2}. Failed. {3}",
                         sourceFileState.Name,
                         destinationFileState.Name, Retries, GetLockedFileMessage(destinationFileState.Name));
                     return false;
@@ -911,10 +941,13 @@ namespace Microsoft.Build.Tasks
 
             try
             {
-                var processes = LockCheck.GetProcessesLockingFile(file);
-                message = !string.IsNullOrEmpty(processes)
-                    ? string.Format("The file is locked by: \"{0}\"", processes)
-                    : String.Empty;
+                if (IsWindows)
+                {
+                    var processes = LockCheck.GetProcessesLockingFile(file);
+                    message = !string.IsNullOrEmpty(processes)
+                        ? $"The file is locked by: \"{processes}\""
+                        : String.Empty;
+                }
             }
             catch (Exception)
             {
@@ -976,25 +1009,37 @@ namespace Microsoft.Build.Tasks
                 : defaultValue;
         }
 
+        private void LogWarning(string message, params object[] messageArgs)
+        {
+            string code = Log.ExtractMessageCode(message, out _);
+            Log.LogWarning(subcategory: null, warningCode: code, helpKeyword: null, file: null, lineNumber: 0, columnNumber: 0, endLineNumber: 0, endColumnNumber: 0, helpLink: null, message: message, messageArgs: messageArgs);
+        }
+
+        private void LogError(string message, params object[] messageArgs)
+        {
+            string code = Log.ExtractMessageCode(message, out _);
+            Log.LogError(subcategory: null, errorCode: code, helpKeyword: null, file: null, lineNumber: 0, columnNumber: 0, endLineNumber: 0, endColumnNumber: 0, helpLink: null, message: message, messageArgs: messageArgs);
+        }
+
         #region CopyOnWrite functionality
         private static readonly ICopyOnWriteFilesystem CoW = CopyOnWriteFilesystemFactory.GetInstance();
 
         /// <summary>
         /// Attempt to clone source file to destination.
         /// </summary>
-        /// <param name="source">Full path to source file.</param>
-        /// <param name="dest">full path to destination file.</param>
+        /// <param name="sourceFullPath">Full path to source file.</param>
+        /// <param name="destFullPath">full path to destination file.</param>
         /// <returns>True when a CloneFile was successfully performed.</returns>
-        private bool TryCopyOnWrite(string source, string dest)
+        private bool TryCopyOnWrite(string sourceFullPath, string destFullPath)
         {
             try
             {
-                CoW.CloneFile(source, dest, CloneFlags.PathIsFullyResolved);
-                Log.LogMessage(MessageImportance.Low, $"CloneFile '{source}' to '{dest}'.");
+                CoW.CloneFile(sourceFullPath, destFullPath, CloneFlags.PathIsFullyResolved);
+                Log.LogMessage(MessageImportance.Low, $"CloneFile '{sourceFullPath}' to '{destFullPath}'.");
             }
             catch (Exception e)
             {
-                Log.LogMessage($"Could not CloneFile '{source}' to '{dest}'. Reason: {e.Message}");
+                Log.LogMessage($"Could not CloneFile '{sourceFullPath}' to '{destFullPath}'. Reason: {e.Message}");
                 return false;
             }
 
@@ -1004,23 +1049,23 @@ namespace Microsoft.Build.Tasks
         /// <summary>
         /// Check for CopyOnWrite support. Result is cached by drive root.
         /// </summary>
-        /// <param name="source">Full path to source file.</param>
-        /// <param name="dest">Full path to destination file.</param>
+        /// <param name="sourceFullPath">Full path to source file.</param>
+        /// <param name="destFullPath">Full path to destination file.</param>
         /// <returns>True when CopyOnWrite appears to be supported.</returns>
-        private bool IsCopyOnWriteSupported(string source, string dest)
+        private bool IsCopyOnWriteSupported(string sourceFullPath, string destFullPath)
         {
-            if (source.StartsWith(@"\\", StringComparison.Ordinal) || dest.StartsWith(@"\\", StringComparison.Ordinal))
+            if (sourceFullPath.StartsWith(@"\\", StringComparison.Ordinal) || destFullPath.StartsWith(@"\\", StringComparison.Ordinal))
             {
                 return false;
             }
 
             try
             {
-                return CoW.CopyOnWriteLinkSupportedBetweenPaths(source, dest);
+                return CoW.CopyOnWriteLinkSupportedBetweenPaths(sourceFullPath, destFullPath, pathsAreFullyResolved: true);
             }
             catch (Exception ex)
             {
-                Log.LogMessage(MessageImportance.Low, $"Couldn't determine if CloneFile is supported for {source} : {ex}");
+                Log.LogMessage(MessageImportance.Low, $"Couldn't determine if CloneFile is supported for {sourceFullPath} : {ex}");
                 return false;
             }
         }
