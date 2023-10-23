@@ -12,6 +12,9 @@
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\Shared\CopyExceptionHandling.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="CopyOnWrite" GeneratePathProperty="True" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" PrivateAssets="All" />
     <PackageReference Include="System.Threading.Tasks.Dataflow" PrivateAssets="All" />

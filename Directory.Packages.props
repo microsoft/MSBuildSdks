@@ -12,12 +12,13 @@
     <PackageVersion Update="Microsoft.Build.Tasks.Core" Version="16.9.0" Condition="'$(TargetFramework)' == 'netcoreapp3.1' Or '$(TargetFramework)' == 'netstandard2.0'" />
     <PackageVersion Update="Microsoft.Build.Tasks.Core" Version="15.9.20" Condition="'$(TargetFramework)' == 'net46'" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
-    <PackageVersion Include="Microsoft.Win32.Registry" Version="4.7.0" />
+    <PackageVersion Include="Microsoft.Win32.Registry" Version="5.0.0" />
     <PackageVersion Include="MSBuild.ProjectCreation" Version="10.0.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="Shouldly" Version="4.2.1" />
-    <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="6.0.0" Condition=" '$(TargetFramework)' != 'net46' "/>
-    <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="4.11.1" Condition=" '$(TargetFramework)' == 'net46' "/>
+    <PackageVersion Include="System.CodeDom" Version="7.0.0" />
+    <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="6.0.0" Condition=" '$(TargetFramework)' != 'net46' " />
+    <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="4.11.1" Condition=" '$(TargetFramework)' == 'net46' " />
     <PackageVersion Include="xunit" Version="2.5.1" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.5" />
   </ItemGroup>

@@ -864,7 +864,7 @@ namespace Microsoft.Build.Tasks
                             // if this was just because the source and destination files are the
                             // same file, that's not a failure.
                             // Note -- we check this exceptional case here, not before the copy, for perf.
-                            if (PathsAreIdentical(sourceFileState.Name, destinationFileState.Name))
+                            if (CopyExceptionHandling.PathsAreIdentical(sourceFileState.Name, destinationFileState.Name))
                             {
                                 return true;
                             }
@@ -967,18 +967,6 @@ namespace Microsoft.Build.Tasks
         }
 
         #endregion
-
-        /// <summary>
-        /// Compares two paths to see if they refer to the same file. We can't solve the general
-        /// canonicalization problem, so we just compare strings on the full paths.
-        /// </summary>
-        private static bool PathsAreIdentical(string source, string destination)
-        {
-            string fullSourcePath = Path.GetFullPath(source);
-            string fullDestinationPath = Path.GetFullPath(destination);
-            StringComparison filenameComparison = NativeMethods.IsWindows ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
-            return String.Equals(fullSourcePath, fullDestinationPath, filenameComparison);
-        }
 
         private static int GetParallelismFromEnvironment()
         {

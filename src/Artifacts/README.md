@@ -172,7 +172,7 @@ The `<Artifact />` items specify collections of artifacts to stage.  These items
 | `IsRecursive` | Enables a recursive path search for artifacts to stage | `true` |
 | `VerifyExists`  | Enables a check that the file exists before copying | `true` |
 | `AlwaysCopy` | Enables copies even if the destination already exists | `false` |
-| `OnlyNewer`  | Enables copies only if the destnation exist and the source is newer | `false` |
+| `OnlyNewer`  | Enables copies only if the destination exists and the source is newer | `false` |
 | `FileMatch` | A list of one or more file filters seperated by a space or semicolon to include.  Wildcards include `*` and `?` | `*`|
 | `FileExclude`   | A list of one or more file filters seperated by a space or semicolon to exclude.  Wildcards include `*` and `?` | |
 | `DirExclude`   | A list of one or more directory filters seperated by a space or semicolon to exclude.  Wildcards include `*` and `?` | |
