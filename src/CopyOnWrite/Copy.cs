@@ -1011,41 +1011,14 @@ namespace Microsoft.Build.Tasks
 
         private void LogWarning(string message, params object[] messageArgs)
         {
-            string code = ExtractMessageCode(message);
+            string code = Log.ExtractMessageCode(message, out _);
             Log.LogWarning(subcategory: null, warningCode: code, helpKeyword: null, file: null, lineNumber: 0, columnNumber: 0, endLineNumber: 0, endColumnNumber: 0, helpLink: null, message: message, messageArgs: messageArgs);
         }
 
         private void LogError(string message, params object[] messageArgs)
         {
-            string code = ExtractMessageCode(message);
+            string code = Log.ExtractMessageCode(message, out _);
             Log.LogError(subcategory: null, errorCode: code, helpKeyword: null, file: null, lineNumber: 0, columnNumber: 0, endLineNumber: 0, endColumnNumber: 0, helpLink: null, message: message, messageArgs: messageArgs);
-        }
-
-        private static string ExtractMessageCode(string message)
-        {
-            // Extract MSBxxxx code from message if present.
-            string code = null;
-            int i = 0;
-            while (i < message.Length && char.IsWhiteSpace(message[i]))
-            {
-                i++;
-            }
-
-            if (
-                message.Length >= i + 8 &&
-                message[i] == 'M' &&
-                message[i + 1] == 'S' &&
-                message[i + 2] == 'B' &&
-                message[i + 3] >= '0' && message[i + 3] <= '9' &&
-                message[i + 4] >= '0' && message[i + 4] <= '9' &&
-                message[i + 5] >= '0' && message[i + 5] <= '9' &&
-                message[i + 6] >= '0' && message[i + 6] <= '9' &&
-                message[i + 7] == ':')
-            {
-                code = message.Substring(i, 7);
-            }
-
-            return code;
         }
 
         #region CopyOnWrite functionality
