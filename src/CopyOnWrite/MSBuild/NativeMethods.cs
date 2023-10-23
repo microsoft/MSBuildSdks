@@ -13,6 +13,7 @@ namespace Microsoft.Build.Framework;
 internal static class NativeMethods
 {
     internal const uint ERROR_ACCESS_DENIED = 0x5;
+    internal const int ERROR_INVALID_FILENAME = -2147024773; // Illegal characters in name
     internal const int FILE_ATTRIBUTE_READONLY = 0x00000001;
     internal const int FILE_ATTRIBUTE_DIRECTORY = 0x00000010;
     
