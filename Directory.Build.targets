@@ -2,6 +2,7 @@
   <PropertyGroup>
     <MicroBuild_NuPkgSigningEnabled Condition="'$(SignType)' == 'Test'">false</MicroBuild_NuPkgSigningEnabled>
     <NoWarn Condition="'$(IsTestProject)' == 'true'">$(NoWarn);SA1600</NoWarn>
+    <ShadeAssemblies Condition="'$(Configuration)' == 'Release'">false</ShadeAssemblies>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(SignType)' == 'Test'">

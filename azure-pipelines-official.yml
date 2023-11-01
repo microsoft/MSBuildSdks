@@ -74,6 +74,7 @@ stages:
       inputs:
         projects: 'MSBuildSdks.sln'
         msbuildArgs: '$(MSBuildArgs)'
+        msbuildArchitecture: 'x64'
 
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifacts'
