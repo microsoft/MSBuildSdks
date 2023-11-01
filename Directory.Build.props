@@ -8,5 +8,7 @@
     <NoWarn>$(NoWarn);NU5128;SA0001</NoWarn>
     <RestoreUseStaticGraphEvaluation>true</RestoreUseStaticGraphEvaluation>
     <UseArtifactsOutput>false</UseArtifactsOutput>
+    <IsTestProject Condition="$(MSBuildProjectName.EndsWith('UnitTests'))">true</IsTestProject>
+    <IsPackable Condition="'$(IsTestProject)' != 'true'">true</IsPackable>
   </PropertyGroup>
 </Project>

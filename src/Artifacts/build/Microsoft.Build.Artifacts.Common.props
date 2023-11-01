@@ -6,6 +6,12 @@
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
+    <!--
+      Disable functionality if the project has opted into the .NET SDK's built-in artifacts functionality
+    -->
+    <EnableArtifacts Condition="'$(UseArtifactsOutput)' == 'true'">false</EnableArtifacts>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(EnableArtifacts)' != 'false'">
     <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
 
     <UsingMicrosoftArtifactsSdk>true</UsingMicrosoftArtifactsSdk>

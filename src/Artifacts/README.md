@@ -14,6 +14,8 @@ to reproduce locally.  If your build stages artifacts as part of the overall bui
 hosted build environment.
 
 
+**NOTE: When using the .NET SDK's built-in artifacts functionality, the features of Microsoft.Build.Artifacts are disabled.**
+
 
 ## Example
 The source of artifacts default to the project's `$(OutputPath)`.  You simply need to specify a destination in order to have the artifacts staged for that project.
