@@ -5,7 +5,6 @@ variables:
   ArtifactsDirectoryName: 'artifacts'
   BuildConfiguration: 'Debug'
   BuildPlatform: 'Any CPU'
-  DotNet3Version: '3.x'
   DotNet6Version: '6.x'
   DotNet7Version: '7.x'
   DotNet8Version: '8.x'
@@ -38,11 +37,6 @@ jobs:
   steps:
 
   - task: UseDotNet@2
-    displayName: 'Install .NET Core $(DotNet3Version)'
-    inputs:
-      version: '$(DotNet3Version)'
-
-  - task: UseDotNet@2
     displayName: 'Install .NET $(DotNet6Version)'
     inputs:
       version: '$(DotNet6Version)'
@@ -70,14 +64,6 @@ jobs:
       command: 'test'
       arguments: '--no-restore --no-build --framework net472 /noautorsp'
       testRunTitle: 'Windows .NET Framework'
-    condition: succeededOrFailed()
-
-  - task: DotNetCoreCLI@2
-    displayName: 'Run Unit Tests (.NET Core 3.0)'
-    inputs:
-      command: 'test'
-      arguments: '--no-restore --no-build --framework netcoreapp3.1 /noautorsp'
-      testRunTitle: 'Windows .NET Core 3.0'
     condition: succeededOrFailed()
 
   - task: DotNetCoreCLI@2
