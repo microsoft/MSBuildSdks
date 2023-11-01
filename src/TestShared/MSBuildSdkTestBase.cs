@@ -17,7 +17,6 @@ namespace Microsoft.Build.UnitTests.Common
     public abstract class MSBuildSdkTestBase : MSBuildTestBase, IDisposable
     {
         private readonly string _testRootPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-        private readonly string _previousCurrentDirectory = Environment.CurrentDirectory;
 
         protected MSBuildSdkTestBase()
         {
@@ -30,8 +29,6 @@ namespace Microsoft.Build.UnitTests.Common
     <add key=""NuGet.org"" value=""https://api.nuget.org/v3/index.json"" />
   </packageSources>
 </configuration>");
-
-            Environment.CurrentDirectory = TestRootPath;
         }
 
         protected bool IsWindows { get; } = Environment.OSVersion.Platform == PlatformID.Win32NT;
@@ -67,7 +64,6 @@ namespace Microsoft.Build.UnitTests.Common
 
         protected virtual void Dispose(bool disposing)
         {
-            Environment.CurrentDirectory = _previousCurrentDirectory;
             if (disposing)
             {
                 if (Directory.Exists(TestRootPath))
