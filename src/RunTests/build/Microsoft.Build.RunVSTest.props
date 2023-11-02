@@ -2,6 +2,6 @@
 	<PropertyGroup>
 		<NugetPath Condition="$(NUGET_PACKAGES)==''">$(USERPROFILE)\.nuget</NugetPath>
 		<NugetPath Condition="$(NUGET_PACKAGES)!=''">$(NUGET_PACKAGES)</NugetPath>
-		<VSTestRunnerVersion Condition="$(VSTestRunnerVersion)==''">17.6.3</VSTestRunnerVersion>
+		<VSTestRunnerVersion Condition="$(VSTestRunnerVersion)==''">$(MicrosoftBuildPackageVersion)</VSTestRunnerVersion>
 	</PropertyGroup>
 </Project>

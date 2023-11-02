@@ -5,7 +5,6 @@ variables:
   ArtifactsDirectoryName: 'artifacts'
   BuildConfiguration: 'Debug'
   BuildPlatform: 'Any CPU'
-  DotNet3Version: '3.x'
   DotNet6Version: '6.x'
   DotNet7Version: '7.x'
   MSBuildArgs: '"/p:Platform=$(BuildPlatform)" "/p:Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
@@ -37,11 +36,6 @@ jobs:
   steps:
 
   - task: UseDotNet@2
-    displayName: 'Install .NET Core $(DotNet3Version)'
-    inputs:
-      version: '$(DotNet3Version)'
-
-  - task: UseDotNet@2
     displayName: 'Install .NET $(DotNet6Version)'
     inputs:
       version: '$(DotNet6Version)'
@@ -66,19 +60,19 @@ jobs:
     condition: succeededOrFailed()
 
   - task: DotNetCoreCLI@2
-    displayName: 'Run Unit Tests (.NET Core 3.0)'
-    inputs:
-      command: 'test'
-      arguments: '--no-restore --no-build --framework netcoreapp3.1 /noautorsp'
-      testRunTitle: 'Windows .NET Core 3.0'
-    condition: succeededOrFailed()
-
-  - task: DotNetCoreCLI@2
     displayName: 'Run Unit Tests (.NET 6.0)'
     inputs:
       command: 'test'
       arguments: '--no-restore --no-build --framework net6.0 /noautorsp'
       testRunTitle: 'Windows .NET 6.0'
+    condition: succeededOrFailed()
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Run Unit Tests (.NET 7.0)'
+    inputs:
+      command: 'test'
+      arguments: '--no-restore --no-build --framework net7.0 /noautorsp'
+      testRunTitle: 'Windows .NET 7.0'
     condition: succeededOrFailed()
 
   - task: PublishBuildArtifacts@1
@@ -118,6 +112,14 @@ jobs:
       testRunTitle: 'Linux .NET 6.0'
     condition: succeededOrFailed()
 
+  - task: DotNetCoreCLI@2
+    displayName: 'Run Unit Tests (.NET 7.0)'
+    inputs:
+      command: 'test'
+      arguments: '--no-restore --no-build --framework net7.0 /noautorsp'
+      testRunTitle: 'Linux .NET 7.0'
+    condition: succeededOrFailed()
+
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifacts'
     inputs:
@@ -153,6 +155,14 @@ jobs:
       command: 'test'
       arguments: '--no-restore --no-build --framework net6.0 /noautorsp'
       testRunTitle: 'MacOS .NET 6.0'
+    condition: succeededOrFailed()
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Run Unit Tests (.NET 7.0)'
+    inputs:
+      command: 'test'
+      arguments: '--no-restore --no-build --framework net7.0 /noautorsp'
+      testRunTitle: 'MacOS .NET 7.0'
     condition: succeededOrFailed()
 
   - task: PublishBuildArtifacts@1

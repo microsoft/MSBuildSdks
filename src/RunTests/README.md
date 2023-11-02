@@ -3,6 +3,15 @@
 The `Microsoft.Build.RunVSTest` MSBuild SDK adds support for running tests from MSBuild, similarly to how one would use `dotnet test`.
 
 ## Usage in `Directory.Packages.Props`
+In your global.json add the following:
+```json
+{
+  "msbuild-sdks": {
+	"Microsoft.Build.RunVSTest": "1.0.0"
+  }
+}
+```
+
 In your `Directory.Packages.props`:
 ```xml
 <Project>
@@ -19,7 +28,7 @@ This example will include the `Microsoft.Build.RunVSTest` task for all NuGet-bas
 ## Example
 To run tests
 ```
-$env:MSBUILDENSURESTDOUTFORTASKPROCESSES=1
+$env:=1
 msbuild /nodereuse:false /t:VSTest
 ```
 

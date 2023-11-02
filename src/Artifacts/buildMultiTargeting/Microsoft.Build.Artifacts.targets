@@ -8,7 +8,7 @@
   <Import Project="$(CustomBeforeArtifactsTargets)"
           Condition="'$(CustomBeforeArtifactsTargets)' != '' And Exists('$(CustomBeforeArtifactsTargets)')" />
 
-  <PropertyGroup>
+  <PropertyGroup Condition="'$(EnableArtifacts)' != 'false'">
     <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
 
     <!--
@@ -22,7 +22,7 @@
     <CopyArtifactsAfterTargets Condition="'$(CopyArtifactsAfterTargets)' == ''">Build</CopyArtifactsAfterTargets>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(EnableDefaultArtifacts)' != 'false' And '$(ArtifactsPath)' != '' And '$([MSBuild]::ValueOrDefault($(DefaultArtifactsSource), $(OutputPath)))' != ''">
+  <ItemGroup Condition="'$(EnableArtifacts)' != 'false' And '$(EnableDefaultArtifacts)' != 'false' And '$(ArtifactsPath)' != '' And '$([MSBuild]::ValueOrDefault($(DefaultArtifactsSource), $(OutputPath)))' != ''">
     <!--
       By default copy the contents of $(DefaultArtifactsSource) (default is $(OutputPath)) to $(ArtifactsPath) unless:
        * EnableDefaultArtifacts is 'false'

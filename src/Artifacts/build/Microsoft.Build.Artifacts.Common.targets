@@ -10,16 +10,9 @@
   </PropertyGroup>
 
   <UsingTask TaskName="Robocopy"
-             AssemblyFile="$([MSBuild]::ValueOrDefault('$(ArtifactsTaskAssembly)', '$(MSBuildThisFileDirectory)net46\Microsoft.Build.Artifacts.dll'))"
-             Condition="'$(MSBuildRuntimeType)' != 'Core' And '$(MSBuildVersion)' &lt; '16.0'" />
-  <UsingTask TaskName="Robocopy"
-             AssemblyFile="$([MSBuild]::ValueOrDefault('$(ArtifactsTaskAssembly)', '$(MSBuildThisFileDirectory)net472\Microsoft.Build.Artifacts.dll'))"
-             Condition="'$(MSBuildRuntimeType)' != 'Core' And '$(MSBuildVersion)' &gt;= '16.0'" />
-  <UsingTask TaskName="Robocopy"
-             AssemblyFile="$([MSBuild]::ValueOrDefault('$(ArtifactsTaskAssembly)', '$(MSBuildThisFileDirectory)netstandard2.0\Microsoft.Build.Artifacts.dll'))"
-             Condition="'$(MSBuildRuntimeType)' == 'Core'" />
+             AssemblyFile="$([MSBuild]::ValueOrDefault('$(ArtifactsTaskAssembly)', '$(MSBuildThisFileDirectory)netstandard2.0\Microsoft.Build.Artifacts.dll'))" />
 
-  <ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(EnableArtifacts)' != 'false'">
     <Robocopy>
       <Visible>false</Visible>
       <VerifyExists>true</VerifyExists>
