@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Build
 {
-    public class RunTestsTask : Build.Utilities.Task
+    public class RunVSTestTask : Build.Utilities.Task
     {
         private const string CodeCoverageString = "Code Coverage";
 

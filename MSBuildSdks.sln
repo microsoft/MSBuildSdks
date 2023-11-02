@@ -82,7 +82,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SampleNoTargets", "SampleNo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.CopyOnWrite", "src\CopyOnWrite\Microsoft.Build.CopyOnWrite.csproj", "{153D1183-2953-4D4D-A5AD-AA2CF99B0DE3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.RunTests", "src\RunTests\Microsoft.Build.RunTests.csproj", "{B4CA4749-4CDE-499F-8372-C71966C6DB16}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.RunVSTest", "src\RunTests\Microsoft.Build.RunVSTest.csproj", "{B4CA4749-4CDE-499F-8372-C71966C6DB16}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
