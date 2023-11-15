@@ -36,7 +36,7 @@ stages:
   - job: Build
     displayName: 'Build'
     pool:
-      name: 'VSEngSS-MicroBuild2022-1ES'
+      name: 'VSEngSS-MicroBuild2022Preview-1ES'
     steps:
     - task: PowerShell@2
       displayName: 'Update SignType, Build Number, and Add Build Tag for tagged commits'
@@ -74,6 +74,8 @@ stages:
         projects: 'MSBuildSdks.sln'
         msbuildArgs: '$(MSBuildArgs)'
         msbuildArchitecture: 'x64'
+      env:
+        DOTNET_MULTILEVEL_LOOKUP: '0'
 
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifacts'
