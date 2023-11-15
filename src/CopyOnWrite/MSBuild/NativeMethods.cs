@@ -105,7 +105,7 @@ internal static class NativeMethods
 
     private static bool IsLongPathsEnabledRegistry()
     {
-        using (RegistryKey fileSystemKey = Registry.LocalMachine.OpenSubKey(WINDOWS_FILE_SYSTEM_REGISTRY_KEY))
+        using (RegistryKey? fileSystemKey = Registry.LocalMachine.OpenSubKey(WINDOWS_FILE_SYSTEM_REGISTRY_KEY))
         {
             object? longPathsEnabledValue = fileSystemKey?.GetValue(WINDOWS_LONG_PATHS_ENABLED_VALUE_NAME, 0);
             return fileSystemKey != null && Convert.ToInt32(longPathsEnabledValue) == 1;
