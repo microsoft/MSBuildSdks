@@ -89,10 +89,12 @@ namespace Microsoft.Build.NoTargets.UnitTests
         {
             ProjectCreator projectA = ProjectCreator.Templates.SdkCsproj(
                     path: Path.Combine(TestRootPath, "ProjectA", "ProjectA.csproj"),
-#if NETFRAMEWORK || NET7_0
-                    targetFramework: "net7.0")
+#if NETFRAMEWORK || NET8_0
+                    targetFramework: "net8.0")
 #elif NET6_0
                     targetFramework: "net6.0")
+#elif NET7_0
+                    targetFramework: "net7.0")
 #endif
                 .Save();
 
