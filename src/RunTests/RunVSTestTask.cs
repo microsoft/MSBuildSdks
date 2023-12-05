@@ -18,8 +18,8 @@ namespace Microsoft.Build
     public class RunVSTestTask : Task
     {
         private const string CodeCoverageString = "Code Coverage";
-        private static readonly HashSet<string> NormalTestLogging = new(new[] { "n", "normal", "d", "detailed", "diag", "diagnostic" }, StringComparer.OrdinalIgnoreCase);
-        private static readonly HashSet<string> QuietTestLogging = new(new[] { "q", "quiet" }, StringComparer.OrdinalIgnoreCase);
+        private static readonly HashSet<string> NormalTestLogging = new (new[] { "n", "normal", "d", "detailed", "diag", "diagnostic" }, StringComparer.OrdinalIgnoreCase);
+        private static readonly HashSet<string> QuietTestLogging = new (new[] { "q", "quiet" }, StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Gets or Sets Full path to the test file.

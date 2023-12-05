@@ -12,7 +12,7 @@
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Build.Utilities.Core" />
+		<PackageReference Include="Microsoft.Build.Tasks.Core" />
 		<PackageReference Include="Microsoft.TestPlatform" />
 	</ItemGroup>
 	<ItemGroup>
