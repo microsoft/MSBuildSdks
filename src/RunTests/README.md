@@ -73,3 +73,10 @@ To build and run tests
 $env:MSBUILDENSURESTDOUTFORTASKPROCESSES=1
 msbuild /nodereuse:false /t:Build;Test
 ```
+
+## Microsoft.TestPlatform version
+A default version is set for Microsoft.TestPlatform. To use a version other than the one included with this task,
+override the VSTestRunnerVersion property.
+```
+msbuild /nodereuse:false /t:Test /p:VSTestRunnerVersion=17.7.2
+```
