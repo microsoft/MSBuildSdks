@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!--
   Copyright (c) Microsoft Corporation. All rights reserved.
   
   Licensed under the MIT license.
 -->
 <Project  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <UsingTask TaskName="Microsoft.Build.RunVSTestTask" AssemblyFile="$(MSBuildThisFileDirectory)netstandard2.0\Microsoft.Build.RunVSTest.dll" />
+  <UsingTask TaskName="Microsoft.Build.RunVSTestTask" AssemblyFile="$(MSBuildThisFileDirectory)..\build\netstandard2.0\Microsoft.Build.RunVSTest.dll" />
   <Target Name="RunVSTest" AfterTargets="Test" Condition="$(SkipExecution) != 'true'">
 	  <RunVSTestTask VSTestRunnerVersion="$(VSTestRunnerVersion)" 
 					 TestFileFullPath="$(TargetPath)" 
@@ -29,6 +29,7 @@
 					 VSTestArtifactsProcessingMode="$(VSTestArtifactsProcessingMode)" 
 					 VSTestSessionCorrelationId="$(VSTestSessionCorrelationId)"
 					 NugetPath="$(NugetPath)"
+					 IsTestProject="$(IsTestProject)"
 					 />
   </Target>
 </Project>

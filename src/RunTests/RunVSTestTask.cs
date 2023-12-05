@@ -2,24 +2,29 @@
 //
 // Licensed under the MIT license.
 
+using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.Build
 {
-    public class RunVSTestTask : Build.Utilities.Task
+    /// <summary>
+    /// Runs tests with vstest.
+    /// </summary>
+    public class RunVSTestTask : Task
     {
         private const string CodeCoverageString = "Code Coverage";
-
-        // Allows the execution of the test to be skipped. This is useful when the task is invoked from a target and the condition for running the target is not met or if test caching is enabled.
+        private static readonly HashSet<string> NormalTestLogging = new(new[] { "n", "normal", "d", "detailed", "diag", "diagnostic" }, StringComparer.OrdinalIgnoreCase);
+        private static readonly HashSet<string> QuietTestLogging = new(new[] { "q", "quiet" }, StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// Gets or Sets a value indicating whether to Skip Execution.
+        /// Gets or Sets Full path to the test file.
         /// </summary>
-        public bool SkipExecution { get; set; }
+        public string IsTestProject { get; set; }
 
         /// <summary>
         /// Gets or Sets Full path to the test file.
@@ -152,30 +157,21 @@ namespace Microsoft.Build
         /// <summary>
         /// Gets or Sets Runner version of VSTest.
         /// </summary>
+        [Required]
         public string VSTestRunnerVersion { get; set; }
 
         /// <summary>
         /// Gets or Sets Path to nuget package cache.
         /// </summary>
+        [Required]
         public string NugetPath { get; set; }
 
         /// <summary>
-        /// Executes the test. Skips execution if specified.
+        /// Executes the test.
         /// </summary>
         /// <returns>Returns true if the test was executed, otherwise false.</returns>
         public override bool Execute()
         {
-            var traceEnabledValue = Environment.GetEnvironmentVariable("VSTEST_BUILD_TRACE");
-            if (SkipExecution)
-            {
-                if (!string.IsNullOrEmpty(traceEnabledValue) && traceEnabledValue.Equals("1", StringComparison.Ordinal))
-                {
-                    Log.LogMessage("Skipping test execution.");
-                }
-
-                return true;
-            }
-
             var debugEnabled = Environment.GetEnvironmentVariable("VSTEST_BUILD_DEBUG");
             if (!string.IsNullOrEmpty(debugEnabled) && debugEnabled.Equals("1", StringComparison.Ordinal))
             {
@@ -192,15 +188,10 @@ namespace Microsoft.Build
                 Debugger.Break();
             }
 
-            // Avoid logging "Task returned false but did not log an error." on test failure, because we don't
-            // write MSBuild error. https://github.com/dotnet/msbuild/blob/51a1071f8871e0c93afbaf1b2ac2c9e59c7b6491/src/Framework/IBuildEngine7.cs#L12
-            var allowfailureWithoutError = BuildEngine.GetType().GetProperty("AllowFailureWithoutError");
-            allowfailureWithoutError?.SetValue(BuildEngine, true);
-
-            return ExecuteTest().GetAwaiter().GetResult() == 0;
+            return ExecuteTest() == 0;
         }
 
-        internal IEnumerable<string> CreateArgument()
+        internal IEnumerable<string> CreateArguments()
         {
             var allArgs = AddArgs();
 
@@ -302,15 +293,12 @@ namespace Microsoft.Build
             // Console logger was not specified by user, but verbosity was, hence add default console logger with verbosity as specified
             if (!string.IsNullOrEmpty(VSTestVerbosity) && !isConsoleLoggerSpecifiedByUser)
             {
-                var normalTestLogging = new List<string>() { "n", "normal", "d", "detailed", "diag", "diagnostic" };
-                var quietTestLogging = new List<string>() { "q", "quiet" };
-
                 string vsTestVerbosity = "minimal";
-                if (normalTestLogging.Contains(VSTestVerbosity.ToLowerInvariant()))
+                if (NormalTestLogging.Contains(VSTestVerbosity))
                 {
                     vsTestVerbosity = "normal";
                 }
-                else if (quietTestLogging.Contains(VSTestVerbosity.ToLowerInvariant()))
+                else if (QuietTestLogging.Contains(VSTestVerbosity))
                 {
                     vsTestVerbosity = "quiet";
                 }
@@ -418,26 +406,29 @@ namespace Microsoft.Build
             return allArgs;
         }
 
-        private Task<int> ExecuteTest()
+        private int ExecuteTest()
         {
-#if NET6_0_OR_GREATER
-            string packagePath = $@"{NugetPath}\packages\microsoft.testplatform\{VSTestRunnerVersion}\tools\net6.0\Common7\IDE\Extensions\TestPlatform\";
-#else
-            string packagePath = $@"{NugetPath}\packages\microsoft.testplatform\{VSTestRunnerVersion}\tools\net462\Common7\IDE\Extensions\TestPlatform\";
-#endif
+            string packagePath = $@"{NugetPath}\microsoft.testplatform\{VSTestRunnerVersion}\tools\net462\Common7\IDE\Extensions\TestPlatform\";
+
             var processInfo = new ProcessStartInfo
             {
                 FileName = $"{packagePath}vstest.console.exe",
-                Arguments = string.Join(" ", CreateArgument()),
+                Arguments = string.Join(" ", CreateArguments()),
                 UseShellExecute = false,
+                RedirectStandardError = true,
+                RedirectStandardOutput = true,
             };
 
-            using (var activeProcess = new Process { StartInfo = processInfo })
-            {
-                activeProcess.Start();
-                activeProcess.WaitForExit();
-                return Task.FromResult(activeProcess.ExitCode);
-            }
+            using var activeProcess = new Process { StartInfo = processInfo };
+            activeProcess.Start();
+            using StreamReader errReader = activeProcess.StandardError;
+            _ = Log.LogMessagesFromStream(errReader, MessageImportance.Normal);
+
+            using StreamReader outReader = activeProcess.StandardOutput;
+            _ = Log.LogMessagesFromStream(outReader, MessageImportance.Normal);
+            activeProcess.WaitForExit();
+
+            return activeProcess.ExitCode;
         }
     }
 }

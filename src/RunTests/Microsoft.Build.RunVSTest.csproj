@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>netstandard2.0</TargetFrameworks>
+		<TargetFramework>netstandard2.0</TargetFramework>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageId>Microsoft.Build.RunVSTest</PackageId>
 		<Description>Runs VS Test Console</Description>
@@ -23,6 +23,18 @@
 		</None>
 		<None Include="build\Microsoft.Build.RunVSTest.targets">
 			<PackagePath>build\</PackagePath>
+			<Pack>true</Pack>
+			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="Sdk\Sdk.props">
+			<PackagePath>Sdk\</PackagePath>
+			<Pack>true</Pack>
+			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</None>
+		<None Include="Sdk\Sdk.targets">
+			<PackagePath>Sdk\</PackagePath>
 			<Pack>true</Pack>
 			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		</None>
