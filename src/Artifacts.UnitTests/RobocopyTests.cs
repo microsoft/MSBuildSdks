@@ -351,6 +351,45 @@ namespace Microsoft.Build.Artifacts.UnitTests
         }
 
         [Fact]
+        public void ExplicitSelfCopiesShouldNoOp()
+        {
+            // Use a relative path to allow aliasing a local file and its full path.
+            string localSource = Path.Combine(Environment.CurrentDirectory, "foo.txt");
+            File.WriteAllText(localSource, string.Empty);
+
+            BuildEngine buildEngine = BuildEngine.Create();
+            MockFileSystem fs = new MockFileSystem();
+
+            Robocopy copyArtifacts = new Robocopy
+            {
+                BuildEngine = buildEngine,
+                Sources = new ITaskItem[]
+                {
+                    new MockTaskItem(localSource)
+                    {
+                        ["DestinationFolder"] = ".",
+                        ["AlwaysCopy"] = "true",
+                    },
+                    new MockTaskItem(Path.Combine(".", "foo.txt"))
+                    {
+                        ["DestinationFolder"] = Environment.CurrentDirectory,
+                        ["AlwaysCopy"] = "true",
+                    },
+                },
+                Sleep = _ => { },
+                FileSystem = fs,
+            };
+
+            copyArtifacts.Execute().ShouldBeTrue(buildEngine.GetConsoleLog());
+            copyArtifacts.NumFilesCopied.ShouldBe(0);
+            copyArtifacts.NumErrors.ShouldBe(0);
+            copyArtifacts.NumFilesSkipped.ShouldBe(1);
+            copyArtifacts.NumDuplicateDestinationDelayedJobs.ShouldBe(0);
+            fs.NumCloneFileCalls.ShouldBe(0);
+            fs.NumCopyFileCalls.ShouldBe(0);
+        }
+
+        [Fact]
         public void DifferentSourcesSameDestinationShouldRunDuplicatesSeparately()
         {
             DirectoryInfo source = CreateFiles(

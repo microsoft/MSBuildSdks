@@ -13,7 +13,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks.Dataflow;
 
-#nullable disable
+#nullable enable annotations
 
 namespace Microsoft.Build.Tasks
 {
@@ -50,28 +50,16 @@ namespace Microsoft.Build.Tasks
         public Copy()
         {
             RetryDelayMilliseconds = RetryDelayMillisecondsDefault;
-
-            if (DidNotCopyBecauseOfFileMatch == null)
-            {
-                CreatesDirectory = "Creating directory \"{0}\"";
-                DidNotCopyBecauseOfFileMatch = "Did not copy from file \"{0}\" to file \"{1}\" because the \"{2}\" parameter was set to \"{3}\" in the project and the files' sizes and timestamps match.";
-                FileComment = "Copying file from \"{0}\" to \"{1}\".";
-                HardLinkComment = "Creating hard link to copy \"{0}\" to \"{1}\"";
-                RetryingAsFileCopy = "Could not use a link to copy \"{0}\" to \"{1}\". Copying the file instead. {2}";
-                RetryingAsSymbolicLink = "Could not use a hard link to copy \"{0}\" to \"{1}\". Copying the file with symbolic link instead. {2}";
-                RemovingReadOnlyAttribute = "Removing read-only attribute from \"{0}\".";
-                SymbolicLinkComment = "Creating symbolic link to copy \"{0}\" to \"{1}\"";
-            }
         }
 
-        private static string CreatesDirectory;
-        private static string DidNotCopyBecauseOfFileMatch;
-        private static string FileComment;
-        private static string HardLinkComment;
-        private static string RetryingAsFileCopy;
-        private static string RetryingAsSymbolicLink;
-        private static string RemovingReadOnlyAttribute;
-        private static string SymbolicLinkComment;
+        private static readonly string CreatesDirectory = "Creating directory \"{0}\"";
+        private static readonly string DidNotCopyBecauseOfFileMatch = "Did not copy from file \"{0}\" to file \"{1}\" because the \"{2}\" parameter was set to \"{3}\" in the project and the files' sizes and timestamps match.";
+        private static readonly string FileComment = "Copying file from \"{0}\" to \"{1}\".";
+        private static readonly string HardLinkComment = "Creating hard link to copy \"{0}\" to \"{1}\"";
+        private static readonly string RetryingAsFileCopy = "Could not use a link to copy \"{0}\" to \"{1}\". Copying the file instead. {2}";
+        private static readonly string RetryingAsSymbolicLink = "Could not use a hard link to copy \"{0}\" to \"{1}\". Copying the file with symbolic link instead. {2}";
+        private static readonly string RemovingReadOnlyAttribute = "Removing read-only attribute from \"{0}\".";
+        private static readonly string SymbolicLinkComment = "Creating symbolic link to copy \"{0}\" to \"{1}\"";
 
         #region Properties
 
@@ -100,9 +88,9 @@ namespace Microsoft.Build.Tasks
         private const int RetryDelayMillisecondsDefault = 1000;
 
         [Required]
-        public ITaskItem[] SourceFiles { get; set; }
+        public ITaskItem[]  SourceFiles { get; set; }
 
-        public ITaskItem DestinationFolder { get; set; }
+        public ITaskItem? DestinationFolder { get; set; }
 
         /// <summary>
         /// Gets or sets the number of times to attempt to copy, if all previous attempts failed.
@@ -136,7 +124,7 @@ namespace Microsoft.Build.Tasks
         public bool SkipUnchangedFiles { get; set; }
 
         [Output]
-        public ITaskItem[] DestinationFiles { get; set; }
+        public ITaskItem[]  DestinationFiles { get; set; }
 
         /// <summary>
         /// The subset of files that were successfully copied.
@@ -333,8 +321,8 @@ namespace Microsoft.Build.Tasks
             if (!hardLinkCreated && !symbolicLinkCreated)
             {
                 // Do not log a fake command line as well, as it's superfluous, and also potentially expensive
-                string sourceFilePath = FileUtilities.GetFullPathNoThrow(sourceFileState.Name);
-                string destinationFilePath = FileUtilities.GetFullPathNoThrow(destinationFileState.Name);
+                string sourceFilePath = sourceFileState.FullPath;
+                string destinationFilePath = destinationFileState.FullPath;
                 Log.LogMessage(MessageImportance.Normal, FileComment, sourceFilePath, destinationFilePath);
 
                 bool cloned = false;
@@ -438,7 +426,7 @@ namespace Microsoft.Build.Tasks
             bool success;
             try
             {
-                success = parallelism == 1 || DestinationFiles.Length == 1
+                success = parallelism == 1 || DestinationFiles!.Length == 1
                     ? CopySingleThreaded(copyFile, out destinationFilesSuccessfullyCopied)
                     : CopyParallel(copyFile, parallelism, out destinationFilesSuccessfullyCopied);
             }
@@ -462,7 +450,7 @@ namespace Microsoft.Build.Tasks
             out List<ITaskItem> destinationFilesSuccessfullyCopied)
         {
             bool success = true;
-            destinationFilesSuccessfullyCopied = new List<ITaskItem>(DestinationFiles.Length);
+            destinationFilesSuccessfullyCopied = new List<ITaskItem>(DestinationFiles!.Length);
 
             // Set of files we actually copied and the location from which they were originally copied.  The purpose
             // of this collection is to let us skip copying duplicate files.  We will only copy the file if it 
@@ -474,7 +462,7 @@ namespace Microsoft.Build.Tasks
                 StringComparer.OrdinalIgnoreCase);
 
             // Now that we have a list of destinationFolder files, copy from source to destinationFolder.
-            for (int i = 0; i < SourceFiles.Length && !_cancellationTokenSource.IsCancellationRequested; ++i)
+            for (int i = 0; i < SourceFiles!.Length && !_cancellationTokenSource.IsCancellationRequested; ++i)
             {
                 bool copyComplete = false;
                 string destPath = DestinationFiles[i].ItemSpec;
@@ -544,10 +532,10 @@ namespace Microsoft.Build.Tasks
 
             // Map: Destination path -> indexes in SourceFiles/DestinationItems array indices (ordered low->high).
             var partitionsByDestination = new Dictionary<string, List<int>>(
-                DestinationFiles.Length, // Set length to common case of 1:1 source->dest.
+                DestinationFiles!.Length, // Set length to common case of 1:1 source->dest.
                 StringComparer.OrdinalIgnoreCase);
 
-            for (int i = 0; i < SourceFiles.Length && !_cancellationTokenSource.IsCancellationRequested; ++i)
+            for (int i = 0; i < SourceFiles!.Length && !_cancellationTokenSource.IsCancellationRequested; ++i)
             {
                 ITaskItem destItem = DestinationFiles[i];
                 string destPath = destItem.ItemSpec;
@@ -680,7 +668,7 @@ namespace Microsoft.Build.Tasks
             }
 
             // If the caller passed in DestinationFiles, then its length must match SourceFiles.
-            if (DestinationFiles != null && DestinationFiles.Length != SourceFiles.Length)
+            if (DestinationFiles != null && DestinationFiles.Length != SourceFiles!.Length)
             {
                 LogError(
                     "MSB3094: \"{2}\" refers to {0} item(s), and \"{3}\" refers to {1} item(s). They must have the same number of items.",
@@ -706,7 +694,7 @@ namespace Microsoft.Build.Tasks
             if (DestinationFiles == null)
             {
                 // If the caller passed in DestinationFolder, convert it to DestinationFiles
-                DestinationFiles = new ITaskItem[SourceFiles.Length];
+                DestinationFiles = new ITaskItem[SourceFiles!.Length];
 
                 for (int i = 0; i < SourceFiles.Length; ++i)
                 {
@@ -714,11 +702,11 @@ namespace Microsoft.Build.Tasks
                     string destinationFile;
                     try
                     {
-                        destinationFile = Path.Combine(DestinationFolder.ItemSpec, Path.GetFileName(SourceFiles[i].ItemSpec));
+                        destinationFile = Path.Combine(DestinationFolder!.ItemSpec, Path.GetFileName(SourceFiles[i].ItemSpec));
                     }
                     catch (ArgumentException e)
                     {
-                        LogError("MSB3021: Unable to copy file \"{0}\" to \"{1}\". {2}", SourceFiles[i].ItemSpec, DestinationFolder.ItemSpec, e.Message);
+                        LogError("MSB3021: Unable to copy file \"{0}\" to \"{1}\". {2}", SourceFiles![i].ItemSpec!, DestinationFolder!.ItemSpec, e.Message);
                         // Clear the outputs.
                         DestinationFiles = Array.Empty<ITaskItem>();
                         return false;
@@ -761,13 +749,9 @@ namespace Microsoft.Build.Tasks
                         "true"
                     );
                 }
-                // We only do the cheap check for identicalness here, we try the more expensive check
-                // of comparing the fullpaths of source and destination to see if they are identical,
-                // in the exception handler lower down.
-                else if (!String.Equals(
-                             sourceFileState.Name,
-                             destinationFileState.Name,
-                             StringComparison.OrdinalIgnoreCase))
+                // We only do a cheap check for path equality here, we try the more expensive check
+                // of comparing the underlying file path (if symlinks/junctions are in use) in the exception handler lower down.
+                else if (!string.Equals(sourceFileState.FullPath, destinationFileState.FullPath, StringComparison.OrdinalIgnoreCase))
                 {
                     success = DoCopyWithRetries(sourceFileState, destinationFileState, copyFile);
                 }
@@ -864,7 +848,8 @@ namespace Microsoft.Build.Tasks
                             // if this was just because the source and destination files are the
                             // same file, that's not a failure.
                             // Note -- we check this exceptional case here, not before the copy, for perf.
-                            if (CopyExceptionHandling.PathsAreIdentical(sourceFileState.Name, destinationFileState.Name))
+                            // TODO: This does not handle the case of having deleted the destination file prior to trying to copy - we can delete the destination and it happens to be the source as well!
+                            if (CopyExceptionHandling.FullPathsAreIdentical(sourceFileState.FullPath, destinationFileState.FullPath))
                             {
                                 return true;
                             }
@@ -1023,11 +1008,11 @@ namespace Microsoft.Build.Tasks
             try
             {
                 CoW.CloneFile(sourceFullPath, destFullPath, CloneFlags.PathIsFullyResolved);
-                Log.LogMessage(MessageImportance.Low, $"CloneFile '{sourceFullPath}' to '{destFullPath}'.");
+                Log.LogMessage(MessageImportance.Low, $"Created copy-on-write link '{sourceFullPath}' to '{destFullPath}'.");
             }
             catch (Exception e)
             {
-                Log.LogMessage($"Could not CloneFile '{sourceFullPath}' to '{destFullPath}'. Reason: {e.Message}");
+                Log.LogMessage($"Could not create copy-on-write link '{sourceFullPath}' to '{destFullPath}'. Reason: {e.Message}");
                 return false;
             }
 

@@ -3,8 +3,9 @@
 
 using Microsoft.Build.Framework;
 using System;
-using System.Collections.Concurrent;
 using System.IO;
+
+#nullable enable
 
 namespace Microsoft.Build.Shared
 {
@@ -15,8 +16,6 @@ namespace Microsoft.Build.Shared
     /// </summary>
     internal static class FileUtilities
     {
-        private static readonly ConcurrentDictionary<string, bool> FileExistenceCache = new ConcurrentDictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
-
         /// <summary>
         /// Gets the canonicalized full path of the provided path.
         /// Guidance for use: call this on all paths accepted through internal entry
@@ -26,18 +25,8 @@ namespace Microsoft.Build.Shared
         /// </summary>
         internal static string NormalizePath(string path)
         {
-            if (path == null)
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
-
-            string fullPath = GetFullPath(path);
+            string fullPath = Path.GetFullPath(path);
             return FixFilePath(fullPath);
-        }
-
-        private static string GetFullPath(string path)
-        {
-            return Path.GetFullPath(path);
         }
 
         internal static string FixFilePath(string path)

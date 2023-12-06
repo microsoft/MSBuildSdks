@@ -36,27 +36,6 @@ internal static class CopyExceptionHandling
     }
 
     /// <summary>
-    /// Compares two paths to see if they refer to the same file, regardless of different path canonicalization
-    /// (e.g. inclusion of '.' or '..' path segments in one or the other path) or symlinks.
-    /// Because of slow performance, this method is intended for use in exception paths for IOException.
-    /// </summary>
-    /// <param name="source">The source file path.</param>
-    /// <param name="destination">The destination file path.</param>
-    /// <returns>True if the paths refer to the same file and a copy operation failure can be ignored.</returns>
-    internal static bool PathsAreIdentical(string source, string destination)
-    {
-        // Collapse path parts like '.' and '..' into a more canonical format.
-        string fullSourcePath = Path.GetFullPath(source);
-        string fullDestinationPath = Path.GetFullPath(destination);
-        if (string.Equals(fullSourcePath, fullDestinationPath, PathComparison))
-        {
-            return true;
-        }
-
-        return FullPathsAreIdentical(fullSourcePath, fullDestinationPath);
-    }
-
-    /// <summary>
     /// Compares two paths to see if they refer to the same file, regardless of symlinks.
     /// Assumes the provided paths have already been canonicalized via Path.GetFullPath().
     /// Because of slow performance, this method is intended for use in exception paths for IOException.
@@ -67,8 +46,8 @@ internal static class CopyExceptionHandling
     internal static bool FullPathsAreIdentical(string source, string destination)
     {
         // Might be copying a file onto itself via symlinks. Compare the resolved paths.
-        string? symlinkResolvedSource = GetRealPathOrNull(source);
-        string? symlinkResolvedDestination = GetRealPathOrNull(destination);
+        string symlinkResolvedSource = GetRealPathOrNull(source) ?? source;
+        string symlinkResolvedDestination = GetRealPathOrNull(destination) ?? destination;
         return string.Equals(symlinkResolvedSource, symlinkResolvedDestination, PathComparison);
     }
 
