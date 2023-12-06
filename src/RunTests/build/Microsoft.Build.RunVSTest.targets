@@ -30,7 +30,6 @@
 				VSTestArtifactsProcessingMode="$(VSTestArtifactsProcessingMode)"
 				VSTestSessionCorrelationId="$(VSTestSessionCorrelationId)"
 				NugetPath="$(NugetPath)"
-				IsTestProject="$(IsTestProject)"
 	/>
   </Target>
 </Project>

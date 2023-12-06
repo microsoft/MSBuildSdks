@@ -27,18 +27,7 @@
 			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
-	<ItemGroup>
-		<None Include="Sdk\Sdk.props">
-			<PackagePath>Sdk\</PackagePath>
-			<Pack>true</Pack>
-			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</None>
-		<None Include="Sdk\Sdk.targets">
-			<PackagePath>Sdk\</PackagePath>
-			<Pack>true</Pack>
-			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</None>
-	</ItemGroup>
+	
 	<ItemGroup>
 		<FilesToSign Include="$(TargetPath)" Authenticode="Microsoft400" StrongName="StrongName" />
 	</ItemGroup>
