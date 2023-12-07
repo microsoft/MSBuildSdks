@@ -26,6 +26,9 @@ namespace Microsoft.Build.Tasks
         internal const string AlwaysOverwriteReadOnlyFilesEnvVar = "MSBUILDALWAYSOVERWRITEREADONLYFILES";
         private static readonly bool IsWindows = Environment.OSVersion.Platform == PlatformID.Win32NT;
 
+        // Escape hatch taken from MSBuild Traits.cs that allows turning off delete-before-copy logic.
+        private static readonly bool CopyWithoutDeleteEscapeHatch = Environment.GetEnvironmentVariable("MSBUILDCOPYWITHOUTDELETE") == "1";
+
         // Default parallelism determined empirically - times below are in seconds spent in the Copy task building this repo
         // with "build -skiptests -rebuild -configuration Release /ds" (with hack to build.ps1 to disable creating selfhost
         // build for non-selfhost first build; implies first running build in repo to pull packages and create selfhost)
@@ -265,7 +268,8 @@ namespace Microsoft.Build.Tasks
                 MakeFileWriteable(destinationFileState, true);
             }
 
-            if (destinationFileState.FileExists &&
+            if (!CopyWithoutDeleteEscapeHatch &&
+                destinationFileState.FileExists &&
                 !destinationFileState.IsReadOnly)
             {
                 FileUtilities.DeleteNoThrow(destinationFileState.Name);
