@@ -13,16 +13,6 @@ namespace Microsoft.Build.CopyOnWrite.UnitTests;
 public class CopyExceptionHandlingTests : MSBuildSdkTestBase
 {
     [Fact]
-    public void PathsAreIdentical_NoSymlinks()
-    {
-        string osRoot = IsWindows ? @"C:\" : "/";
-        string osCapitalizationDependentName = IsWindows ? "NAME" : "name";
-        Assert.True(CopyExceptionHandling.PathsAreIdentical(osRoot, osRoot));
-        Assert.True(CopyExceptionHandling.PathsAreIdentical(Path.Combine(osRoot, "name"), Path.Combine(osCapitalizationDependentName)));
-        Assert.True(CopyExceptionHandling.PathsAreIdentical(osRoot, Path.Combine(osRoot, "subDir", "..")));
-    }
-
-    [Fact]
     public void PathsAreIdentical_Symlinks()
     {
         if (!UserCanCreateSymlinks())
@@ -33,25 +23,25 @@ public class CopyExceptionHandlingTests : MSBuildSdkTestBase
         using var tempDir = new DisposableTempDirectory();
         string regularFilePath = Path.Combine(tempDir.Path, "regular.txt");
         File.WriteAllText(regularFilePath, "regular");
-        Assert.True(CopyExceptionHandling.PathsAreIdentical(regularFilePath, regularFilePath));
+        Assert.True(CopyExceptionHandling.FullPathsAreIdentical(regularFilePath, regularFilePath));
 
         string regularFilePathWithNonCanonicalSegments =
             Path.Combine(tempDir.Path, "..", Path.GetFileName(tempDir.Path), ".", "regular.txt");
-        Assert.True(CopyExceptionHandling.PathsAreIdentical(regularFilePath, regularFilePathWithNonCanonicalSegments));
+        Assert.True(CopyExceptionHandling.FullPathsAreIdentical(regularFilePath, regularFilePathWithNonCanonicalSegments));
 
         string symlinkPath = Path.Combine(tempDir.Path, "symlink_to_regular.txt");
         string? errorMessage = null;
         bool linkCreated = NativeMethods.MakeSymbolicLink(symlinkPath, regularFilePath, ref errorMessage);
         Assert.True(linkCreated);
         Assert.Null(errorMessage);
-        Assert.True(CopyExceptionHandling.PathsAreIdentical(regularFilePath, symlinkPath));
+        Assert.True(CopyExceptionHandling.FullPathsAreIdentical(regularFilePath, symlinkPath));
 
         File.Delete(symlinkPath);
         errorMessage = null;
         linkCreated = NativeMethods.MakeSymbolicLink(symlinkPath, regularFilePathWithNonCanonicalSegments, ref errorMessage);
         Assert.True(linkCreated);
         Assert.Null(errorMessage);
-        Assert.True(CopyExceptionHandling.PathsAreIdentical(regularFilePath, symlinkPath));
+        Assert.True(CopyExceptionHandling.FullPathsAreIdentical(regularFilePath, symlinkPath));
     }
 
     private bool UserCanCreateSymlinks()

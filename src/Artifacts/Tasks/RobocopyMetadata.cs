@@ -264,6 +264,13 @@ namespace Microsoft.Build.Artifacts.Tasks
 
         public bool ShouldCopy(IFileSystem fileSystem, FileInfo source, FileInfo dest)
         {
+            if (string.Equals(source.FullName, dest.FullName, FileSystem.PathComparison))
+            {
+                // Self-copy makes no sense.
+                // TODO: This does not handle the case where the file is the same via different directory symlinks/junctions.
+                return false;
+            }
+
             if (AlwaysCopy || !fileSystem.FileExists(dest))
             {
                 return true;
