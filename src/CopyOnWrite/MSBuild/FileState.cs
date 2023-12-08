@@ -314,14 +314,7 @@ namespace Microsoft.Build.Tasks
         /// </summary>
         internal string Name => _filename;
 
-        internal string FullPath
-        {
-            get
-            {
-                _data.Value.ThrowException();
-                return _data.Value.FullPath;
-            }
-        }
+        internal string FullPath => _data.Value.FullPath;
 
         /// <summary>
         /// Use in case the state is known to have changed exogenously.

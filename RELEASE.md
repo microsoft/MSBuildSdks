@@ -28,7 +28,7 @@ In this example, the version of `Microsoft.Build.CentralPackageVersions` is **1.
 Create a new release at https://github.com/Microsoft/MSBuildSdks/releases.  The tag should be in the format of `packageid.version`.  Using the above example, the tag would be `Microsoft.Build.CentralPackageVersions.1.0.34`.  Release notes should contain the important commits that are relevant to that release.  You can leave out commits that are not customer facing.
 
 ## VSTS Build
-Publishing the release will push a git tag which triggers [an official build](https://devdiv.visualstudio.com/DefaultCollection/DevDiv/_build/index?definitionId=9267&_a=completed).  This build definition will also create signed packages and upload them as artifacts.
+Publishing the release will push a git tag which triggers [an official build](https://devdiv.visualstudio.com/DefaultCollection/DevDiv/_build?definitionId=13584).  This build definition will also create signed packages and upload them as artifacts.
 
 ## VSTS Release
 Once a build is complete, [a VSTS Release](https://devdiv.visualstudio.com/DefaultCollection/DevDiv/_release?definitionId=816&_a=releases) is automatically triggered which will queue up a task to push the package to nuget.org.  The publish task must be manually approved by a team member.  Watch for the email notification or manually find the waiting release to approve the task.  Following approval, the package should be available within 15 minutes.
