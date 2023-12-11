@@ -34,13 +34,13 @@ Example build, internal Microsoft repo with 758 nodes, 3989 edges, on Win11 22H2
 
 Command | Value
 ---|---
-`msbuild /p:EnableCopyOnWriteWin=false`| Time Elapsed 00:06:02.03
+`msbuild /p:DisableCopyOnWrite=true`| Time Elapsed 00:06:02.03
 Enlistment size| 66.4 GB (71,305,402,686 bytes)
 Size on disk| 66.9 GB (71,848,480,768 bytes)
 
 Command | Value
 ---|---
-`msbuild /p:EnableCopyOnWriteWin=true` | **Time Elapsed 00:04:09.32**
+`msbuild /p:DisableCopyOnWrite=false` | **Time Elapsed 00:04:09.32**
 Enlistment size| 66.4 GB (71,305,402,686 bytes)
 Size on disk| **3.83 GB (3,055,628,028 bytes)**
 
