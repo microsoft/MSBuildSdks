@@ -428,7 +428,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
         [Theory]
         [InlineData("*")]
         [InlineData("*.txt")]
-        public void SingleAndLongChainCopiesAreDelayedAfterFirstPartOfChain(string match)
+        public void SingleAndLongChainCopiesParallelCopyOriginalSourceFile(string match)
         {
             DirectoryInfo source = CreateFiles(
                 "source",
