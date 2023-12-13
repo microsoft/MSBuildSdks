@@ -426,190 +426,133 @@ namespace Microsoft.Build.Artifacts.UnitTests
         }
 
         [Theory]
-        [InlineData("*")]
-        [InlineData("*.txt")]
-        public void SingleAndLongChainCopiesParallelCopyOriginalSourceFile(string match)
+        [InlineData("*", 10)]
+        [InlineData("*.txt", 10)]
+        [InlineData("*", 100)]
+        [InlineData("*.txt", 100)]
+        [InlineData("*", 1000)]
+        [InlineData("*.txt", 1000)]
+        public void SingleAndLongChainCopiesParallelCopyOriginalSourceFile(string match, int longChainLength)
         {
+            string longChainFileName = $"chain{longChainLength}.txt";
             DirectoryInfo source = CreateFiles(
                 "source",
-                "chain1.txt",
+                $"chain1.txt",
                 "chain2.txt",
-                "chain10.txt");
+                longChainFileName);
 
-            DirectoryInfo prexistingDest = CreateFiles(
+            DirectoryInfo preexistingDest = CreateFiles(
                 "preexistingDest",
                 "preexistingDest1.txt",
                 "differentExtension.other");
 
-            DirectoryInfo destination1 = new DirectoryInfo(Path.Combine(TestRootPath, "destination1"));
-            DirectoryInfo destination2 = new DirectoryInfo(Path.Combine(TestRootPath, "destination2"));
-            DirectoryInfo destination3 = new DirectoryInfo(Path.Combine(TestRootPath, "destination3"));
-            DirectoryInfo destination4 = new DirectoryInfo(Path.Combine(TestRootPath, "destination4"));
-            DirectoryInfo destination5 = new DirectoryInfo(Path.Combine(TestRootPath, "destination5"));
-            DirectoryInfo destination6 = new DirectoryInfo(Path.Combine(TestRootPath, "destination6"));
-            DirectoryInfo destination7 = new DirectoryInfo(Path.Combine(TestRootPath, "destination7"));
-            DirectoryInfo destination8 = new DirectoryInfo(Path.Combine(TestRootPath, "destination8"));
-            DirectoryInfo destination9 = new DirectoryInfo(Path.Combine(TestRootPath, "destination9"));
-            DirectoryInfo destination10 = new DirectoryInfo(Path.Combine(TestRootPath, "destination10"));
+            var destinationDirs = new DirectoryInfo[longChainLength];
+            for (int i = 0; i < longChainLength; i++)
+            {
+                destinationDirs[i] = new DirectoryInfo(Path.Combine(TestRootPath, $"destination{i + 1}"));
+            }
 
             DirectoryInfo wildcardDestination1 = new DirectoryInfo(Path.Combine(TestRootPath, "wildcardDestination1"));
 
             BuildEngine buildEngine = BuildEngine.Create();
             MockFileSystem fs = new MockFileSystem();
 
+            // Note that Robocopy semantics are that when the source is a directory it must exist at the start of the call,
+            // else the item is assumed to be a file and will fail on nonexistence.
+            // Don't need to test or support chained directory copies where destination dirs don't exist yet.
+            List<ITaskItem> sources = new (longChainLength + 7)
+            {
+                new MockTaskItem(Path.Combine(source.FullName, "chain1.txt"))
+                {
+                    ["DestinationFolder"] = destinationDirs[0].FullName,
+                    ["AlwaysCopy"] = "true", // Bypass timestamp check.
+                },
+                new MockTaskItem(Path.Combine(destinationDirs[0].FullName, "chain1.txt"))
+                {
+                    ["DestinationFolder"] = destinationDirs[1].FullName,
+                    ["AlwaysCopy"] = "true",
+                },
+
+                new MockTaskItem(Path.Combine(source.FullName, "chain2.txt"))
+                {
+                    ["DestinationFolder"] = destinationDirs[0].FullName,
+                    ["AlwaysCopy"] = "true",
+                },
+                new MockTaskItem(Path.Combine(destinationDirs[0].FullName, "chain2.txt"))
+                {
+                    ["DestinationFolder"] = destinationDirs[1].FullName,
+                    ["AlwaysCopy"] = "true",
+                },
+                new MockTaskItem(Path.Combine(destinationDirs[1].FullName, "chain2.txt"))
+                {
+                    ["DestinationFolder"] = destinationDirs[2].FullName,
+                    ["AlwaysCopy"] = "true",
+                },
+
+                // Case where the source is a pre-existing destination for another copy - should be delayed to after the initial parallel copy wave,
+                // and all files (copied or pre-existing) should be copied.
+                new MockTaskItem(Path.Combine(source.FullName, "chain1.txt"))
+                {
+                    ["DestinationFolder"] = preexistingDest.FullName,
+                    ["AlwaysCopy"] = "true", // Bypass timestamp check.
+                },
+                new MockTaskItem(preexistingDest.FullName)
+                {
+                    ["DestinationFolder"] = wildcardDestination1.FullName,
+                    ["FileMatch"] = match,
+                    ["AlwaysCopy"] = "true",
+                },
+                new MockTaskItem(Path.Combine(source.FullName, $"chain{longChainLength}.txt"))
+                {
+                    ["DestinationFolder"] = destinationDirs[0].FullName,
+                    ["AlwaysCopy"] = "true",
+                },
+            };
+
+            for (int i = 1; i < longChainLength; i++)
+            {
+                sources.Add(new MockTaskItem(Path.Combine(destinationDirs[i - 1].FullName, $"chain{longChainLength}.txt"))
+                {
+                    ["DestinationFolder"] = destinationDirs[i].FullName,
+                    ["AlwaysCopy"] = "true",
+                });
+            }
+
             Robocopy copyArtifacts = new Robocopy
             {
                 BuildEngine = buildEngine,
-                Sources = new ITaskItem[]
-                {
-                    new MockTaskItem(Path.Combine(source.FullName, "chain1.txt"))
-                    {
-                        ["DestinationFolder"] = destination1.FullName,
-                        ["AlwaysCopy"] = "true",  // Bypass timestamp check.
-                    },
-                    new MockTaskItem(Path.Combine(destination1.FullName, "chain1.txt"))
-                    {
-                        ["DestinationFolder"] = destination2.FullName,
-                        ["AlwaysCopy"] = "true",
-                    },
-
-                    new MockTaskItem(Path.Combine(source.FullName, "chain2.txt"))
-                    {
-                        ["DestinationFolder"] = destination1.FullName,
-                        ["AlwaysCopy"] = "true",
-                    },
-                    new MockTaskItem(Path.Combine(destination1.FullName, "chain2.txt"))
-                    {
-                        ["DestinationFolder"] = destination2.FullName,
-                        ["AlwaysCopy"] = "true",
-                    },
-                    new MockTaskItem(Path.Combine(destination2.FullName, "chain2.txt"))
-                    {
-                        ["DestinationFolder"] = destination3.FullName,
-                        ["AlwaysCopy"] = "true",
-                    },
-
-                    new MockTaskItem(Path.Combine(source.FullName, "chain10.txt"))
-                    {
-                        ["DestinationFolder"] = destination1.FullName,
-                        ["AlwaysCopy"] = "true",
-                    },
-                    new MockTaskItem(Path.Combine(destination1.FullName, "chain10.txt"))
-                    {
-                        ["DestinationFolder"] = destination2.FullName,
-                        ["AlwaysCopy"] = "true",
-                    },
-                    new MockTaskItem(Path.Combine(destination2.FullName, "chain10.txt"))
-                    {
-                        ["DestinationFolder"] = destination3.FullName,
-                        ["AlwaysCopy"] = "true",
-                    },
-                    new MockTaskItem(Path.Combine(destination3.FullName, "chain10.txt"))
-                    {
-                        ["DestinationFolder"] = destination4.FullName,
-                        ["AlwaysCopy"] = "true",
-                    },
-                    new MockTaskItem(Path.Combine(destination4.FullName, "chain10.txt"))
-                    {
-                        ["DestinationFolder"] = destination5.FullName,
-                        ["AlwaysCopy"] = "true",
-                    },
-                    new MockTaskItem(Path.Combine(destination5.FullName, "chain10.txt"))
-                    {
-                        ["DestinationFolder"] = destination6.FullName,
-                        ["AlwaysCopy"] = "true",
-                    },
-                    new MockTaskItem(Path.Combine(destination6.FullName, "chain10.txt"))
-                    {
-                        ["DestinationFolder"] = destination7.FullName,
-                        ["AlwaysCopy"] = "true",
-                    },
-                    new MockTaskItem(Path.Combine(destination7.FullName, "chain10.txt"))
-                    {
-                        ["DestinationFolder"] = destination8.FullName,
-                        ["AlwaysCopy"] = "true",
-                    },
-                    new MockTaskItem(Path.Combine(destination8.FullName, "chain10.txt"))
-                    {
-                        ["DestinationFolder"] = destination9.FullName,
-                        ["AlwaysCopy"] = "true",
-                    },
-                    new MockTaskItem(Path.Combine(destination9.FullName, "chain10.txt"))
-                    {
-                        ["DestinationFolder"] = destination10.FullName,
-                        ["AlwaysCopy"] = "true",
-                    },
-
-                    // Case where the source is a pre-existing destination for another copy - should be delayed to after the initial parallel copy wave,
-                    // and all files (copied or pre-existing) should be copied.
-                    new MockTaskItem(Path.Combine(source.FullName, "chain1.txt"))
-                    {
-                        ["DestinationFolder"] = prexistingDest.FullName,
-                        ["AlwaysCopy"] = "true",  // Bypass timestamp check.
-                    },
-                    new MockTaskItem(prexistingDest.FullName)
-                    {
-                        ["DestinationFolder"] = wildcardDestination1.FullName,
-                        ["FileMatch"] = match,
-                        ["AlwaysCopy"] = "true",
-                    },
-
-                    // Note that Robocopy semantics are that when the source is a directory it must exist at the start of the call,
-                    // else the item is assumed to be a file and will fail on nonexistence.
-                    // Don't need to test or support chained directory copies where destination dirs don't exist yet.
-                },
                 Sleep = _ => { },
                 FileSystem = fs,
+                Sources = sources.ToArray(),
             };
 
             bool expectOtherExtensionCopy = match == "*";
             copyArtifacts.Execute().ShouldBeTrue(buildEngine.GetConsoleLog());
             string consoleLog = buildEngine.GetConsoleLog(LoggerVerbosity.Diagnostic);
-            copyArtifacts.NumFilesCopied.ShouldBe(2 + 3 + 10 + (1 + 2) + (expectOtherExtensionCopy ? 1 : 0), consoleLog);
+            copyArtifacts.NumFilesCopied.ShouldBe(2 + 3 + longChainLength + (1 + 2) + (expectOtherExtensionCopy ? 1 : 0), consoleLog);
             copyArtifacts.NumErrors.ShouldBe(0, consoleLog);
             copyArtifacts.NumFilesSkipped.ShouldBe(0, consoleLog);
             copyArtifacts.NumDuplicateDestinationDelayedJobs.ShouldBe(0, consoleLog);  // Every file in the chain should have been copied in parallel
-            fs.NumCloneFileCalls.ShouldBe(2 + 3 + 10 + (1 + 2) + (expectOtherExtensionCopy ? 1 : 0), consoleLog);
+            fs.NumCloneFileCalls.ShouldBe(2 + 3 + longChainLength + (1 + 2) + (expectOtherExtensionCopy ? 1 : 0), consoleLog);
 
-            Assert.True(File.Exists(Path.Combine(destination1.FullName, "chain1.txt")));
-            Assert.True(File.Exists(Path.Combine(destination1.FullName, "chain2.txt")));
-            Assert.True(File.Exists(Path.Combine(destination1.FullName, "chain10.txt")));
+            Assert.True(File.Exists(Path.Combine(destinationDirs[0].FullName, "chain1.txt")));
+            Assert.True(File.Exists(Path.Combine(destinationDirs[0].FullName, "chain2.txt")));
+            Assert.True(File.Exists(Path.Combine(destinationDirs[0].FullName, longChainFileName)));
 
-            Assert.True(File.Exists(Path.Combine(destination2.FullName, "chain1.txt")));
-            Assert.True(File.Exists(Path.Combine(destination2.FullName, "chain2.txt")));
-            Assert.True(File.Exists(Path.Combine(destination2.FullName, "chain10.txt")));
+            Assert.True(File.Exists(Path.Combine(destinationDirs[1].FullName, "chain1.txt")));
+            Assert.True(File.Exists(Path.Combine(destinationDirs[1].FullName, "chain2.txt")));
+            Assert.True(File.Exists(Path.Combine(destinationDirs[1].FullName, longChainFileName)));
 
-            Assert.False(File.Exists(Path.Combine(destination3.FullName, "chain1.txt")));
-            Assert.True(File.Exists(Path.Combine(destination3.FullName, "chain2.txt")));
-            Assert.True(File.Exists(Path.Combine(destination3.FullName, "chain10.txt")));
+            Assert.False(File.Exists(Path.Combine(destinationDirs[2].FullName, "chain1.txt")));
+            Assert.True(File.Exists(Path.Combine(destinationDirs[2].FullName, "chain2.txt")));
+            Assert.True(File.Exists(Path.Combine(destinationDirs[2].FullName, longChainFileName)));
 
-            Assert.False(File.Exists(Path.Combine(destination4.FullName, "chain1.txt")));
-            Assert.False(File.Exists(Path.Combine(destination4.FullName, "chain2.txt")));
-            Assert.True(File.Exists(Path.Combine(destination4.FullName, "chain10.txt")));
-
-            Assert.False(File.Exists(Path.Combine(destination5.FullName, "chain1.txt")));
-            Assert.False(File.Exists(Path.Combine(destination5.FullName, "chain2.txt")));
-            Assert.True(File.Exists(Path.Combine(destination5.FullName, "chain10.txt")));
-
-            Assert.False(File.Exists(Path.Combine(destination6.FullName, "chain1.txt")));
-            Assert.False(File.Exists(Path.Combine(destination6.FullName, "chain2.txt")));
-            Assert.True(File.Exists(Path.Combine(destination6.FullName, "chain10.txt")));
-
-            Assert.False(File.Exists(Path.Combine(destination7.FullName, "chain1.txt")));
-            Assert.False(File.Exists(Path.Combine(destination7.FullName, "chain2.txt")));
-            Assert.True(File.Exists(Path.Combine(destination7.FullName, "chain10.txt")));
-
-            Assert.False(File.Exists(Path.Combine(destination8.FullName, "chain1.txt")));
-            Assert.False(File.Exists(Path.Combine(destination8.FullName, "chain2.txt")));
-            Assert.True(File.Exists(Path.Combine(destination8.FullName, "chain10.txt")));
-
-            Assert.False(File.Exists(Path.Combine(destination9.FullName, "chain1.txt")));
-            Assert.False(File.Exists(Path.Combine(destination9.FullName, "chain2.txt")));
-            Assert.True(File.Exists(Path.Combine(destination9.FullName, "chain10.txt")));
-
-            Assert.False(File.Exists(Path.Combine(destination10.FullName, "chain1.txt")));
-            Assert.False(File.Exists(Path.Combine(destination10.FullName, "chain2.txt")));
-            Assert.True(File.Exists(Path.Combine(destination10.FullName, "chain10.txt")));
+            for (int i = 3; i < longChainLength; i++)
+            {
+                Assert.False(File.Exists(Path.Combine(destinationDirs[i].FullName, "chain1.txt")));
+                Assert.False(File.Exists(Path.Combine(destinationDirs[i].FullName, "chain2.txt")));
+                Assert.True(File.Exists(Path.Combine(destinationDirs[i].FullName, longChainFileName)));
+            }
 
             Assert.True(File.Exists(Path.Combine(wildcardDestination1.FullName, "preexistingDest1.txt")));
             Assert.Equal(expectOtherExtensionCopy, File.Exists(Path.Combine(wildcardDestination1.FullName, "differentExtension.other")));
