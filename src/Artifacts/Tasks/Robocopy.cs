@@ -113,7 +113,7 @@ namespace Microsoft.Build.Artifacts.Tasks
             // Remaining jobs must run single-threaded in order to ensure ordering of filesystem changes.
             if (_duplicateDestinationDelayedJobs.Count > 0)
             {
-                Log.LogMessage("Finishing {0} delayed copies to same destinations as as single-threaded", _duplicateDestinationDelayedJobs.Count);
+                Log.LogMessage($"Finishing {_duplicateDestinationDelayedJobs.Count} delayed copies to same destinations as single-threaded copies");
                 foreach (CopyJob job in _duplicateDestinationDelayedJobs)
                 {
                     job.DestFile.Refresh();
