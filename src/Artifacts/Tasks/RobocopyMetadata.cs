@@ -334,8 +334,8 @@ namespace Microsoft.Build.Artifacts.Tasks
                     else if (item.IndexOfAny(Wildcards) >= 0)
                     {
                         preRegex.Add(item);
-                        string regexString = item.Replace(@"\", @"\\").Replace(".", "[.]").Replace("?", ".").Replace("*", ".*");
-                        regularExpressions.Add(new Regex($"^{regexString}$", RegexOptions.IgnoreCase));
+                        string regexString = Robocopy.WildcardToRegexStr(item);
+                        regularExpressions.Add(new Regex($"^{regexString}$", FileSystem.PathRegexOptions));
                     }
                     else
                     {
