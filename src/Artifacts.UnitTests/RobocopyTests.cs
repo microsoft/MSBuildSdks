@@ -437,14 +437,16 @@ namespace Microsoft.Build.Artifacts.UnitTests
             string longChainFileName = $"chain{longChainLength}.txt";
             DirectoryInfo source = CreateFiles(
                 "source",
-                $"chain1.txt",
+                "chain1.txt",
                 "chain2.txt",
                 longChainFileName);
 
             DirectoryInfo preexistingDest = CreateFiles(
                 "preexistingDest",
                 "preexistingDest1.txt",
-                "differentExtension.other");
+                "differentExtension.other",
+                Path.Combine("preexistingDestSubdir", "preexistingDestSubdir1.txt"),
+                Path.Combine("preexistingDestSubdir", "preexistingDestSubdir1.excludeme"));
 
             var destinationDirs = new DirectoryInfo[longChainLength];
             for (int i = 0; i < longChainLength; i++)
@@ -489,8 +491,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
                     ["AlwaysCopy"] = "true",
                 },
 
-                // Case where the source is a pre-existing destination for another copy - should be delayed to after the initial parallel copy wave,
-                // and all files (copied or pre-existing) should be copied.
+                // Case where the source is a pre-existing destination for another copy.
                 new MockTaskItem(Path.Combine(source.FullName, "chain1.txt"))
                 {
                     ["DestinationFolder"] = preexistingDest.FullName,
@@ -500,9 +501,12 @@ namespace Microsoft.Build.Artifacts.UnitTests
                 {
                     ["DestinationFolder"] = wildcardDestination1.FullName,
                     ["FileMatch"] = match,
+                    ["IsRecursive"] = "true",
                     ["AlwaysCopy"] = "true",
+                    ["FileExclude"] = "*.excludeme",
                 },
-                new MockTaskItem(Path.Combine(source.FullName, $"chain{longChainLength}.txt"))
+
+                new MockTaskItem(Path.Combine(source.FullName, longChainFileName))
                 {
                     ["DestinationFolder"] = destinationDirs[0].FullName,
                     ["AlwaysCopy"] = "true",
@@ -511,7 +515,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
 
             for (int i = 1; i < longChainLength; i++)
             {
-                sources.Add(new MockTaskItem(Path.Combine(destinationDirs[i - 1].FullName, $"chain{longChainLength}.txt"))
+                sources.Add(new MockTaskItem(Path.Combine(destinationDirs[i - 1].FullName, longChainFileName))
                 {
                     ["DestinationFolder"] = destinationDirs[i].FullName,
                     ["AlwaysCopy"] = "true",
@@ -527,13 +531,14 @@ namespace Microsoft.Build.Artifacts.UnitTests
             };
 
             bool expectOtherExtensionCopy = match == "*";
+            int expectedCopies = longChainLength + (expectOtherExtensionCopy ? 1 : 0) + 9;
             copyArtifacts.Execute().ShouldBeTrue(buildEngine.GetConsoleLog());
             string consoleLog = buildEngine.GetConsoleLog(LoggerVerbosity.Diagnostic);
-            copyArtifacts.NumFilesCopied.ShouldBe(2 + 3 + longChainLength + (1 + 2) + (expectOtherExtensionCopy ? 1 : 0), consoleLog);
+            copyArtifacts.NumFilesCopied.ShouldBe(expectedCopies, consoleLog);
             copyArtifacts.NumErrors.ShouldBe(0, consoleLog);
             copyArtifacts.NumFilesSkipped.ShouldBe(0, consoleLog);
             copyArtifacts.NumDuplicateDestinationDelayedJobs.ShouldBe(0, consoleLog);  // Every file in the chain should have been copied in parallel
-            fs.NumCloneFileCalls.ShouldBe(2 + 3 + longChainLength + (1 + 2) + (expectOtherExtensionCopy ? 1 : 0), consoleLog);
+            fs.NumCloneFileCalls.ShouldBe(expectedCopies, consoleLog);
 
             Assert.True(File.Exists(Path.Combine(destinationDirs[0].FullName, "chain1.txt")));
             Assert.True(File.Exists(Path.Combine(destinationDirs[0].FullName, "chain2.txt")));
@@ -556,6 +561,120 @@ namespace Microsoft.Build.Artifacts.UnitTests
 
             Assert.True(File.Exists(Path.Combine(wildcardDestination1.FullName, "preexistingDest1.txt")));
             Assert.Equal(expectOtherExtensionCopy, File.Exists(Path.Combine(wildcardDestination1.FullName, "differentExtension.other")));
+            Assert.True(File.Exists(Path.Combine(wildcardDestination1.FullName, "preexistingDestSubdir", "preexistingDestSubdir1.txt")));
+            Assert.False(File.Exists(Path.Combine(wildcardDestination1.FullName, "preexistingDestSubdir", "preexistingDestSubdir1.excludeme")));
+        }
+
+        [Theory]
+        [InlineData("*")]
+        [InlineData("*.txt")]
+        public void ChainedDestinationDirectoryEnumerations(string match)
+        {
+            DirectoryInfo source = CreateFiles(
+                "source",
+                "source1.txt",
+                "source2.other",
+                "source.excludeme.txt",
+                "zzz_lastsource.txt");
+
+            DirectoryInfo preexistingDest = CreateFiles(
+                "preexistingDest",
+                "preexistingDest1.txt",
+                "differentExtension.other",
+                Path.Combine("preexistingDestSubdir", "preexistingDestSubdir1.txt"),
+                Path.Combine("preexistingDestSubdir", "preexistingDestSubdir1.excludeme.txt"));
+
+            DirectoryInfo wildcardDestination1 = new DirectoryInfo(Path.Combine(TestRootPath, "wildcardDestination1"));
+            DirectoryInfo preexistingWildcardDestination2 = new DirectoryInfo(Path.Combine(TestRootPath, "preexistingWildcardDestination2"));
+            preexistingWildcardDestination2.Create();
+            DirectoryInfo wildcardDestination3 = new DirectoryInfo(Path.Combine(TestRootPath, "wildcardDestination3"));
+
+            BuildEngine buildEngine = BuildEngine.Create();
+            MockFileSystem fs = new MockFileSystem();
+
+            Robocopy copyArtifacts = new Robocopy
+            {
+                BuildEngine = buildEngine,
+                Sleep = _ => { },
+                FileSystem = fs,
+                Sources = new ITaskItem[]
+                {
+                    // Note that Robocopy semantics are that when the source is a directory it must exist at the start of the call,
+                    // else the item is assumed to be a file and will fail on nonexistence.
+                    // Don't need to test or support chained directory copies where destination dirs don't exist yet.
+
+                    // Case where the source is a pre-existing destination for another copy - should be delayed to after the initial parallel copy wave,
+                    // and all files (copied or pre-existing) should be copied.
+                    new MockTaskItem(source.FullName)
+                    {
+                        ["DestinationFolder"] = preexistingDest.FullName,
+                        ["FileMatch"] = match,
+                        ["AlwaysCopy"] = "true", // Bypass timestamp check.
+                    },
+                    new MockTaskItem(preexistingDest.FullName)
+                    {
+                        ["DestinationFolder"] = wildcardDestination1.FullName,
+                        ["FileMatch"] = match,
+                        ["AlwaysCopy"] = "true",
+                        ["IsRecursive"] = "true",
+                        ["FileExclude"] = "*.excludeme.*",
+                    },
+                    new MockTaskItem(preexistingDest.FullName)
+                    {
+                        ["DestinationFolder"] = preexistingWildcardDestination2.FullName,
+                        ["FileMatch"] = match,
+                        ["AlwaysCopy"] = "true",
+                        ["IsRecursive"] = "true",
+                        ["FileExclude"] = "*.excludeme.*",
+                    },
+                    new MockTaskItem(preexistingWildcardDestination2.FullName)
+                    {
+                        ["DestinationFolder"] = wildcardDestination3.FullName,
+                        ["FileMatch"] = match,
+                        ["AlwaysCopy"] = "true",
+                        ["IsRecursive"] = "false",
+                        ["FileExclude"] = "*.excludeme.*",
+                    },
+                },
+            };
+
+            bool expectOtherExtensionCopy = match == "*";
+            int expectedCopies = (expectOtherExtensionCopy ? 7 : 0) + 14;
+            copyArtifacts.Execute().ShouldBeTrue(buildEngine.GetConsoleLog());
+            string consoleLog = buildEngine.GetConsoleLog(LoggerVerbosity.Diagnostic);
+            copyArtifacts.NumFilesCopied.ShouldBe(expectedCopies, consoleLog);
+            copyArtifacts.NumErrors.ShouldBe(0, consoleLog);
+            copyArtifacts.NumFilesSkipped.ShouldBe(0, consoleLog);
+            copyArtifacts.NumDuplicateDestinationDelayedJobs.ShouldBe(0, consoleLog);  // Every file in the chain should have been copied in parallel
+            fs.NumCloneFileCalls.ShouldBe(expectedCopies, consoleLog);
+
+            Assert.True(File.Exists(Path.Combine(preexistingDest.FullName, "source1.txt")));
+            Assert.Equal(expectOtherExtensionCopy, File.Exists(Path.Combine(preexistingDest.FullName, "source2.other")));
+            Assert.True(File.Exists(Path.Combine(preexistingDest.FullName, "source.excludeme.txt")));
+            Assert.True(File.Exists(Path.Combine(preexistingDest.FullName, "zzz_lastsource.txt")));
+
+            Assert.True(File.Exists(Path.Combine(wildcardDestination1.FullName, "source1.txt")));
+            Assert.True(File.Exists(Path.Combine(wildcardDestination1.FullName, "zzz_lastsource.txt")));
+            Assert.True(File.Exists(Path.Combine(wildcardDestination1.FullName, "preexistingDest1.txt")));
+            Assert.Equal(expectOtherExtensionCopy, File.Exists(Path.Combine(wildcardDestination1.FullName, "differentExtension.other")));
+            Assert.Equal(expectOtherExtensionCopy, File.Exists(Path.Combine(wildcardDestination1.FullName, "source2.other")));
+            Assert.True(File.Exists(Path.Combine(wildcardDestination1.FullName, "preexistingDestSubdir", "preexistingDestSubdir1.txt")));
+            Assert.False(File.Exists(Path.Combine(wildcardDestination1.FullName, "preexistingDestSubdir", "preexistingDestSubdir1.excludeme.txt")));
+
+            Assert.True(File.Exists(Path.Combine(preexistingWildcardDestination2.FullName, "source1.txt")));
+            Assert.True(File.Exists(Path.Combine(preexistingWildcardDestination2.FullName, "zzz_lastsource.txt")));
+            Assert.True(File.Exists(Path.Combine(preexistingWildcardDestination2.FullName, "preexistingDest1.txt")));
+            Assert.Equal(expectOtherExtensionCopy, File.Exists(Path.Combine(preexistingWildcardDestination2.FullName, "differentExtension.other")));
+            Assert.Equal(expectOtherExtensionCopy, File.Exists(Path.Combine(preexistingWildcardDestination2.FullName, "source2.other")));
+            Assert.True(File.Exists(Path.Combine(preexistingWildcardDestination2.FullName, "preexistingDestSubdir", "preexistingDestSubdir1.txt")));
+            Assert.False(File.Exists(Path.Combine(preexistingWildcardDestination2.FullName, "preexistingDestSubdir", "preexistingDestSubdir1.excludeme.txt")));
+
+            Assert.True(File.Exists(Path.Combine(wildcardDestination3.FullName, "source1.txt")));
+            Assert.True(File.Exists(Path.Combine(wildcardDestination3.FullName, "zzz_lastsource.txt")));
+            Assert.True(File.Exists(Path.Combine(wildcardDestination3.FullName, "preexistingDest1.txt")));
+            Assert.Equal(expectOtherExtensionCopy, File.Exists(Path.Combine(wildcardDestination3.FullName, "differentExtension.other")));
+            Assert.Equal(expectOtherExtensionCopy, File.Exists(Path.Combine(wildcardDestination3.FullName, "source2.other")));
+            Assert.False(Directory.Exists(Path.Combine(wildcardDestination3.FullName, "preexistingDestSubdir")), consoleLog);
         }
 
         [Fact]
@@ -563,7 +682,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
         {
             DirectoryInfo source = CreateFiles(
                 "source",
-                @"foo.txt");
+                "foo.txt");
 
             DirectoryInfo destination = new DirectoryInfo(Path.Combine(TestRootPath, "destination"));
             BuildEngine buildEngine = BuildEngine.Create();

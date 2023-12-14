@@ -128,6 +128,26 @@ namespace Microsoft.Build.Artifacts.Tasks
             return !Log.HasLoggedErrors;
         }
 
+
+        /// <summary>
+        /// Converts a wildcard file pattern to a regular expression string.
+        /// </summary>
+        internal static string WildcardToRegexStr(string pattern)
+        {
+            pattern = Regex.Escape(pattern);
+            pattern = pattern.Replace("\\*", ".*");
+            pattern = pattern.Replace("\\?", ".?");
+            return pattern;
+        }
+
+        /// <summary>
+        /// Converts a wildcard file pattern to a regular expression.
+        /// </summary>
+        private static Regex WildcardToRegex(string pattern)
+        {
+            return new Regex(WildcardToRegexStr(pattern), Artifacts.FileSystem.PathRegexOptions);
+        }
+
         private static int GetMsBuildCopyTaskParallelism()
         {
             // Use the MSBuild Copy task override parallelism setting if present.
@@ -139,17 +159,6 @@ namespace Microsoft.Build.Artifacts.Tasks
             }
 
             return parallelism;
-        }
-
-        /// <summary>
-        /// Converts a wildcard file pattern to a regular expression.
-        /// </summary>
-        private static Regex WildcardToRegex(string pattern)
-        {
-            pattern = Regex.Escape(pattern);
-            pattern = pattern.Replace("\\*", ".*");
-            pattern = pattern.Replace("\\?", ".?");
-            return new Regex(pattern, Artifacts.FileSystem.PathRegexOptions);
         }
 
         /// <summary>
@@ -183,6 +192,12 @@ namespace Microsoft.Build.Artifacts.Tasks
                 _ => new Dictionary<string, FileInfo>(Artifacts.FileSystem.PathComparer));
             if (!copiesUnderwayInDestDir.TryGetValue(destFilePath, out FileInfo? sourceFileUnderway))
             {
+                // Create the destination directory before posting to support enumerating destination directories in CopySearch().
+                if (destFile.DirectoryName is not null)
+                {
+                    CreateDirectoryWithRetries(destFile.DirectoryName);
+                }
+
                 // No other copies to this destination underway, kick off parallel copy.
                 copiesUnderwayInDestDir[destFilePath] = replacementSourceFile ?? sourceFile;
                 _copyFileBlock.Post(new CopyJob(sourceFile, destFile, metadata, replacementSourceFile));
@@ -209,11 +224,6 @@ namespace Microsoft.Build.Artifacts.Tasks
         /// </summary>
         private void CopyFileImpl(FileInfo sourceFile, FileInfo destFile, RobocopyMetadata metadata, FileInfo? replacementSourceFile)
         {
-            if (destFile.DirectoryName is not null)
-            {
-                CreateDirectoryWithRetries(destFile.DirectoryName);
-            }
-
             string originalSourcePath = sourceFile.FullName;
             string destPath = destFile.FullName;
 
@@ -378,9 +388,12 @@ namespace Microsoft.Build.Artifacts.Tasks
                 }
             }
 
-            // Doing recursion manually so we can consider DirExcludes
+            // Doing recursion manually so we can consider DirExcludes.
             if (isRecursive)
             {
+                // For correctness when copying from another destination directory we rely on
+                // destination directories being created before launching an async copy, so that we
+                // can enumerate a real, but possibly empty or partially copied-to, directory.
                 foreach (DirectoryInfo childSource in FileSystem.EnumerateDirectories(source))
                 {
                     // per dir we need to re-items for those items excluding a specific dir
