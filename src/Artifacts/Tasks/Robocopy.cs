@@ -130,7 +130,6 @@ namespace Microsoft.Build.Artifacts.Tasks
             return !Log.HasLoggedErrors;
         }
 
-
         /// <summary>
         /// Converts a wildcard file pattern to a regular expression string.
         /// </summary>
