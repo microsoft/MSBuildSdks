@@ -35,6 +35,8 @@ namespace Microsoft.Build.Artifacts.Tasks
         private readonly List<CopyJob> _duplicateDestinationDelayedJobs = new ();  // Jobs that were delayed because they were to a destination path that was already dispatched to copy.
         private readonly ConcurrentDictionary<string, Dictionary<string, FileInfo>> _destinationDirectoryFilesCopying = new (concurrencyLevel: 1, capacity: 31, Artifacts.FileSystem.PathComparer);  // Map for destination directories to track files being copied there in parallel portion of copy. Concurrent dictionaries to get TryAdd(), GetOrAdd().
         private readonly ActionBlock<CopyJob> _copyFileBlock;
+        private readonly HashSet<string> _sourceFilesEncountered = new (Artifacts.FileSystem.PathComparer);  // Reusable scratch space
+
         private TimeSpan _retryWaitInMilliseconds = TimeSpan.Zero;
         private int _numFilesCopied;
         private int _numFilesSkipped;
@@ -341,14 +343,13 @@ namespace Microsoft.Build.Artifacts.Tasks
             Dictionary<string, FileInfo> copiesUnderwayIntoDir = _destinationDirectoryFilesCopying.GetOrAdd(
                 sourceDirPath,
                 _ => new Dictionary<string, FileInfo>(Artifacts.FileSystem.PathComparer));
-            HashSet<string> sourceFilesEncountered = new (Artifacts.FileSystem.PathComparer);
             foreach (FileInfo sourceFile in FileSystem.EnumerateFiles(sourceDir, match))
             {
                 // If this is a direct match for an in-progress copy, supply the original source to be used as a replacement.
                 string sourceFilePath = sourceFile.FullName;
                 copiesUnderwayIntoDir.TryGetValue(sourceFilePath, out FileInfo? replacementSourceFile);
                 yield return (sourceFile, replacementSourceFile);
-                sourceFilesEncountered.Add(sourceFilePath);
+                _sourceFilesEncountered.Add(sourceFilePath);
             }
 
             // Next enumerate the in-progress copies that match the search but may not have begun to actually copy into the
@@ -356,13 +357,15 @@ namespace Microsoft.Build.Artifacts.Tasks
             if (copiesUnderwayIntoDir.Count > 0)
             {
                 foreach (KeyValuePair<string, FileInfo> kvp in copiesUnderwayIntoDir
-                    .Where(kvp => !sourceFilesEncountered.Contains(kvp.Key) &&
+                    .Where(kvp => !_sourceFilesEncountered.Contains(kvp.Key) &&
                            matchRegex.IsMatch(Path.GetFileName(kvp.Key))))
                 {
                     // The FileInfo will show the file missing initially but fulfills the needs of logging the file path.
                     yield return (new FileInfo(kvp.Key), kvp.Value);
                 }
             }
+
+            _sourceFilesEncountered.Clear();
         }
 
         private void CopySearch(IList<RobocopyMetadata> bucket, bool isRecursive, string match, Regex? matchRegex, DirectoryInfo source, string? subDirectory)
