@@ -61,7 +61,6 @@ stages:
       displayName: 'Install .NET $(DotNetVersion)'
       inputs:
         version: '$(DotNetVersion)'
-        includePreviewVersions: true
 
     - task: MicroBuildSigningPlugin@4
       displayName: 'Install MicroBuild Signing Plugin'

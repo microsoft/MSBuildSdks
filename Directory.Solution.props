@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <RestoreUseStaticGraphEvaluation>true</RestoreUseStaticGraphEvaluation>
+    <RestoreSerializeGlobalProperties>true</RestoreSerializeGlobalProperties>
+  </PropertyGroup>
+</Project>
