@@ -162,24 +162,27 @@ namespace Microsoft.Build
 
         protected override string ToolName => "vstest.console.exe";
 
+        protected override MessageImportance StandardOutputLoggingImportance => MessageImportance.High;
+
+        protected override MessageImportance StandardErrorLoggingImportance => MessageImportance.High;
+
+        /// <inheritdoc/>
         protected override string GenerateFullPathToTool()
         {
 #if NET6_0_OR_GREATER
-                return $@"{NugetPath}microsoft.testplatform\{VSTestRunnerVersion}\tools\net6.0\Common7\IDE\Extensions\TestPlatform\vstest.console.exe";
+            return $@"{NugetPath}microsoft.testplatform\{VSTestRunnerVersion}\tools\net6.0\Common7\IDE\Extensions\TestPlatform\vstest.console.exe";
 #else
             return $@"{NugetPath}microsoft.testplatform\{VSTestRunnerVersion}\tools\net462\Common7\IDE\Extensions\TestPlatform\vstest.console.exe";
 #endif
         }
 
-        protected override MessageImportance StandardOutputLoggingImportance => MessageImportance.High;
-
-        protected override MessageImportance StandardErrorLoggingImportance => MessageImportance.High;
-
+        /// <inheritdoc/>
         protected override void LogEventsFromTextOutput(string singleLine, MessageImportance messageImportance)
         {
             base.LogEventsFromTextOutput(singleLine, messageImportance);
         }
 
+        /// <inheritdoc/>
         protected override string GenerateCommandLineCommands()
         {
             CommandLineBuilder commandLineBuilder = new CommandLineBuilder();
