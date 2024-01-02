@@ -2,7 +2,7 @@
 //
 // Licensed under the MIT license.
 
-<<<<<<< HEAD
+using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using System;
 using System.Collections.Generic;
@@ -10,22 +10,6 @@ using System.Collections.Generic;
 namespace Microsoft.Build
 {
     public class RunVSTestTask : ToolTask
-=======
-using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Threading;
-
-namespace Microsoft.Build
-{
-    /// <summary>
-    /// Runs tests with vstest.
-    /// </summary>
-    public class RunVSTestTask : Task
->>>>>>> f180ca40132333a66cf79cd11dcc265c3f4dddab
     {
         private const string CodeCoverageString = "Code Coverage";
         private static readonly HashSet<string> NormalTestLogging = new (new[] { "n", "normal", "d", "detailed", "diag", "diagnostic" }, StringComparer.OrdinalIgnoreCase);
@@ -176,72 +160,32 @@ namespace Microsoft.Build
         [Required]
         public string NugetPath { get; set; }
 
-<<<<<<< HEAD
-        protected override string ToolName
-        {
-            get
-            {
-#if NET6_0_OR_GREATER
-                return $@"{NugetPath}\packages\microsoft.testplatform\{VSTestRunnerVersion}\tools\net6.0\Common7\IDE\Extensions\TestPlatform\";
-#else
-                return $@"{NugetPath}\packages\microsoft.testplatform\{VSTestRunnerVersion}\tools\net462\Common7\IDE\Extensions\TestPlatform\";
-#endif
-=======
-        /// <summary>
-        /// Executes the test.
-        /// </summary>
-        /// <returns>Returns true if the test was executed, otherwise false.</returns>
-        public override bool Execute()
-        {
-            var debugEnabled = Environment.GetEnvironmentVariable("VSTEST_BUILD_DEBUG");
-            if (!string.IsNullOrEmpty(debugEnabled) && debugEnabled.Equals("1", StringComparison.Ordinal))
-            {
-                Log.LogMessage("Waiting for debugger attach...");
-
-                var currentProcess = Process.GetCurrentProcess();
-                Log.LogMessage($"Process Id: {currentProcess.Id}, Name: {currentProcess.ProcessName}");
-
-                while (!Debugger.IsAttached)
-                {
-                    Thread.Sleep(1000);
-                }
-
-                Debugger.Break();
-            }
-
-            return ExecuteTest() == 0;
-        }
-
-        internal IEnumerable<string> CreateArguments()
-        {
-            var allArgs = AddArgs();
-
-            // VSTestCLIRunSettings should be last argument in allArgs as vstest.console ignore options after "--"(CLIRunSettings option).
-            AddCliRunSettingsArgs(allArgs);
-
-            return allArgs;
-        }
-
-        private void AddCliRunSettingsArgs(List<string> allArgs)
-        {
-            if (VSTestCLIRunSettings != null && VSTestCLIRunSettings.Length > 0)
-            {
-                allArgs.Add("--");
-                foreach (var arg in VSTestCLIRunSettings)
-                {
-                    allArgs.Add(ArgumentEscaper.HandleEscapeSequenceInArgForProcessStart(arg));
-                }
->>>>>>> f180ca40132333a66cf79cd11dcc265c3f4dddab
-            }
-        }
+        protected override string ToolName => "vstest.console.exe";
 
         protected override string GenerateFullPathToTool()
+        {
+#if NET6_0_OR_GREATER
+                return $@"{NugetPath}microsoft.testplatform\{VSTestRunnerVersion}\tools\net6.0\Common7\IDE\Extensions\TestPlatform\vstest.console.exe";
+#else
+            return $@"{NugetPath}microsoft.testplatform\{VSTestRunnerVersion}\tools\net462\Common7\IDE\Extensions\TestPlatform\vstest.console.exe";
+#endif
+        }
+
+        protected override MessageImportance StandardOutputLoggingImportance => MessageImportance.High;
+
+        protected override MessageImportance StandardErrorLoggingImportance => MessageImportance.High;
+
+        protected override void LogEventsFromTextOutput(string singleLine, MessageImportance messageImportance)
+        {
+            base.LogEventsFromTextOutput(singleLine, messageImportance);
+        }
+
+        protected override string GenerateCommandLineCommands()
         {
             CommandLineBuilder commandLineBuilder = new CommandLineBuilder();
             var isConsoleLoggerSpecifiedByUser = false;
             var isCollectCodeCoverageEnabled = false;
             var isRunSettingsEnabled = false;
-            var allArgs = new List<string>();
 
             // TODO log arguments in task
             if (!string.IsNullOrEmpty(VSTestSetting))
@@ -308,18 +252,19 @@ namespace Microsoft.Build
             }
             else
             {
-                commandLineBuilder.AppendSwitch(TestFileFullPath);
+                commandLineBuilder.AppendTextUnquoted(" ");
+                commandLineBuilder.AppendTextUnquoted(TestFileFullPath);
             }
 
             // Console logger was not specified by user, but verbosity was, hence add default console logger with verbosity as specified
             if (!string.IsNullOrEmpty(VSTestVerbosity) && !isConsoleLoggerSpecifiedByUser)
             {
                 string vsTestVerbosity = "minimal";
-                if (NormalTestLogging.Contains(VSTestVerbosity))
+                if (NormalTestLogging.Contains(VSTestVerbosity.ToLowerInvariant()))
                 {
                     vsTestVerbosity = "normal";
                 }
-                else if (QuietTestLogging.Contains(VSTestVerbosity))
+                else if (QuietTestLogging.Contains(VSTestVerbosity.ToLowerInvariant()))
                 {
                     vsTestVerbosity = "quiet";
                 }
@@ -422,36 +367,7 @@ namespace Microsoft.Build
                 commandLineBuilder.AppendSwitchIfNotNull("--testSessionCorrelationId:", VSTestSessionCorrelationId);
             }
 
-<<<<<<< HEAD
             return commandLineBuilder.ToString();
-=======
-            return allArgs;
-        }
-
-        private int ExecuteTest()
-        {
-            string packagePath = $@"{NugetPath}\microsoft.testplatform\{VSTestRunnerVersion}\tools\net462\Common7\IDE\Extensions\TestPlatform\";
-
-            var processInfo = new ProcessStartInfo
-            {
-                FileName = $"{packagePath}vstest.console.exe",
-                Arguments = string.Join(" ", CreateArguments()),
-                UseShellExecute = false,
-                RedirectStandardError = true,
-                RedirectStandardOutput = true,
-            };
-
-            using var activeProcess = new Process { StartInfo = processInfo };
-            activeProcess.Start();
-            using StreamReader errReader = activeProcess.StandardError;
-            _ = Log.LogMessagesFromStream(errReader, MessageImportance.Normal);
-
-            using StreamReader outReader = activeProcess.StandardOutput;
-            _ = Log.LogMessagesFromStream(outReader, MessageImportance.Normal);
-            activeProcess.WaitForExit();
-
-            return activeProcess.ExitCode;
->>>>>>> f180ca40132333a66cf79cd11dcc265c3f4dddab
         }
     }
 }
