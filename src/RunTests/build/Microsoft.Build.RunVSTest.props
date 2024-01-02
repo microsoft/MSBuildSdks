@@ -1,7 +1,14 @@
-<Project>
-	<PropertyGroup>
-		<NugetPath Condition="$(NUGET_PACKAGES)==''">$(USERPROFILE)\.nuget</NugetPath>
-		<NugetPath Condition="$(NUGET_PACKAGES)!=''">$(NUGET_PACKAGES)</NugetPath>
-		<VSTestRunnerVersion Condition="$(VSTestRunnerVersion)==''">$(MicrosoftBuildPackageVersion)</VSTestRunnerVersion>
-	</PropertyGroup>
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (c) Microsoft Corporation. All rights reserved.
+  
+  Licensed under the MIT license.
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <NugetPath Condition="$(NugetPath)==''">$(NuGetPackageRoot)</NugetPath>
+    <NugetPath Condition="$(NugetPath)=='' And $(NUGET_PACKAGES)!=''">$(NUGET_PACKAGES)</NugetPath>
+    <SkipExecution Condition="$(SkipExecution)==''">false</SkipExecution>
+    <VSTestRunnerVersion Condition="$(VSTestRunnerVersion)==''">17.8.0</VSTestRunnerVersion>
+  </PropertyGroup>
 </Project>

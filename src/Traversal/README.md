@@ -99,14 +99,14 @@ Directory.Solution.props:
   <PropertyGroup>
     <TraversalSkipUnsupportedProjects>true</TraversalSkipUnsupportedProjects>
   </PropertyGroup>
-  <Import Project="Microsoft.Build.Traversal" Project="Sdk.props" />
+  <Import Sdk="Microsoft.Build.Traversal" Project="Sdk.props" />
 </Project>
 ```
 
 Directory.Solution.targets:
 ```xml
 <Project>
-  <Import Project="Microsoft.Build.Traversal" Project="Sdk.targets" />
+  <Import Sdk="Microsoft.Build.Traversal" Project="Sdk.targets" />
 </Project>
 ```
 
