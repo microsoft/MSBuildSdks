@@ -6,6 +6,8 @@
     <PackageReference Include="AssemblyShader" />
     <PackageReference Include="Microsoft.NET.Test.Sdk"
                       ShadeDependencies="NuGet.Frameworks"  />
+    <PackageReference Include="Microsoft.TemplateEngine.Authoring.TemplateVerifier"
+                      Condition="'$(TargetFramework)' == 'net8.0'" />
     <PackageReference Include="MSBuild.ProjectCreation" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="Shouldly" />
@@ -20,6 +22,9 @@
   <ItemGroup>
     <None Include="..\Traversal\Sdk\**"
           Link="Sdk\$(RelativeDir)%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\Traversal\Templates\**"
+          Link="Templates\$(RelativeDir)%(RecursiveDir)%(Filename)%(Extension)"
           CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

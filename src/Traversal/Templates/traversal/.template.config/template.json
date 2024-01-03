@@ -1,0 +1,15 @@
+{
+    "$schema": "http://json.schemastore.org/template",
+    "author": "Microsoft",
+    "classifications": [
+        "MSBuild"
+    ],
+    "identity": "Microsoft.Build.Traversal",
+    "name": "MSBuild Traversal Project",
+    "shortName": "traversal",
+    "tags": {
+      "type": "project"
+    },
+    "sourceName": "dirs",
+    "defaultName": "dirs"
+  }
