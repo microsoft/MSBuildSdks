@@ -10,5 +10,6 @@
     <NugetPath Condition="$(NugetPath)=='' And $(NUGET_PACKAGES)!=''">$(NUGET_PACKAGES)</NugetPath>
     <SkipExecution Condition="$(SkipExecution)==''">false</SkipExecution>
     <VSTestRunnerVersion Condition="$(VSTestRunnerVersion)==''">17.8.0</VSTestRunnerVersion>
+	<UseMSBuildTestInfrastructure Condition="$(UseMSBuildTestInfrastructure)==''">true</UseMSBuildTestInfrastructure>
   </PropertyGroup>
 </Project>

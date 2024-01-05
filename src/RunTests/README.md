@@ -59,10 +59,9 @@ Use with traversal project
 For sln project it is sufficent to simply opt-in to using 'UseMSBuildTestInfrastructure' and add the package reference to your test project csproj files
 ```
 <Project>
-<PropertyGroup>
+  <PropertyGroup>
 	<UseMSBuildTestInfrastructure>true</UseMSBuildTestInfrastructure>
-</PropertyGroup>
-<UseMSBuildTestInfrastructure>true</UseMSBuildTestInfrastructure>
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.RunVSTest" Version="1.0.0" />
   </ItemGroup>
