@@ -9,7 +9,5 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "monthly"
-    assignees:
-      - "jeffkl"
     labels:
       - "maintenance"
