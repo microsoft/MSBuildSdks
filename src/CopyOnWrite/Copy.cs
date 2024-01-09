@@ -11,7 +11,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Threading.Tasks.Dataflow;
+using System.Threading.Tasks;
+using Task = Microsoft.Build.Utilities.Task;
 
 #nullable enable annotations
 
@@ -554,19 +555,18 @@ namespace Microsoft.Build.Tasks
 
             // Lockless flags updated from each thread - each needs to be a processor word for atomicity.
             var successFlags = new IntPtr[DestinationFiles.Length];
-            var actionBlockOptions = new ExecutionDataflowBlockOptions
-            {
-                MaxDegreeOfParallelism = parallelism,
-                CancellationToken = _cancellationTokenSource.Token,
-                EnsureOrdered = parallelism == 1,
-            };
-            var partitionCopyActionBlock = new ActionBlock<List<int>>(
-                async (List<int> partition) =>
-                {
-                    // Break from synchronous thread context of caller to get onto thread pool thread.
-                    await System.Threading.Tasks.Task.Yield();
 
-                    for (int partitionIndex = 0; partitionIndex < partition.Count && !_cancellationTokenSource.IsCancellationRequested; partitionIndex++)
+            Parallel.ForEach(partitionsByDestination.Values,
+                new ParallelOptions
+                {
+                    CancellationToken = _cancellationTokenSource.Token,
+                    MaxDegreeOfParallelism = parallelism,
+                },
+                (List<int> partition) =>
+                {
+                    for (int partitionIndex = 0;
+                         partitionIndex < partition.Count && !_cancellationTokenSource.IsCancellationRequested;
+                         partitionIndex++)
                     {
                         int fileIndex = partition[partitionIndex];
                         ITaskItem sourceItem = SourceFiles[fileIndex];
@@ -583,9 +583,9 @@ namespace Microsoft.Build.Tasks
                         if (!copyComplete)
                         {
                             if (DoCopyIfNecessary(
-                                new FileState(sourceItem.ItemSpec),
-                                new FileState(destItem.ItemSpec),
-                                copyFile))
+                                    new FileState(sourceItem.ItemSpec),
+                                    new FileState(destItem.ItemSpec),
+                                    copyFile))
                             {
                                 copyComplete = true;
                             }
@@ -602,25 +602,7 @@ namespace Microsoft.Build.Tasks
                             successFlags[fileIndex] = (IntPtr)1;
                         }
                     }
-                },
-                actionBlockOptions);
-
-            foreach (List<int> partition in partitionsByDestination.Values)
-            {
-                bool partitionAccepted = partitionCopyActionBlock.Post(partition);
-                if (_cancellationTokenSource.IsCancellationRequested)
-                {
-                    break;
-                }
-                else if (!partitionAccepted)
-                {
-                    // Retail assert...
-                    LogError("Failed posting a file copy to an ActionBlock. Should not happen with block at max int capacity.");
-                }
-            }
-
-            partitionCopyActionBlock.Complete();
-            partitionCopyActionBlock.Completion.GetAwaiter().GetResult();
+                });
 
             // Assemble an in-order list of destination items that succeeded.
             destinationFilesSuccessfullyCopied = new List<ITaskItem>(DestinationFiles.Length);
