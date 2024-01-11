@@ -5,33 +5,45 @@
 #if NET8_0_OR_GREATER
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
-#endif
-
 using System.IO;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.Build.Traversal.UnitTests
 {
-#if NET8_0_OR_GREATER
     public class TemplateTests
     {
         private static readonly string RootPath = Path.GetDirectoryName(typeof(TemplateTests).Assembly.Location);
         private readonly ILoggerFactory _loggerFactory;
 
-        public TemplateTests()
+        public TemplateTests(ITestOutputHelper xunitOutputHelper)
         {
             _loggerFactory = LoggerFactory.Create(config =>
             {
-                config.AddConsole();
+                config.AddXunit(xunitOutputHelper);
             });
         }
 
         [Fact]
-        public async Task Foo()
+        public async Task UsesDirsAsDefaultName()
         {
             TemplateVerifierOptions options = new (templateName: "traversal")
             {
+                TemplateSpecificArgs = new[] { "--name", string.Empty }, // BUG: Workaround for https://github.com/dotnet/templating/issues/7394
+                TemplatePath = Path.Combine(RootPath, "Templates", "traversal"),
+            };
+
+            VerificationEngine engine = new (_loggerFactory);
+            await engine.Execute(options);
+        }
+
+        [Fact]
+        public async Task RespectsExplicitName()
+        {
+            TemplateVerifierOptions options = new (templateName: "traversal")
+            {
+                TemplateSpecificArgs = new[] { "--name", "asdf" },
                 TemplatePath = Path.Combine(RootPath, "Templates", "traversal"),
             };
 
@@ -39,6 +51,5 @@ namespace Microsoft.Build.Traversal.UnitTests
             await engine.Execute(options);
         }
     }
-
-#endif
 }
+#endif
