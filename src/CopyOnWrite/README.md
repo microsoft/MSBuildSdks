@@ -2,7 +2,7 @@
 [![NuGet](https://img.shields.io/nuget/v/Microsoft.Build.CopyOnWrite.svg)](https://www.nuget.org/packages/Microsoft.Build.CopyOnWrite)
  [![NuGet](https://img.shields.io/nuget/dt/Microsoft.Build.CopyOnWrite.svg)](https://www.nuget.org/packages/Microsoft.Build.CopyOnWrite)
 
-The `Microsoft.Build.CopyOnWrite` MSBuild SDK overrides the native MSBuild Copy task to add support for ReFS and Dev Drive CloneFile (Copy on Write). It is designed to be as backwards compatible as possible and should directly replace all usages of Copy in MSBuild.
+The `Microsoft.Build.CopyOnWrite` MSBuild SDK overrides the native MSBuild Copy task to add support for ReFS and Dev Drive CloneFile (Copy on Write) on Windows. It is designed to be as backwards compatible as possible and should directly replace all usages of Copy in MSBuild. On Linux and Mac the current behavior is to always fall back to regular file copies.
 
 ## Usage in `Directory.Packages.Props`
 This is intended to be used in a large repo already onboarded to Central Package Management. In your `Directory.Packages.props`:
