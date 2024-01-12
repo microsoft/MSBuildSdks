@@ -49,4 +49,4 @@ Size on disk| **3.83 GB (3,055,628,028 bytes)**
 See [blog post 1](https://aka.ms/EngMSDevDrive) and [blog post 2](https://aka.ms/VSDevDrive) for more information on Dev Drive, copy-on-write, and moving your package caches.
 
 ## Caveats
-To use this feature, you need run on a drive formatted with [ReFS](https://learn.microsoft.com/en-us/windows-server/storage/refs/refs-overview) or [Dev Drive](https://aka.ms/devdrive) on Windows. ReFS is available on Windows Server, or on Windows 11 22H2 Enterprise and Pro SKUs. Dev Drive is available on all Windows SKUs.
+To use this feature, you need run on a drive formatted with [Dev Drive](https://aka.ms/devdrive) or [ReFS](https://learn.microsoft.com/en-us/windows-server/storage/refs/refs-overview) on Windows. ReFS is available on Windows Server, or on Windows 11 22H2 Enterprise and Pro SKUs. Dev Drive is available on all Windows 11 SKUs and is slated for a future Windows Server release.
