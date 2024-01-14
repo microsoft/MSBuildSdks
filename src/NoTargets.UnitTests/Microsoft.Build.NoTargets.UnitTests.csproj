@@ -6,12 +6,16 @@
     <PackageReference Include="AssemblyShader" />
     <PackageReference Include="Microsoft.NET.Test.Sdk"
                       ShadeDependencies="NuGet.Frameworks" />
+    <PackageReference Include="Microsoft.TemplateEngine.Authoring.TemplateVerifier"
+                      Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))" />
     <PackageReference Include="MSBuild.ProjectCreation" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="Shouldly" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.analyzers" />
     <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="Xunit.Extensions.Logging"
+                      Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NoTargets\Microsoft.Build.NoTargets.csproj"
@@ -20,6 +24,9 @@
   <ItemGroup>
     <None Include="..\NoTargets\Sdk\**\*"
           Link="Sdk\%(RecursiveDir)%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\NoTargets\Templates\**"
+          Link="Templates\$(RelativeDir)%(RecursiveDir)%(Filename)%(Extension)"
           CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

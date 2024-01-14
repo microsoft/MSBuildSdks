@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Title>MSBuild Traversal templates</Title>
-    <Description>Templates for common MSBuild traversal projects</Description>
-    <PackageTags>MSBuild traversal dirs template</PackageTags>
+    <Title>MSBuild NoTargets templates</Title>
+    <Description>Templates for common MSBuild NoTargets projects</Description>
+    <PackageTags>MSBuild NoTargets project template</PackageTags>
     <ArtifactsPath>$(BaseArtifactsPath)$(MSBuildProjectName)\</ArtifactsPath>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageType>Template</PackageType>
@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="traversal\**\*" Exclude="traversal\**\bin\**;traversal\**\obj\**" />
+    <Content Include="notargets\**\*" Exclude="notargets\**\bin\**;notargets\**\obj\**" />
     <Compile Remove="**\*" />
   </ItemGroup>
 

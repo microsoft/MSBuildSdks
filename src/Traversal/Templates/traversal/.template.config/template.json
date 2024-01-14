@@ -1,17 +1,17 @@
 {
-    "$schema": "http://json.schemastore.org/template",
-    "author": "Microsoft",
-    "classifications": [
-        "MSBuild"
-    ],
-    "identity": "Microsoft.Build.Traversal",
-    "name": "MSBuild Traversal Project",
-    "description": "A starter dirs.proj file that can be used for MSBuild Traversal projects",
-    "shortName": "traversal",
-    "tags": {
-      "type": "item"
-    },
-    "sourceName": "dirs",
-    "preferDefaultName": true,
-    "defaultName": "dirs"
-  }
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": [
+    "MSBuild"
+  ],
+  "identity": "Microsoft.Build.Traversal",
+  "name": "MSBuild Traversal Project",
+  "description": "A starter project file for MSBuild Traversal projects",
+  "shortName": "traversal",
+  "tags": {
+    "type": "item"
+  },
+  "sourceName": "dirs",
+  "preferDefaultName": true,
+  "defaultName": "dirs"
+}
