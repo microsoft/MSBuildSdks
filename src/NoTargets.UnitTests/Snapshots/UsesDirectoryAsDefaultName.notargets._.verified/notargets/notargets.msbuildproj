@@ -13,7 +13,7 @@
 
     <!--
       Update as necessary; the project does not produce a binary, but the target framework may impact other project
-      dependencies or tools. 
+      dependencies or tools.
     -->
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
