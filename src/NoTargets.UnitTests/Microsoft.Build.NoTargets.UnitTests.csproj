@@ -4,6 +4,8 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AssemblyShader" />
+    <PackageReference Include="MartinCostello.Logging.XUnit"
+                      Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))" />
     <PackageReference Include="Microsoft.NET.Test.Sdk"
                       ShadeDependencies="NuGet.Frameworks" />
     <PackageReference Include="Microsoft.TemplateEngine.Authoring.TemplateVerifier"
@@ -14,8 +16,6 @@
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.analyzers" />
     <PackageReference Include="xunit.runner.visualstudio" />
-    <PackageReference Include="Xunit.Extensions.Logging"
-                      Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NoTargets\Microsoft.Build.NoTargets.csproj"

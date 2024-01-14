@@ -21,7 +21,7 @@ namespace Microsoft.Build.NoTargets.UnitTests
         {
             _loggerFactory = LoggerFactory.Create(config =>
             {
-                config.AddXunit(xunitOutputHelper);
+                config.AddXUnit(xunitOutputHelper);
             });
         }
 
