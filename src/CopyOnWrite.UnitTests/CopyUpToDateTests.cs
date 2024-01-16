@@ -2,11 +2,11 @@
 //
 // Licensed under the MIT license.
 
-using System;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Tasks;
 using Microsoft.Build.UnitTests.Common;
 using Microsoft.Build.Utilities;
+using System;
 using System.IO;
 using Xunit;
 using Xunit.Abstractions;
