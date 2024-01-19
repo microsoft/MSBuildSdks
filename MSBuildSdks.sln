@@ -84,6 +84,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.CopyOnWrite
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.CopyOnWrite.UnitTests", "src\CopyOnWrite.UnitTests\Microsoft.Build.CopyOnWrite.UnitTests.csproj", "{AF9F2AFE-04D4-40B3-B17F-54ABD3DE7E4E}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.Traversal.Templates", "src\Traversal\Templates\Microsoft.Build.Traversal.Templates.csproj", "{1AEE3631-B92A-4A7F-974F-BAB420CE3913}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.NoTargets.Templates", "src\NoTargets\Templates\Microsoft.Build.NoTargets.Templates.csproj", "{03A56E49-A35E-4F9D-AEAE-B0257BF6F919}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -146,6 +150,14 @@ Global
 		{AF9F2AFE-04D4-40B3-B17F-54ABD3DE7E4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AF9F2AFE-04D4-40B3-B17F-54ABD3DE7E4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AF9F2AFE-04D4-40B3-B17F-54ABD3DE7E4E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1AEE3631-B92A-4A7F-974F-BAB420CE3913}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1AEE3631-B92A-4A7F-974F-BAB420CE3913}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1AEE3631-B92A-4A7F-974F-BAB420CE3913}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1AEE3631-B92A-4A7F-974F-BAB420CE3913}.Release|Any CPU.Build.0 = Release|Any CPU
+		{03A56E49-A35E-4F9D-AEAE-B0257BF6F919}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03A56E49-A35E-4F9D-AEAE-B0257BF6F919}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03A56E49-A35E-4F9D-AEAE-B0257BF6F919}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03A56E49-A35E-4F9D-AEAE-B0257BF6F919}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

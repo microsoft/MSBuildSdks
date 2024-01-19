@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.Build.Traversal">
+  <!--
+    To install the Traversal MSBuild SDK, see https://github.com/microsoft/MSBuildSdks/tree/main?tab=readme-ov-file#how-can-i-use-these-sdks
+
+    For docs on customizing a Traversal project, see https://github.com/microsoft/MSBuildSdks/blob/main/src/Traversal/README.md
+  -->
+  <ItemGroup>
+    <!-- Build all projects recursively under the "src" folder -->
+    <ProjectReference Include="src\**\*.*proj" />
+  </ItemGroup>
+</Project>

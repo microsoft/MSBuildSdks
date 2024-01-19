@@ -9,9 +9,8 @@ The `Microsoft.Build.NoTargets` MSBuild project SDK allows project tree owners t
 To have a project that just copies a file:
 ```xml
 <Project Sdk="Microsoft.Build.NoTargets">
-
   <PropertyGroup>
-    <TargetFramework>net46</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -40,7 +39,7 @@ Or a project that runs a tool:
 ```xml
 <Project Sdk="Microsoft.Build.NoTargets">
   <PropertyGroup>
-    <TargetFramework>net46</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <MyTool>mytool.exe</MyTool>
   </PropertyGroup>
 
