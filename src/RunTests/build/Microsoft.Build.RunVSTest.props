@@ -11,5 +11,7 @@
     <SkipExecution Condition="$(SkipExecution)==''">false</SkipExecution>
     <VSTestRunnerVersion Condition="$(VSTestRunnerVersion)==''">17.8.0</VSTestRunnerVersion>
 	<UseMSBuildTestInfrastructure Condition="$(UseMSBuildTestInfrastructure)==''">true</UseMSBuildTestInfrastructure>
+	<VSTestTaskAssemblyFile>$(NugetPath)microsoft.testplatform.build\$(VSTestRunnerVersion)\lib\netstandard2.0\Microsoft.TestPlatform.Build.dll</VSTestTaskAssemblyFile>
+	<VSTestConsolePath>$(NugetPath)microsoft.testplatform.portable\$(VSTestRunnerVersion)\tools\netcoreapp3.1\vstest.console.dll</VSTestConsolePath>
   </PropertyGroup>
 </Project>

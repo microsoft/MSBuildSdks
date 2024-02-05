@@ -10,6 +10,8 @@
     <PackageVersion Include="CopyOnWrite" Version="0.3.7" Condition=" '$(TargetFramework)' != 'net46' " />
     <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildPackageVersion)" />
 	<PackageVersion Include="Microsoft.TestPlatform" Version="17.8.0" />
+	<PackageVersion Include="Microsoft.TestPlatform.Portable" Version="17.8.0" />
+	<PackageVersion Include="Microsoft.TestPlatform.Build" Version="17.8.0" />
     <PackageVersion Include="Microsoft.Win32.Registry" Version="5.0.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="System.CodeDom" Version="7.0.0" />
