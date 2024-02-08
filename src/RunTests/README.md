@@ -28,12 +28,9 @@ In your ..vcxproj file
   </ItemGroup>
 </Project>
 ```
-in your .csproj file opt-in to using 'UseMSBuildTestInfrastructure' and add the package reference to your test project csproj files
+
 ```
 <Project>
-  <PropertyGroup>
-	<UseMSBuildTestInfrastructure>true</UseMSBuildTestInfrastructure>
-  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.RunVSTest" Version="1.0.0" />
   </ItemGroup>
@@ -56,7 +53,6 @@ Use with traversal project
 ```
 
 ## Sln
-For sln project it is sufficent to simply opt-in to using 'UseMSBuildTestInfrastructure' and add the package reference to your test project csproj files
 ```
 <Project>
   <ItemGroup>
@@ -74,11 +70,4 @@ msbuild /t:Test
 To build and run tests
 ```
 msbuild /t:Build;Test
-```
-
-## Microsoft.TestPlatform version
-A default version is set for Microsoft.TestPlatform. To use a version other than the one included with this task,
-override the VSTestRunnerVersion property.
-```
-msbuild /t:Test /p:VSTestRunnerVersion=17.7.2
 ```

@@ -154,12 +154,6 @@ namespace Microsoft.Build
         [Required]
         public string VSTestRunnerVersion { get; set; }
 
-        /// <summary>
-        /// Gets or Sets Path to nuget package cache.
-        /// </summary>
-        [Required]
-        public string NugetPath { get; set; }
-
         protected override string ToolName => "vstest.console.exe";
 
         protected override MessageImportance StandardOutputLoggingImportance => MessageImportance.High;
