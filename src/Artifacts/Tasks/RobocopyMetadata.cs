@@ -264,6 +264,13 @@ namespace Microsoft.Build.Artifacts.Tasks
 
         public bool ShouldCopy(IFileSystem fileSystem, FileInfo source, FileInfo dest)
         {
+            if (string.Equals(source.FullName, dest.FullName, FileSystem.PathComparison))
+            {
+                // Self-copy makes no sense.
+                // TODO: This does not handle the case where the file is the same via different directory symlinks/junctions.
+                return false;
+            }
+
             if (AlwaysCopy || !fileSystem.FileExists(dest))
             {
                 return true;
@@ -327,8 +334,8 @@ namespace Microsoft.Build.Artifacts.Tasks
                     else if (item.IndexOfAny(Wildcards) >= 0)
                     {
                         preRegex.Add(item);
-                        string regexString = item.Replace(@"\", @"\\").Replace(".", "[.]").Replace("?", ".").Replace("*", ".*");
-                        regularExpressions.Add(new Regex($"^{regexString}$", RegexOptions.IgnoreCase));
+                        string regexString = Robocopy.WildcardToRegexStr(item);
+                        regularExpressions.Add(new Regex($"^{regexString}$", FileSystem.PathRegexOptions));
                     }
                     else
                     {

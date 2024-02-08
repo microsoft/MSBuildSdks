@@ -56,7 +56,7 @@ namespace Microsoft.Build.UnitTests.Common
             {
                 file.Directory?.Create();
 
-                File.WriteAllBytes(file.FullName, new byte[0]);
+                File.WriteAllText(file.FullName, file.FullName.Substring(directory.FullName.Length + 1));
             }
 
             return directory;

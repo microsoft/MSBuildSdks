@@ -43,6 +43,11 @@ namespace Microsoft.Build.Tasks
             private readonly string _filename;
 
             /// <summary>
+            /// The fully resolved path (via Path.GetFullPath).
+            /// </summary>
+            public readonly string FullPath;
+
+            /// <summary>
             /// Set to true if file or directory exists
             /// </summary>
             public readonly bool Exists;
@@ -85,6 +90,7 @@ namespace Microsoft.Build.Tasks
                 LastWriteTimeUtc = new DateTime(1601, 1, 1);
 
                 _filename = FileUtilities.AttemptToShortenPath(filename); // This is no-op unless the path actually is too long
+                FullPath = FileUtilities.NormalizePath(_filename);
 
                 int oldMode = 0;
 
@@ -304,9 +310,11 @@ namespace Microsoft.Build.Tasks
 
         /// <summary>
         /// Name of the file as it was passed in.
-        /// Not normalized.
+        /// Not normalized unless the original path was too long.
         /// </summary>
         internal string Name => _filename;
+
+        internal string FullPath => _data.Value.FullPath;
 
         /// <summary>
         /// Use in case the state is known to have changed exogenously.

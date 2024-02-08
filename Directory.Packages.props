@@ -8,26 +8,25 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="CopyOnWrite" Version="0.3.7" Condition=" '$(TargetFramework)' != 'net46' " />
+    <PackageVersion Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildPackageVersion)" />
     <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildPackageVersion)" />
-	<PackageVersion Include="Microsoft.TestPlatform" Version="17.8.0" />
-	<PackageVersion Include="Microsoft.TestPlatform.Portable" Version="17.8.0" />
-	<PackageVersion Include="Microsoft.TestPlatform.Build" Version="17.8.0" />
     <PackageVersion Include="Microsoft.Win32.Registry" Version="5.0.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="System.CodeDom" Version="7.0.0" />
+    <PackageVersion Include="System.Collections.Immutable" Version="7.0.0" />
     <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="7.0.0" Condition=" '$(TargetFramework)' != 'net46' " />
     <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="4.11.1" Condition=" '$(TargetFramework)' == 'net46' " />
   </ItemGroup>
   <ItemGroup Condition="'$(IsTestProject)' == 'true'">
     <PackageVersion Include="AssemblyShader" Version="1.0.3-preview" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageVersion Include="MSBuild.ProjectCreation" Version="10.0.0" />
     <PackageVersion Include="Shouldly" Version="4.2.1" />
-    <PackageVersion Include="xunit" Version="2.6.0" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.5" />  
+    <PackageVersion Include="xunit" Version="2.6.4" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.5" />
   </ItemGroup>
   <ItemGroup>
-    <GlobalPackageReference Include="Microsoft.Build.Artifacts" Version="6.0.6" Condition="'$(EnableArtifacts)' != 'false'" />
+    <GlobalPackageReference Include="Microsoft.Build.Artifacts" Version="6.1.10" Condition="'$(EnableArtifacts)' != 'false'" />
     <GlobalPackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" Version="1.0.0" Condition="'$(EnableMicroBuild)' != 'false'" />
     <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="3.6.133" Condition="'$(EnableGitVersioning)' != 'false'" />
   </ItemGroup>
