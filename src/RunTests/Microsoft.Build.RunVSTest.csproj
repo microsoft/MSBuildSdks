@@ -13,9 +13,6 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Build.Tasks.Core" PrivateAssets="All" />
-		<PackageReference Include="Microsoft.TestPlatform" PrivateAssets="All" />
-		<PackageReference Include="Microsoft.TestPlatform.Build" PrivateAssets="All" />
-		<PackageReference Include="Microsoft.TestPlatform.Portable" PrivateAssets="All" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Include="build\Microsoft.Build.RunVSTest.props">
