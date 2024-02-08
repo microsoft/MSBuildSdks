@@ -169,11 +169,7 @@ namespace Microsoft.Build
         /// <inheritdoc/>
         protected override string GenerateFullPathToTool()
         {
-#if NET6_0_OR_GREATER
-            return $@"{NugetPath}microsoft.testplatform\{VSTestRunnerVersion}\tools\net6.0\Common7\IDE\Extensions\TestPlatform\vstest.console.exe";
-#else
-            return $@"{NugetPath}microsoft.testplatform\{VSTestRunnerVersion}\tools\net462\Common7\IDE\Extensions\TestPlatform\vstest.console.exe";
-#endif
+            return $@"{Environment.GetEnvironmentVariable("VSINSTALLDIR")}\Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe";
         }
 
         /// <inheritdoc/>

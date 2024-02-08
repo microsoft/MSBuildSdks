@@ -13,7 +13,6 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Build.Tasks.Core" PrivateAssets="All" />
-		<PackageReference Include="Microsoft.TestPlatform" PrivateAssets="All" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Include="build\Microsoft.Build.RunVSTest.props">
@@ -23,18 +22,6 @@
 		</None>
 		<None Include="build\Microsoft.Build.RunVSTest.targets">
 			<PackagePath>build\</PackagePath>
-			<Pack>true</Pack>
-			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</None>
-	</ItemGroup>
-	<ItemGroup>
-		<None Include="Sdk\Sdk.props">
-			<PackagePath>Sdk\</PackagePath>
-			<Pack>true</Pack>
-			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
-		</None>
-		<None Include="Sdk\Sdk.targets">
-			<PackagePath>Sdk\</PackagePath>
 			<Pack>true</Pack>
 			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		</None>
