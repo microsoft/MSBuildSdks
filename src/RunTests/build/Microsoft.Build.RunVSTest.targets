@@ -31,7 +31,6 @@
 				  VSTestSessionCorrelationId="$(VSTestSessionCorrelationId)"
 	/>
 	</Target>
-	<Import Project="Microsoft.TestPlatform.targets" Condition="'$(MSBuildRuntime)' == 'Core'" />
 	<Target Name="ForceRunVSTest" AfterTargets="Test" Condition="'$(MSBuildRuntime)' == 'Core'" >
 		<CallTarget Targets="VSTest" />
 	</Target>
