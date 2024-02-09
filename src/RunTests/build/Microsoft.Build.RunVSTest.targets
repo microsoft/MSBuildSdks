@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (c) Microsoft Corporation. All rights reserved.
+  
+  Licensed under the MIT license.
+-->
+<Project  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<UsingTask TaskName="Microsoft.Build.RunVSTestTask" AssemblyFile="$(MSBuildThisFileDirectory)netstandard2.0\Microsoft.Build.RunVSTest.dll"  Condition="'$(MSBuildRuntime)' != 'Core'"/>
+	<Target Name="RunVSTest" AfterTargets="Test" Condition="'$(MSBuildRuntime)' != 'Core'">
+		<RunVSTestTask
+				  VSTestRunnerVersion="$(VSTestRunnerVersion)"
+				  TestFileFullPath="$(TargetPath)"
+				  VSTestSetting="$(VSTestSetting)"
+				  VSTestTestAdapterPath="$(VSTestTestAdapterPath)"
+				  VSTestFramework="$(VSTestFramework)"
+				  VSTestPlatform="$(VSTestPlatform)"
+				  VSTestTestCaseFilter="$(VSTestTestCaseFilter)"
+				  VSTestLogger="$(VSTestLogger)"
+				  VSTestResultsDirectory="$(VSTestResultsDirectory)"
+				  VSTestVerbosity="$(VSTestVerbosity)"
+				  VSTestCollect="$(VSTestCollect)"
+				  VSTestBlame="$(VSTestBlame)"
+				  VSTestBlameCrash="$(VSTestBlameCrash)"
+				  VSTestBlameCrashDumpType="$(VSTestBlameCrashDumpType)"
+				  VSTestBlameCrashCollectAlways="$(VSTestBlameCrashCollectAlways)"
+				  VSTestBlameHang="$(VSTestBlameHang)"
+				  VSTestBlameHangDumpType="$(VSTestBlameHangDumpType)"
+				  VSTestTraceDataCollectorDirectoryPath="$(VSTestTraceDataCollectorDirectoryPath)"
+				  VSTestNoLogo="$(VSTestNoLogo)"
+				  VSTestArtifactsProcessingMode="$(VSTestArtifactsProcessingMode)"
+				  VSTestSessionCorrelationId="$(VSTestSessionCorrelationId)"
+	/>
+	</Target>
+	<Target Name="ForceRunVSTest" AfterTargets="Test" Condition="'$(MSBuildRuntime)' == 'Core'" >
+		<CallTarget Targets="VSTest" />
+	</Target>
+</Project>
