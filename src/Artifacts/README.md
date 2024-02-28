@@ -135,7 +135,7 @@ The following properties control artifacts staging:
 | Property | Description | Default |
 |-------------------------------------|-------------|---------|
 | `EnableDefaultArtifacts` | Set this to `false` to disable the default staging of the `$(OutputPath)` to the artifacts directory.| `true` |
-| `DefaultArtifactsSource` | The default path to use as a source for staging artifacts. | `$(OutputPath)` |
+| `DefaultArtifactsSource` | The default path to use as a source for staging artifacts. | `$(OutputPath)` if `AppendTargetFrameworkToOutputPath` is not true, otherwise the parent of `$(OutputPath)` (behavior changed in version 2.0.20). If you need the old behavior, set `AppendTargetFrameworkToOutputPath` to true, or set the property value `<DefaultArtifactsSource>$(OutputPath)</DefaultArtifactsSource>`. |
 | `ArtifactsPath` | The default path to use as a destination for staging artifacts | |
 | `DefaultArtifactsFileMatch` | The default filter to use for staging artifacts | `*exe *dll *exe.config` |
 | `DefaultArtifactsFileExclude` | The default file filter to exclude when staging artifacts | |
