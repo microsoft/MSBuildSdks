@@ -1,6 +1,9 @@
 resources:
-- repo: self
-
+  repositories:
+  - repository: MicroBuildTemplate
+    type: git
+    name: 1ESPipelineTemplates/MicroBuildTemplate
+    ref: refs/tags/release
 variables:
   ArtifactsDirectoryName: 'artifacts'
   BuildConfiguration: 'Release'
@@ -8,7 +11,6 @@ variables:
   DotNetVersion: '8.x'
   MSBuildArgs: '"/p:Platform=$(BuildPlatform)" "/p:Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
   SignType: 'Test'
-
 trigger:
   batch: 'true'
   branches:
@@ -19,7 +21,6 @@ trigger:
   paths:
     exclude:
     - '*.md'
-
 pr:
   branches:
     include:
@@ -28,56 +29,61 @@ pr:
   paths:
     exclude:
     - '*.md'
-
-stages:
-- stage:
-  displayName: 'Build'
-  jobs:
-  - job: Build
-    displayName: 'Build'
+extends:
+  template: azure-pipelines/MicroBuild.1ES.Official.yml@MicroBuildTemplate
+  parameters:
     pool:
-      name: 'VSEngSS-MicroBuild2022-1ES'
-    steps:
-    - task: PowerShell@2
-      displayName: 'Update SignType, Build Number, and Add Build Tag for tagged commits'
-      condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/Microsoft.Build'))
-      inputs:
-        targetType: 'inline'
-        script: |
-          Write-Host "Updating SignType to 'Real'"
-          Write-Host "##vso[task.setvariable variable=SignType;]Real"
-          Write-Host ""
-          $buildTag = [System.Text.RegularExpressions.Regex]::Match("$(Build.SourceBranchName)", "Microsoft\.Build\.[\w\.]+.*")
-          if($buildTag.Success -eq $true)
-          {
-              Write-Host "Updating VSTS build number to ""$buildTag"""
-              Write-Host "##vso[build.updatebuildnumber]$buildTag"
+      name: VSEngSS-MicroBuild2022-1ES
+      demands:
+      - msbuild
+      - visualstudio
+      os: windows
+    stages:
+    - stage: ''
+      displayName: 'Build'
+      jobs:
+      - job: Build
+        displayName: 'Build'
+        pool:
+          name: 'VSEngSS-MicroBuild2022-1ES'
+        templateContext:
+          mb:
+            signing:
+              enabled: true
+              signType: '$(SignType)'
+              zipSources: false
+          outputs:
+          - output: pipelineArtifact
+            displayName: 'Publish Artifacts'
+            condition: always()
+            targetPath: '$(ArtifactsDirectoryName)'
+            artifactName: $(ArtifactsDirectoryName)
+        steps:
+        - task: PowerShell@2
+          displayName: 'Update SignType, Build Number, and Add Build Tag for tagged commits'
+          condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/Microsoft.Build'))
+          inputs:
+            targetType: 'inline'
+            script: |
+              Write-Host "Updating SignType to 'Real'"
+              Write-Host "##vso[task.setvariable variable=SignType;]Real"
               Write-Host ""
-              Write-Host "Adding build tag ""$buildTag"""
-              Write-Host "##vso[build.addbuildtag]$buildTag"
-          }
-
-    - task: UseDotNet@2
-      displayName: 'Install .NET $(DotNetVersion)'
-      inputs:
-        version: '$(DotNetVersion)'
-
-    - task: MicroBuildSigningPlugin@4
-      displayName: 'Install MicroBuild Signing Plugin'
-      inputs:
-        signType: '$(SignType)'
-        zipSources: false
-
-    - task: VSBuild@1
-      displayName: 'Build Solution'
-      inputs:
-        projects: 'MSBuildSdks.sln'
-        msbuildArgs: '$(MSBuildArgs)'
-        msbuildArchitecture: 'x64'
-
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish Artifacts'
-      inputs:
-        PathtoPublish: '$(ArtifactsDirectoryName)'
-        ArtifactName: $(ArtifactsDirectoryName)
-      condition: always()
+              $buildTag = [System.Text.RegularExpressions.Regex]::Match("$(Build.SourceBranchName)", "Microsoft\.Build\.[\w\.]+.*")
+              if($buildTag.Success -eq $true)
+              {
+                  Write-Host "Updating VSTS build number to ""$buildTag"""
+                  Write-Host "##vso[build.updatebuildnumber]$buildTag"
+                  Write-Host ""
+                  Write-Host "Adding build tag ""$buildTag"""
+                  Write-Host "##vso[build.addbuildtag]$buildTag"
+              }
+        - task: UseDotNet@2
+          displayName: 'Install .NET $(DotNetVersion)'
+          inputs:
+            version: '$(DotNetVersion)'
+        - task: VSBuild@1
+          displayName: 'Build Solution'
+          inputs:
+            projects: 'MSBuildSdks.sln'
+            msbuildArgs: '$(MSBuildArgs)'
+            msbuildArchitecture: 'x64'
