@@ -10,7 +10,7 @@ variables:
   BuildPlatform: 'Any CPU'
   DotNetVersion: '8.x'
   MSBuildArgs: '"/p:Platform=$(BuildPlatform)" "/p:Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
-  SignType: 'Test'
+  SignType: 'Real'
 trigger:
   batch: 'true'
   branches:
@@ -18,14 +18,6 @@ trigger:
     - 'main'
     - 'rel/*'
     - 'refs/tags/*'
-  paths:
-    exclude:
-    - '*.md'
-pr:
-  branches:
-    include:
-    - 'main'
-    - 'rel/*'
   paths:
     exclude:
     - '*.md'
@@ -53,7 +45,7 @@ extends:
           mb:
             signing:
               enabled: true
-              signType: '$(SignType)'
+              signType: 'real'
               zipSources: false
           outputs:
           - output: pipelineArtifact
@@ -63,14 +55,11 @@ extends:
             artifactName: $(ArtifactsDirectoryName)
         steps:
         - task: PowerShell@2
-          displayName: 'Update SignType, Build Number, and Add Build Tag for tagged commits'
+          displayName: 'Update Build Number, and Add Build Tag for tagged commits'
           condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/Microsoft.Build'))
           inputs:
             targetType: 'inline'
             script: |
-              Write-Host "Updating SignType to 'Real'"
-              Write-Host "##vso[task.setvariable variable=SignType;]Real"
-              Write-Host ""
               $buildTag = [System.Text.RegularExpressions.Regex]::Match("$(Build.SourceBranchName)", "Microsoft\.Build\.[\w\.]+.*")
               if($buildTag.Success -eq $true)
               {
