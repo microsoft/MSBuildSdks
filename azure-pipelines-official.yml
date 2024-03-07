@@ -32,6 +32,9 @@ pr:
 extends:
   template: azure-pipelines/MicroBuild.1ES.Official.yml@MicroBuildTemplate
   parameters:
+    sdl:
+      sbom:
+        enabled: false
     pool:
       name: VSEngSS-MicroBuild2022-1ES
       demands:
