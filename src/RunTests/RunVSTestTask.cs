@@ -18,11 +18,6 @@ namespace Microsoft.Build
         /// <summary>
         /// Gets or Sets Full path to the test file.
         /// </summary>
-        public string IsTestProject { get; set; }
-
-        /// <summary>
-        /// Gets or Sets Full path to the test file.
-        /// </summary>
         public string TestFileFullPath { get; set; }
 
         /// <summary>
@@ -64,19 +59,6 @@ namespace Microsoft.Build
         /// Gets or Sets Diagnostic data for VSTest.
         /// </summary>
         public string VSTestDiag { get; set; }
-
-        /// <summary>
-        /// Gets or Sets Command line options for VSTest.
-        /// </summary>
-        public string[] VSTestCLIRunSettings { get; set; }
-
-        // Initialized to empty string to allow declaring as non-nullable, the property is marked as
-        // required so we can ensure that the property is set to non-null before the task is executed.
-
-        /// <summary>
-        /// Gets or Sets Path to VSTest console executable.
-        /// </summary>
-        public string VSTestConsolePath { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or Sets Directory where VSTest results are saved.
@@ -147,12 +129,6 @@ namespace Microsoft.Build
         /// Gets or Sets Correlation Id of test session.
         /// </summary>
         public string VSTestSessionCorrelationId { get; set; }
-
-        /// <summary>
-        /// Gets or Sets Runner version of VSTest.
-        /// </summary>
-        [Required]
-        public string VSTestRunnerVersion { get; set; }
 
         protected override string ToolName => "vstest.console.exe";
 

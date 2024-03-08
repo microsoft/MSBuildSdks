@@ -8,7 +8,6 @@
 	<UsingTask TaskName="Microsoft.Build.RunVSTestTask" AssemblyFile="$(MSBuildThisFileDirectory)netstandard2.0\Microsoft.Build.RunVSTest.dll"  Condition="'$(MSBuildRuntime)' != 'Core'"/>
 	<Target Name="RunVSTest" AfterTargets="Test" Condition="'$(MSBuildRuntime)' != 'Core'">
 		<RunVSTestTask
-				  VSTestRunnerVersion="$(VSTestRunnerVersion)"
 				  TestFileFullPath="$(TargetPath)"
 				  VSTestSetting="$(VSTestSetting)"
 				  VSTestTestAdapterPath="$(VSTestTestAdapterPath)"
@@ -16,6 +15,8 @@
 				  VSTestPlatform="$(VSTestPlatform)"
 				  VSTestTestCaseFilter="$(VSTestTestCaseFilter)"
 				  VSTestLogger="$(VSTestLogger)"
+				  VSTestListTests="$(VSTestListTests)"
+				  VSTestDiag="$(VSTestDiag)"
 				  VSTestResultsDirectory="$(VSTestResultsDirectory)"
 				  VSTestVerbosity="$(VSTestVerbosity)"
 				  VSTestCollect="$(VSTestCollect)"
@@ -25,6 +26,7 @@
 				  VSTestBlameCrashCollectAlways="$(VSTestBlameCrashCollectAlways)"
 				  VSTestBlameHang="$(VSTestBlameHang)"
 				  VSTestBlameHangDumpType="$(VSTestBlameHangDumpType)"
+				  VSTestBlameHangTimeout="$(VSTestBlameHangTimeout)"
 				  VSTestTraceDataCollectorDirectoryPath="$(VSTestTraceDataCollectorDirectoryPath)"
 				  VSTestNoLogo="$(VSTestNoLogo)"
 				  VSTestArtifactsProcessingMode="$(VSTestArtifactsProcessingMode)"
