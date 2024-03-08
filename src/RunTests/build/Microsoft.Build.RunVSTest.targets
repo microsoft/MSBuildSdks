@@ -5,8 +5,8 @@
   Licensed under the MIT license.
 -->
 <Project  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-	<UsingTask TaskName="Microsoft.Build.RunVSTestTask" AssemblyFile="$(MSBuildThisFileDirectory)netstandard2.0\Microsoft.Build.RunVSTest.dll"  Condition="'$(MSBuildRuntime)' != 'Core'"/>
-	<Target Name="RunVSTest" AfterTargets="Test" Condition="'$(MSBuildRuntime)' != 'Core'">
+	<UsingTask TaskName="Microsoft.Build.RunVSTestTask" AssemblyFile="$(MSBuildThisFileDirectory)netstandard2.0\Microsoft.Build.RunVSTest.dll"  Condition="'$(IsTestProject)' == 'true' and '$(MSBuildRuntime)' != 'Core'"/>
+	<Target Name="RunVSTest" AfterTargets="Test" Condition="'$(IsTestProject)' == 'true' and '$(MSBuildRuntime)' != 'Core'">
 		<RunVSTestTask
 				  TestFileFullPath="$(TargetPath)"
 				  VSTestSetting="$(VSTestSetting)"
@@ -33,7 +33,7 @@
 				  VSTestSessionCorrelationId="$(VSTestSessionCorrelationId)"
 	/>
 	</Target>
-	<Target Name="ForceRunVSTest" AfterTargets="Test" Condition="'$(MSBuildRuntime)' == 'Core'" >
+	<Target Name="ForceRunVSTest" AfterTargets="Test" Condition="'$(IsTestProject)' == 'true' and '$(MSBuildRuntime)' == 'Core'" >
 		<CallTarget Targets="VSTest" />
 	</Target>
 </Project>
