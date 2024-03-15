@@ -11,12 +11,6 @@ The MSBuild project SDKs are used to configure and extend your build.
 
 Supports creating traversal projects which are MSBuild projects that indicate what projects to include when building your tree.  For large project trees, they are replacements for Visual Studio solution files.
 
-### [Microsoft.Build.CentralPackageVersions](src/CentralPackageVersions)
-[![NuGet](https://img.shields.io/nuget/v/Microsoft.Build.CentralPackageVersions.svg)](https://www.nuget.org/packages/Microsoft.Build.CentralPackageVersions)
- [![NuGet](https://img.shields.io/nuget/dt/Microsoft.Build.CentralPackageVersions.svg)](https://www.nuget.org/packages/Microsoft.Build.CentralPackageVersions)
-
-Supports centrally managing NuGet package versions in a code base.  Also allows adding global package references to all projects.
-
 ### [Microsoft.Build.NoTargets](src/NoTargets)
 [![NuGet](https://img.shields.io/nuget/v/Microsoft.Build.NoTargets.svg)](https://www.nuget.org/packages/Microsoft.Build.NoTargets)
  [![NuGet](https://img.shields.io/nuget/dt/Microsoft.Build.NoTargets.svg)](https://www.nuget.org/packages/Microsoft.Build.NoTargets)
