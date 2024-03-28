@@ -9,6 +9,13 @@
 
   <!-- Only consider non "dotnet" scenarios sinces those are already covered by Microsoft.Testing.Platform.MSBuild, which is automatically included as a dependency of MSTest.TestAdapter -->
   <Target Name="RunVSTest" AfterTargets="Test" Condition="'$(RunVSTest)' != 'false' and '$(IsTestProject)' == 'true' and '$(MSBuildRuntimeType)' != 'Core'">
+    <!--
+      This target name is hardcoded in TerminalLogger to mean start of test workload.
+      This let's terminal logger know that it should show `Testing` in the output,
+      and not the additional internal details, such as target names.
+    -->
+    <CallTarget Targets="_TestRunStart" />
+
     <RunVSTestTask ToolExe="$(VSTestToolExe)"
                    ToolPath="$(VSTestToolPath)"
                    TestFileFullPath="$(TargetPath)"
@@ -35,4 +42,6 @@
                    VSTestArtifactsProcessingMode="$(VSTestArtifactsProcessingMode)"
                    VSTestSessionCorrelationId="$(VSTestSessionCorrelationId)" />
   </Target>
+
+  <Target Name="_TestRunStart" />
 </Project>
