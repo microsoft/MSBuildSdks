@@ -4,36 +4,36 @@
   
   Licensed under the MIT license.
 -->
-<Project  xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-	<UsingTask TaskName="Microsoft.Build.RunVSTestTask" AssemblyFile="$(MSBuildThisFileDirectory)netstandard2.0\Microsoft.Build.RunVSTest.dll"  Condition="'$(IsTestProject)' == 'true' and '$(MSBuildRuntime)' != 'Core'"/>
-	<Target Name="RunVSTest" AfterTargets="Test" Condition="'$(IsTestProject)' == 'true' and '$(MSBuildRuntime)' != 'Core'">
-		<RunVSTestTask
-				  TestFileFullPath="$(TargetPath)"
-				  VSTestSetting="$(VSTestSetting)"
-				  VSTestTestAdapterPath="$(VSTestTestAdapterPath)"
-				  VSTestFramework="$(VSTestFramework)"
-				  VSTestPlatform="$(VSTestPlatform)"
-				  VSTestTestCaseFilter="$(VSTestTestCaseFilter)"
-				  VSTestLogger="$(VSTestLogger)"
-				  VSTestListTests="$(VSTestListTests)"
-				  VSTestDiag="$(VSTestDiag)"
-				  VSTestResultsDirectory="$(VSTestResultsDirectory)"
-				  VSTestVerbosity="$(VSTestVerbosity)"
-				  VSTestCollect="$(VSTestCollect)"
-				  VSTestBlame="$(VSTestBlame)"
-				  VSTestBlameCrash="$(VSTestBlameCrash)"
-				  VSTestBlameCrashDumpType="$(VSTestBlameCrashDumpType)"
-				  VSTestBlameCrashCollectAlways="$(VSTestBlameCrashCollectAlways)"
-				  VSTestBlameHang="$(VSTestBlameHang)"
-				  VSTestBlameHangDumpType="$(VSTestBlameHangDumpType)"
-				  VSTestBlameHangTimeout="$(VSTestBlameHangTimeout)"
-				  VSTestTraceDataCollectorDirectoryPath="$(VSTestTraceDataCollectorDirectoryPath)"
-				  VSTestNoLogo="$(VSTestNoLogo)"
-				  VSTestArtifactsProcessingMode="$(VSTestArtifactsProcessingMode)"
-				  VSTestSessionCorrelationId="$(VSTestSessionCorrelationId)"
-	/>
-	</Target>
-	<Target Name="ForceRunVSTest" AfterTargets="Test" Condition="'$(IsTestProject)' == 'true' and '$(MSBuildRuntime)' == 'Core'" >
-		<CallTarget Targets="VSTest" />
-	</Target>
+<Project>
+  <UsingTask TaskName="Microsoft.Build.RunVSTestTask" AssemblyFile="$(MSBuildThisFileDirectory)netstandard2.0\Microsoft.Build.RunVSTest.dll" Condition="'$(IsTestProject)' == 'true' and '$(MSBuildRuntime)' != 'Core'"/>
+  <Target Name="RunVSTest" AfterTargets="Test" Condition="'$(IsTestProject)' == 'true' and '$(MSBuildRuntime)' != 'Core'">
+    <RunVSTestTask ToolExe="$(VSTestToolExe)"
+                   ToolPath="$(VSTestToolPath)"
+                   TestFileFullPath="$(TargetPath)"
+                   VSTestSetting="$(VSTestSetting)"
+                   VSTestTestAdapterPath="$(VSTestTestAdapterPath)"
+                   VSTestFramework="$(VSTestFramework)"
+                   VSTestPlatform="$(VSTestPlatform)"
+                   VSTestTestCaseFilter="$(VSTestTestCaseFilter)"
+                   VSTestLogger="$(VSTestLogger)"
+                   VSTestListTests="$(VSTestListTests)"
+                   VSTestDiag="$(VSTestDiag)"
+                   VSTestResultsDirectory="$(VSTestResultsDirectory)"
+                   VSTestVerbosity="$(VSTestVerbosity)"
+                   VSTestCollect="$(VSTestCollect)"
+                   VSTestBlame="$(VSTestBlame)"
+                   VSTestBlameCrash="$(VSTestBlameCrash)"
+                   VSTestBlameCrashDumpType="$(VSTestBlameCrashDumpType)"
+                   VSTestBlameCrashCollectAlways="$(VSTestBlameCrashCollectAlways)"
+                   VSTestBlameHang="$(VSTestBlameHang)"
+                   VSTestBlameHangDumpType="$(VSTestBlameHangDumpType)"
+                   VSTestBlameHangTimeout="$(VSTestBlameHangTimeout)"
+                   VSTestTraceDataCollectorDirectoryPath="$(VSTestTraceDataCollectorDirectoryPath)"
+                   VSTestNoLogo="$(VSTestNoLogo)"
+                   VSTestArtifactsProcessingMode="$(VSTestArtifactsProcessingMode)"
+                   VSTestSessionCorrelationId="$(VSTestSessionCorrelationId)" />
+  </Target>
+  <Target Name="ForceRunVSTest" AfterTargets="Test" Condition="'$(IsTestProject)' == 'true' and '$(MSBuildRuntime)' == 'Core'" >
+    <CallTarget Targets="VSTest" />
+  </Target>
 </Project>

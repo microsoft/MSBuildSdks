@@ -139,7 +139,15 @@ namespace Microsoft.Build
         /// <inheritdoc/>
         protected override string GenerateFullPathToTool()
         {
-            return $@"{Environment.GetEnvironmentVariable("VSINSTALLDIR")}\Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe";
+            // Attempt to look in the VS installation dir
+            string vsInstallDir = Environment.GetEnvironmentVariable("VSINSTALLDIR");
+            if (!string.IsNullOrEmpty(vsInstallDir))
+            {
+                return $@"{vsInstallDir}\Common7\IDE\CommonExtensions\Microsoft\TestWindow\vstest.console.exe";
+            }
+
+            // Fallback to looking for the tool on the PATH
+            return ToolExe;
         }
 
         /// <inheritdoc/>
