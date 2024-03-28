@@ -4,8 +4,8 @@
   
   Licensed under the MIT license.
 -->
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project>
   <PropertyGroup>
-	<UseMSBuildTestInfrastructure Condition="$(UseMSBuildTestInfrastructure)==''">true</UseMSBuildTestInfrastructure>
+    <UseMSBuildTestInfrastructure Condition="'$(UseMSBuildTestInfrastructure)' == ''">true</UseMSBuildTestInfrastructure>
   </PropertyGroup>
 </Project>
