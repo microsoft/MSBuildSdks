@@ -5,8 +5,10 @@
   Licensed under the MIT license.
 -->
 <Project>
-  <UsingTask TaskName="Microsoft.Build.RunVSTestTask" AssemblyFile="$(MSBuildThisFileDirectory)netstandard2.0\Microsoft.Build.RunVSTest.dll" Condition="'$(IsTestProject)' == 'true' and '$(MSBuildRuntime)' != 'Core'"/>
-  <Target Name="RunVSTest" AfterTargets="Test" Condition="'$(IsTestProject)' == 'true' and '$(MSBuildRuntime)' != 'Core'">
+  <UsingTask TaskName="Microsoft.Build.RunVSTestTask" AssemblyFile="$(MSBuildThisFileDirectory)netstandard2.0\Microsoft.Build.RunVSTest.dll" />
+
+  <!-- Only consider non "dotnet" scenarios sinces those are already covered by Microsoft.Testing.Platform.MSBuild, which is automatically included as a dependency of MSTest.TestAdapter -->
+  <Target Name="RunVSTest" AfterTargets="Test" Condition="'$(RunVSTest)' != 'false' and '$(IsTestProject)' == 'true' and '$(MSBuildRuntimeType)' != 'Core'">
     <RunVSTestTask ToolExe="$(VSTestToolExe)"
                    ToolPath="$(VSTestToolPath)"
                    TestFileFullPath="$(TargetPath)"
@@ -32,8 +34,5 @@
                    VSTestNoLogo="$(VSTestNoLogo)"
                    VSTestArtifactsProcessingMode="$(VSTestArtifactsProcessingMode)"
                    VSTestSessionCorrelationId="$(VSTestSessionCorrelationId)" />
-  </Target>
-  <Target Name="ForceRunVSTest" AfterTargets="Test" Condition="'$(IsTestProject)' == 'true' and '$(MSBuildRuntime)' == 'Core'" >
-    <CallTarget Targets="VSTest" />
   </Target>
 </Project>
