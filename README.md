@@ -29,6 +29,12 @@ Supports staging artifacts from build outputs.
 
 Enables Copy on Write for faster file copies.
 
+### [Microsoft.Build.RunVSTest](src/RunTests)
+[![NuGet](https://img.shields.io/nuget/v/Microsoft.Build.RunVSTest.svg)](https://www.nuget.org/packages/Microsoft.Build.RunVSTest)
+ [![NuGet](https://img.shields.io/nuget/dt/Microsoft.Build.RunVSTest.svg)](https://www.nuget.org/packages/Microsoft.Build.RunVSTest)
+
+Hooks VSTest to the Test target, allowing running tests concurrently with the build via `msbuild /t:Build;Test`.
+
 ## How can I use these SDKs?
 
 When using an MSBuild Project SDK obtained via NuGet (such as the SDKs in this repo) a specific version **must** be specified.
