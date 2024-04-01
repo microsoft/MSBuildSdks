@@ -19,7 +19,7 @@
   </ItemGroup>
   <ItemGroup Condition="'$(IsTestProject)' == 'true'">
     <PackageVersion Include="AssemblyShader" Version="1.0.3-preview" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
     <PackageVersion Include="MSBuild.ProjectCreation" Version="10.0.0" />
     <PackageVersion Include="Shouldly" Version="4.2.1" />
     <PackageVersion Include="xunit" Version="2.7.0" />
