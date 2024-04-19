@@ -208,10 +208,12 @@ namespace Microsoft.Build.Traversal.UnitTests
         [InlineData("TraversalProjectNames", "custom.proj", "custom.proj")]
         [InlineData("TraversalProjectNames", null, "dirs.proj")]
         [InlineData("UsingMicrosoftTraversalSdk", null, "true")]
+        [InlineData("SlnGenProjectName", null, "ProjectA")]
+        [InlineData("SlnGenProjectName", "custom", "custom")]
         public void PropertiesHaveExpectedValues(string propertyName, string value, string expectedValue)
         {
             ProjectCreator.Templates.TraversalProject(
-                path: GetTempFile("dirs.proj"))
+                path: Path.Combine(TestRootPath, "ProjectA", "dirs.proj"))
                 .Property(propertyName, value)
                 .Save()
                 .TryGetPropertyValue(propertyName, out string actualValue);
