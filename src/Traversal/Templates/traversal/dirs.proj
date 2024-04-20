@@ -4,6 +4,16 @@
 
     For docs on customizing a Traversal project, see https://github.com/microsoft/MSBuildSdks/blob/main/src/Traversal/README.md
   -->
+
+  <!--
+    Uncomment the following lines if you use the SlnGen tool (https://microsoft.github.io/slngen/) and want to customize how solutions are generated.
+
+    <PropertyGroup>
+      <SlnGenProjectName>MyCustomProject</SlnGenProjectName>
+      <SlnGenFolders>true</SlnGenFolders>
+    </PropertyGroup>
+  -->
+
   <ItemGroup>
     <!-- Build all projects recursively under the "src" folder -->
     <ProjectReference Include="src\**\*.*proj" />
