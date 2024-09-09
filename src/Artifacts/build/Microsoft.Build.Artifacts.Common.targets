@@ -38,7 +38,7 @@
   </Target>
 
   <Target Name="RobocopyFiles"
-          Condition="'$(EnableArtifacts)' != 'false'"
+          Condition="'$(EnableArtifacts)' != 'false' OR '$(EnableRobocopyFiles)' == 'true'"
           AfterTargets="$([MSBuild]::ValueOrDefault($(RobocopyFilesAfterTargets), 'AfterBuild'))"
           DependsOnTargets="$(RobocopyFilesDependsOn)">
     <Robocopy
