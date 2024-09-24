@@ -3,7 +3,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'netstandard2.0'">16.9.0</MicrosoftBuildPackageVersion>
     <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'net46'">15.9.20</MicrosoftBuildPackageVersion>
-    <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'net7.0'">17.7.2</MicrosoftBuildPackageVersion>
+    <MicrosoftBuildPackageVersion Condition="'$(TargetFramework)' == 'net8.0'">17.7.2</MicrosoftBuildPackageVersion>
     <MicrosoftBuildPackageVersion>17.8.3</MicrosoftBuildPackageVersion>
   </PropertyGroup>
   <ItemGroup>

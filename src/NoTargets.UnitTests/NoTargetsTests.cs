@@ -93,8 +93,6 @@ namespace Microsoft.Build.NoTargets.UnitTests
                     targetFramework: "net8.0")
 #elif NET6_0
                     targetFramework: "net6.0")
-#elif NET7_0
-                    targetFramework: "net7.0")
 #endif
                 .Save();
 

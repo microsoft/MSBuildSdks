@@ -6,7 +6,6 @@ variables:
   BuildConfiguration: 'Debug'
   BuildPlatform: 'Any CPU'
   DotNet6Version: '6.x'
-  DotNet7Version: '7.x'
   DotNet8Version: '8.x'
   MSBuildArgs: '"/p:Platform=$(BuildPlatform)" "/p:Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
   SignType: 'Test'
@@ -42,11 +41,6 @@ jobs:
       version: '$(DotNet6Version)'
 
   - task: UseDotNet@2
-    displayName: 'Install .NET $(DotNet7Version)'
-    inputs:
-      version: '$(DotNet7Version)'
-
-  - task: UseDotNet@2
     displayName: 'Install .NET $(DotNet8Version)'
     inputs:
       version: '$(DotNet8Version)'
@@ -71,14 +65,6 @@ jobs:
       command: 'test'
       arguments: '--no-restore --no-build --framework net6.0 /noautorsp'
       testRunTitle: 'Windows .NET 6.0'
-    condition: succeededOrFailed()
-
-  - task: DotNetCoreCLI@2
-    displayName: 'Run Unit Tests (.NET 7.0)'
-    inputs:
-      command: 'test'
-      arguments: '--no-restore --no-build --framework net7.0 /noautorsp'
-      testRunTitle: 'Windows .NET 7.0'
     condition: succeededOrFailed()
 
   - task: DotNetCoreCLI@2
@@ -108,11 +94,6 @@ jobs:
       version: '$(DotNet6Version)'
 
   - task: UseDotNet@2
-    displayName: 'Install .NET $(DotNet7Version)'
-    inputs:
-      version: '$(DotNet7Version)'
-
-  - task: UseDotNet@2
     displayName: 'Install .NET $(DotNet8Version)'
     inputs:
       version: '$(DotNet8Version)'
@@ -129,14 +110,6 @@ jobs:
       command: 'test'
       arguments: '--no-restore --no-build --framework net6.0 /noautorsp'
       testRunTitle: 'Linux .NET 6.0'
-    condition: succeededOrFailed()
-
-  - task: DotNetCoreCLI@2
-    displayName: 'Run Unit Tests (.NET 7.0)'
-    inputs:
-      command: 'test'
-      arguments: '--no-restore --no-build --framework net7.0 /noautorsp'
-      testRunTitle: 'Linux .NET 7.0'
     condition: succeededOrFailed()
 
   - task: DotNetCoreCLI@2
@@ -166,11 +139,6 @@ jobs:
       version: '$(DotNet6Version)'
 
   - task: UseDotNet@2
-    displayName: 'Install .NET $(DotNet7Version)'
-    inputs:
-      version: '$(DotNet7Version)'
-
-  - task: UseDotNet@2
     displayName: 'Install .NET $(DotNet8Version)'
     inputs:
       version: '$(DotNet8Version)'
@@ -187,14 +155,6 @@ jobs:
       command: 'test'
       arguments: '--no-restore --no-build --framework net6.0 /noautorsp'
       testRunTitle: 'MacOS .NET 6.0'
-    condition: succeededOrFailed()
-
-  - task: DotNetCoreCLI@2
-    displayName: 'Run Unit Tests (.NET 7.0)'
-    inputs:
-      command: 'test'
-      arguments: '--no-restore --no-build --framework net7.0 /noautorsp'
-      testRunTitle: 'MacOS .NET 7.0'
     condition: succeededOrFailed()
 
   - task: DotNetCoreCLI@2
