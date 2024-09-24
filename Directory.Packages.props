@@ -2,7 +2,7 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 
-    <!-- Please use caution adding a depenendcy to MSBuild packages. Use latest for testing and
+    <!-- Please use caution adding a dependency to MSBuild packages. Use latest for testing and
          use the minimum version for compilation for back compat. -->
     <MicrosoftBuildPackageVersion>17.11.4</MicrosoftBuildPackageVersion>
     <MicrosoftBuildMinimumPackageVersion>16.11.0</MicrosoftBuildMinimumPackageVersion>
