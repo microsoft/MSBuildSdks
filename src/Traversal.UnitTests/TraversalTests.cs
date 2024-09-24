@@ -584,7 +584,7 @@ namespace Microsoft.Build.Traversal.UnitTests
                         targetsToBuild: new[] { "Restore" });
 
                     var graphBuildRequestData = new GraphBuildRequestData(
-                        projectGraphEntryPoints: new[] { new ProjectGraphEntryPoint(traversalProject.FullPath) },
+                        projectGraphEntryPoints: new[] { new ProjectGraphEntryPoint(traversalProject.FullPath, new Dictionary<string, string>()) },
                         targetsToBuild: new[] { "Build" });
 
                     var graphRestoreResult = buildManager.BuildRequest(graphRestoreRequestData);
