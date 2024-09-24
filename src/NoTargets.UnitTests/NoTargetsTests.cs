@@ -91,8 +91,6 @@ namespace Microsoft.Build.NoTargets.UnitTests
                     path: Path.Combine(TestRootPath, "ProjectA", "ProjectA.csproj"),
 #if NETFRAMEWORK || NET8_0
                     targetFramework: "net8.0")
-#elif NET6_0
-                    targetFramework: "net6.0")
 #endif
                 .Save();
 
