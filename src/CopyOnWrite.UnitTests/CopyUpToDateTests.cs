@@ -13,6 +13,11 @@ using Xunit.Abstractions;
 
 namespace Microsoft.Build.CopyOnWrite.UnitTests;
 
+// These tests rely on Microsoft.Build.Framework which has only a net472 and current-framework target.
+// Don't compile these tests for .NET versions in between as Microsoft.Build.Framework.dll will not be
+// propagated to the output dir.
+#if !NET6_0 && !NET7_0
+
 public class CopyUpToDateTests : MSBuildSdkTestBase
 {
     // If the developer has specified this environment variable (also used in the base CoW library unit tests),
@@ -122,3 +127,5 @@ public class CopyUpToDateTests : MSBuildSdkTestBase
         }
     }
 }
+
+#endif
