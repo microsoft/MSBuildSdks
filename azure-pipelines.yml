@@ -44,6 +44,7 @@ jobs:
     displayName: 'Install .NET $(DotNet9Version)'
     inputs:
       version: '$(DotNet9Version)'
+      includePreviewVersions: true
 
   - task: DotNetCoreCLI@2
     displayName: 'Build Solution'
@@ -97,6 +98,7 @@ jobs:
     displayName: 'Install .NET $(DotNet9Version)'
     inputs:
       version: '$(DotNet9Version)'
+      includePreviewVersions: true
 
   - task: DotNetCoreCLI@2
     displayName: 'dotnet build'
@@ -142,6 +144,7 @@ jobs:
     displayName: 'Install .NET $(DotNet9Version)'
     inputs:
       version: '$(DotNet9Version)'
+      includePreviewVersions: true
 
   - task: DotNetCoreCLI@2
     displayName: 'dotnet build'
