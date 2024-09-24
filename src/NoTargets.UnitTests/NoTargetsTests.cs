@@ -269,11 +269,9 @@ namespace Microsoft.Build.NoTargets.UnitTests
         }
 
         [Theory]
-        [InlineData(".csproj"
-#if NETFRAMEWORK
-            , Skip = "Currently broken"
+#if !NETFRAMEWORK
+        [InlineData(".csproj")]
 #endif
-            )]
         [InlineData(".proj", Skip = "Currently broken because of a regression in Static Graph when the extension is .proj")]
         public void StaticGraphBuildsSucceed(string projectExtension)
         {
