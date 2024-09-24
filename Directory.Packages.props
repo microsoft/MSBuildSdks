@@ -7,7 +7,7 @@
     <MicrosoftBuildPackageVersion>17.8.3</MicrosoftBuildPackageVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="CopyOnWrite" Version="0.3.10" Condition=" '$(TargetFramework)' != 'net46' " />
+    <PackageVersion Include="CopyOnWrite" Version="0.3.11" Condition=" '$(TargetFramework)' != 'net46' " />
     <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" />
     <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildPackageVersion)" />
     <PackageVersion Include="Microsoft.Win32.Registry" Version="5.0.0" />
