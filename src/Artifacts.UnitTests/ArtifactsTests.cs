@@ -244,7 +244,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
         }
 
         [Fact]
-        public void DisabledWhenBuiltInArtifactsEnabled()
+        public void DisabledDefaultArtifactsWhenBuiltInArtifactsEnabled()
         {
             DirectoryInfo projectDirectory = CreateFiles("ClassLibrary1");
 
@@ -254,18 +254,20 @@ namespace Microsoft.Build.Artifacts.UnitTests
                 .Save(Path.Combine(TestRootPath, "Directory.Build.props"));
 
             ProjectCreator.Templates.ProjectWithArtifacts(
-                path: Path.Combine(TestRootPath, "ProjectA.csproj"),
-                sdk: "Microsoft.NET.Sdk")
-                    .Save()
-                    .TryGetItems("Artifact", out IReadOnlyCollection<ProjectItem> artifactItems)
-                    .TryGetPropertyValue("DefaultArtifactsSource", out string defaultArtifactsSource)
-                    .TryGetPropertyValue("EnableArtifacts", out string enableArtifacts)
-                    .TryGetPropertyValue("UsingMicrosoftArtifactsSdk", out string usingMicrosoftArtifactsSdk);
+                    path: Path.Combine(TestRootPath, "ProjectA.csproj"),
+                    sdk: "Microsoft.NET.Sdk")
+                .Save()
+                .TryGetItems("Artifact", out IReadOnlyCollection<ProjectItem> artifactItems)
+                .TryGetPropertyValue("DefaultArtifactsSource", out string defaultArtifactsSource)
+                .TryGetPropertyValue("EnableArtifacts", out string enableArtifacts)
+                .TryGetPropertyValue("UsingMicrosoftArtifactsSdk", out string usingMicrosoftArtifactsSdk)
+                .TryGetPropertyValue("EnableDefaultArtifacts", out string enableDefaultArtifacts);
 
             artifactItems.ShouldBeEmpty();
             defaultArtifactsSource.ShouldBe(string.Empty);
-            enableArtifacts.ShouldBe(bool.FalseString, StringCompareShould.IgnoreCase);
-            usingMicrosoftArtifactsSdk.ShouldBe(string.Empty);
+            enableArtifacts.ShouldBe(string.Empty);
+            usingMicrosoftArtifactsSdk.ShouldBe(bool.TrueString, StringCompareShould.IgnoreCase);
+            enableDefaultArtifacts.ShouldBe(bool.FalseString, StringCompareShould.IgnoreCase);
         }
 
         [Fact]
