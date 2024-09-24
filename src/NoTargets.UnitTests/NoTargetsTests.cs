@@ -318,6 +318,7 @@ namespace Microsoft.Build.NoTargets.UnitTests
             }
         }
 
+#if NETFRAMEWORK
         [Fact]
         public void StaticGraphBuildsSucceedLegacyCsproj()
         {
@@ -371,6 +372,7 @@ namespace Microsoft.Build.NoTargets.UnitTests
                 }
             }
         }
+#endif
 
         [Theory]
         [InlineData(".csproj", "Build")]
