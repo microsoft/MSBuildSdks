@@ -323,7 +323,7 @@ namespace Microsoft.Build.NoTargets.UnitTests
                             new[] { new ProjectGraphEntryPoint(project.FullPath) },
                             new[] { "Build" }));
 
-                    graphResult.OverallResult.ShouldBe(BuildResultCode.Success, buildOutput.GetConsoleLog());
+                    graphResult.OverallResult.ShouldBe(BuildResultCode.Success, graphResult.Exception.ToString());
                 }
                 finally
                 {
