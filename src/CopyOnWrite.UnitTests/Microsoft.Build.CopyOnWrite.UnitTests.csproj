@@ -5,7 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CopyOnWrite" />
-    <PackageReference Include="Microsoft.Build.Framework" />
+    <PackageReference Include="Microsoft.Build" Condition="'$(TargetFramework)' != 'net6.0' And '$(TargetFramework)' != 'net7.0' " />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="Microsoft.Win32.Registry" />
     <PackageReference Include="MSBuild.ProjectCreation" />
@@ -13,6 +13,7 @@
     <PackageReference Include="Shouldly" />
     <PackageReference Include="System.CodeDom" />
     <PackageReference Include="System.Collections.Immutable" />
+    <PackageReference Include="System.Text.Json" Condition="'$(TargetFramework)' != 'net6.0' And '$(TargetFramework)' != 'net7.0' " />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
