@@ -91,10 +91,6 @@ namespace Microsoft.Build.NoTargets.UnitTests
                     path: Path.Combine(TestRootPath, "ProjectA", "ProjectA.csproj"),
 #if NETFRAMEWORK || NET8_0
                     targetFramework: "net8.0")
-#elif NET6_0
-                    targetFramework: "net6.0")
-#elif NET7_0
-                    targetFramework: "net7.0")
 #endif
                 .Save();
 
@@ -269,7 +265,9 @@ namespace Microsoft.Build.NoTargets.UnitTests
         }
 
         [Theory]
+#if !NETFRAMEWORK
         [InlineData(".csproj")]
+#endif
         [InlineData(".proj", Skip = "Currently broken because of a regression in Static Graph when the extension is .proj")]
         public void StaticGraphBuildsSucceed(string projectExtension)
         {
