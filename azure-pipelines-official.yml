@@ -8,7 +8,7 @@ variables:
   ArtifactsDirectoryName: 'artifacts'
   BuildConfiguration: 'Release'
   BuildPlatform: 'Any CPU'
-  DotNetVersion: '8.x'
+  DotNetVersion: '9.x'
   MSBuildArgs: '"/p:Platform=$(BuildPlatform)" "/p:Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
   SignType: 'Real'
 trigger:
@@ -74,6 +74,7 @@ extends:
           displayName: 'Install .NET $(DotNetVersion)'
           inputs:
             version: '$(DotNetVersion)'
+            includePreviewVersions: true
         - task: VSBuild@1
           displayName: 'Build Solution'
           inputs:
