@@ -12,7 +12,7 @@ This sample shows how to use `Microsoft.Build.CentralPackageVersions`.
    ```xml
     <Project Sdk="Microsoft.NET.Sdk">
       <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
       </PropertyGroup>
       <ItemGroup>
         <PackageReference Include="Newtonsoft.Json" />
