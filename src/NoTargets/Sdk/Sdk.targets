@@ -101,6 +101,6 @@
   <Target Name="_GenerateCompileInputs" />
   <Target Name="_GenerateCompileDependencyCache" />
 
-  <!-- Disables the _CopyFilesMarkedCopyLocal target to not copy references when SkipCopyFilesMarkedCopyLocal is set to false. -->
+  <!-- Disables the _CopyFilesMarkedCopyLocal target to not copy references when SkipCopyFilesMarkedCopyLocal is set to true. -->
   <Import Project="DisableCopyFilesMarkedCopyLocal.targets" Condition="'$(SkipCopyFilesMarkedCopyLocal)' == 'true'" />
 </Project>
