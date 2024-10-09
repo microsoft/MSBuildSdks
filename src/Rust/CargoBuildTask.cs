@@ -83,7 +83,7 @@ namespace MSBuild.CargoBuild
             if (!Command.Equals("fetch", StringComparison.InvariantCultureIgnoreCase))
             {
                 var dir = Directory.GetParent(StartupProj!);
-                bool cargoLockFile = File.Exists(Path.Combine(dir!.FullName, "cargo.lock"));
+                bool cargoLockFile = File.Exists(Path.Combine(dir!.FullName, "cargo.toml"));
 
                 return !cargoLockFile || CargoRunCommandAsync(Command.ToLower(), CommandArgs).GetAwaiter().GetResult() == ExitCode.Succeeded;
             }
