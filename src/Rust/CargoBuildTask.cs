@@ -148,7 +148,7 @@ namespace MSBuild.CargoBuild
                 var rustProjects = new List<string>();
                 foreach (ProjectGraphNode node in graph.ProjectNodes)
                 {
-                    bool cargoLockFiles = File.Exists(Path.Combine(node.ProjectInstance.Directory, "cargo.lock"));
+                    bool cargoLockFiles = File.Exists(Path.Combine(node.ProjectInstance.Directory, "cargo.toml"));
                     if (!rustProjects.Contains(node.ProjectInstance.Directory) && cargoLockFiles)
                     {
                         rustProjects.Add(node.ProjectInstance.Directory);

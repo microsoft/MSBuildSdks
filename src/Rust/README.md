@@ -26,7 +26,7 @@ To use this sdk you will need the following:
   <ItemGroup>
     <ProjectFile Include="projects\**\*.csproj" />
   </ItemGroup>
-  <!-- Chains restoring NPM packages after restore. -->
+  <!-- Chains restoring Cargo crates packages after restore. -->
   <Sdk Name="MSBuild.CargoBuild" />
 </Project>
 ```
