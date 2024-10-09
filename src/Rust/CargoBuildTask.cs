@@ -28,7 +28,9 @@ namespace MSBuild.CargoBuild
         private static readonly string _cargoPath = $"{_tempPath}\\cargohome\\bin\\cargo.exe";
         private static readonly string _rustInstallPath = $"{_tempPath}\\rustinstall";
         private static readonly string _rustUpInitBinary = $"{_rustInstallPath}\\rustup-init.exe";
-        private static readonly Dictionary<string, string> _envVars = new () { { "CARGO_HOME", $"{_tempPath}\\cargohome" }, { "RUSTUP_HOME", $"{_tempPath}\\rustuphome" }, };
+        private static readonly string _cargoHome = $"{_tempPath}\\cargohome";
+        private static readonly string _rustupHome = $"{_tempPath}\\rustuphome";
+        private static readonly Dictionary<string, string> _envVars = new () { { "CARGO_HOME", _cargoHome }, { "RUSTUP_HOME", _rustupHome }, };
 
         private bool _shouldCleanRustPath;
         private string? _currentRustupInitExeCheckSum;
@@ -69,6 +71,15 @@ namespace MSBuild.CargoBuild
         /// <inheritdoc/>
         public override bool Execute()
         {
+            if (Command.Equals("clearcargocache", StringComparison.InvariantCultureIgnoreCase))
+            {
+                if (Directory.Exists(_cargoHome))
+                {
+                    Log.LogMessage(MessageImportance.Normal, $"Clearing cargo cache at {_cargoHome}");
+                    Directory.Delete(_cargoHome, true);
+                }
+            }
+
             if (!Command.Equals("fetch", StringComparison.InvariantCultureIgnoreCase))
             {
                 var dir = Directory.GetParent(StartupProj!);
@@ -263,7 +274,10 @@ namespace MSBuild.CargoBuild
                     {
                         foreach (var envar in envars)
                         {
-                            info.EnvironmentVariables.Add(envar.Key, envar.Value);
+                            if (!info.EnvironmentVariables.ContainsKey(envar.Key))
+                            {
+                                info.EnvironmentVariables.Add(envar.Key, envar.Value);
+                            }
                         }
                     }
 
@@ -327,6 +341,11 @@ namespace MSBuild.CargoBuild
 
         private async Task<bool> InstallRust()
         {
+            foreach (var envVar in _envVars)
+            {
+                Environment.SetEnvironmentVariable(envVar.Key, envVar.Value);
+            }
+
             var exitCode = await ExecuteProcessAsync(_rustUpInitBinary, "-y", ".", _envVars);
             var exitCodeLatest = await ExecuteProcessAsync(_rustUpBinary, "default stable", ".", _envVars);
 

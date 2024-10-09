@@ -112,16 +112,19 @@
 	<Target Name="CargoBuild" AfterTargets="CoreCompile">
 		<CargoBuildTask EnableAuth="False" StartupProj="$(MSBuildProjectFullPath)" Command="build" CommandArgs="$(BuildCommandArgs)" />
 	</Target>
-	<Target Name="Test">
-		<CargoBuildTask EnableAuth="False" StartupProj="$(MSBuildProjectFullPath)" Command="test" CommandArgs="$(TestCommandArgs)" />
+	<Target Name="Test" AfterTargets="CargoBuild" Condition="$(Test)=='true'">
+		<CargoBuildTask StartupProj="$(MSBuildProjectFullPath)" Command="test" CommandArgs="$(TestCommandArgs)" />
 	</Target>
-	<Target Name="Clean">
-		<CargoBuildTask EnableAuth="False" StartupProj="$(MSBuildProjectFullPath)" Command="clean" CommandArgs="$(CleanCommandArgs)" />
+	<Target Name="Clean" BeforeTargets="CargoBuild" Condition="$(Clean)=='true'">
+		<CargoBuildTask StartupProj="$(MSBuildProjectFullPath)" Command="clean" CommandArgs="$(CleanCommandArgs)" />
 	</Target>
-	<Target Name="Run">
-		<CargoBuildTask EnableAuth="False" StartupProj="$(MSBuildProjectFullPath)" Command="run" CommandArgs="$(RunCommandArgs)" />
+	<Target Name="Run" AfterTargets="CargoBuild" Condition="$(Run)=='true'">
+		<CargoBuildTask StartupProj="$(MSBuildProjectFullPath)" Command="run" CommandArgs="$(RunCommandArgs)" />
 	</Target>
-	<Target Name="Doc">
-		<CargoBuildTask EnableAuth="False" StartupProj="$(MSBuildProjectFullPath)" Command="doc" CommandArgs="$(DocCommandArgs)" />
+	<Target Name="Doc" AfterTargets="CargoBuild" Condition="$(Doc)=='true'">
+		<CargoBuildTask StartupProj="$(MSBuildProjectFullPath)" Command="doc" CommandArgs="$(DocCommandArgs)" />
+	</Target>
+	<Target Name="ClearCargoCache">
+		<CargoBuildTask StartupProj="$(MSBuildProjectFullPath)" Command="ClearCargoCache" CommandArgs="$(DocCommandArgs)" />
 	</Target>
 </Project>
