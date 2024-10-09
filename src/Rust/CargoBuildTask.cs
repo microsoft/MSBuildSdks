@@ -341,6 +341,11 @@ namespace MSBuild.CargoBuild
 
         private async Task<bool> InstallRust()
         {
+            if (Directory.Exists(_cargoHome) && Directory.Exists(_rustupHome))
+            {
+                return true;
+            }
+
             foreach (var envVar in _envVars)
             {
                 Environment.SetEnvironmentVariable(envVar.Key, envVar.Value);
