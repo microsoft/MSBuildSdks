@@ -5,7 +5,7 @@
     <!-- Please use caution adding a dependency to MSBuild packages. Use latest for testing and
          use the minimum version for compilation for back compat. -->
     <MicrosoftBuildPackageVersion>17.11.4</MicrosoftBuildPackageVersion>
-    <MicrosoftBuildMinimumPackageVersion>16.11.0</MicrosoftBuildMinimumPackageVersion>
+    <MicrosoftBuildMinimumPackageVersion>17.10.4</MicrosoftBuildMinimumPackageVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="CopyOnWrite" Version="0.3.12" Condition=" '$(TargetFramework)' != 'net46' " />
