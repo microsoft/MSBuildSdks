@@ -13,7 +13,7 @@
     <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildPackageVersion)" />
     <PackageVersion Include="Microsoft.Win32.Registry" Version="5.0.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageVersion Include="System.CodeDom" Version="8.0.0" />
+    <PackageVersion Include="System.CodeDom" Version="9.0.0-rc.2.24473.5" />
     <PackageVersion Include="System.Collections.Immutable" Version="8.0.0" />
     <PackageVersion Include="System.Text.Json" Version="8.0.5" />
     <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="8.0.1" /> 
@@ -26,7 +26,7 @@
   <ItemGroup Condition="'$(IsTestProject)' == 'true'">
     <PackageVersion Include="AssemblyShader" Version="1.0.3-preview" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
-    <PackageVersion Include="MSBuild.ProjectCreation" Version="13.0.0" />
+    <PackageVersion Include="MSBuild.ProjectCreation" Version="14.0.0" />
     <PackageVersion Include="Shouldly" Version="4.2.1" />
     <PackageVersion Include="xunit" Version="2.9.2" />
     <PackageVersion Include="xunit.analyzers" Version="1.16.0" />
