@@ -15,7 +15,12 @@
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="System.CodeDom" Version="8.0.0" />
     <PackageVersion Include="System.Collections.Immutable" Version="8.0.0" />
+
+    <!-- Suppress high vuln Component Governance alert. >8.0.4 breaks downlevel VS installations. VS team working to fix. -->
+    <!-- https://github.com/microsoft/MSBuildSdks/issues/591 -->
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-8g4q-xg66-9fp4" />
     <PackageVersion Include="System.Text.Json" Version="8.0.4" />
+
     <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="8.0.1" /> 
 
     <!-- Pinning vulnerable packages -->
