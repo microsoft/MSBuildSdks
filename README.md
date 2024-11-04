@@ -27,7 +27,7 @@ Supports staging artifacts from build outputs.
 [![NuGet](https://img.shields.io/nuget/v/Microsoft.Build.CopyOnWrite.svg)](https://www.nuget.org/packages/Microsoft.Build.CopyOnWrite)
  [![NuGet](https://img.shields.io/nuget/dt/Microsoft.Build.CopyOnWrite.svg)](https://www.nuget.org/packages/Microsoft.Build.CopyOnWrite)
 
-Enables Copy on Write for faster file copies.
+Enables Copy on Write on Windows Dev Drive and ReFS for faster file copies.
 
 ### [Microsoft.Build.RunVSTest](src/RunTests)
 [![NuGet](https://img.shields.io/nuget/v/Microsoft.Build.RunVSTest.svg)](https://www.nuget.org/packages/Microsoft.Build.RunVSTest)
