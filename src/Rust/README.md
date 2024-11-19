@@ -66,6 +66,10 @@ For cargo docs
 msbuild /p:doc=true
 ```
 
+To clear the cargo home cache
+```shell
+msbuild /t:clearcargocache
+```
 ### How to test locally
 
 1) After building the cargo build project, a nupkg file will be created in the `bin\Debug` or `bin\Release` folder. A file like `MSBuild.CargoBuild.<someversionnumber>.nupkg` will be created
@@ -86,7 +90,4 @@ msbuild /p:doc=true
     ```
  4) Once you run `msbuild /restore` in your rust project, the CargoBuild sdk will be restored from the local nuget source. You can now use the sdk locally.
 
-To clear the cargo home cache
-```shell
-msbuild /t:clearcargocache
-```
+
