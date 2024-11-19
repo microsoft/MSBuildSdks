@@ -68,9 +68,9 @@ msbuild /p:doc=true
 
 ### How to test locally
 
-1) After build the project the nuget package will exist in the `bin\Debug` or `bin\Release` folder. A file `MSBuild.CargoBuild.<someversionnumber>.nupkg` will be created
+1) After building the cargo build project, a nupkg file will be created in the `bin\Debug` or `bin\Release` folder. A file like `MSBuild.CargoBuild.<someversionnumber>.nupkg` will be created
 
-2) In repo with the repo that contains your rust project(s), update your nuget.config file to point to the CargoBuild `bin\Debug` or `bin\Release` folder.
+2) In repo that contains your rust project(s), update your nuget.config file to point to the CargoBuild `bin\Debug` or `bin\Release` folder.
 
 ```xml
     <packageSources>
@@ -84,7 +84,7 @@ msbuild /p:doc=true
     "MSBuild.CargoBuild": "<someversionnumber>"
     }
     ```
- 4) Once you run `msbuild /restore` your rust project, the CargoBuild sdk will be restored from the local nuget source. You can now use the sdk locally.
+ 4) Once you run `msbuild /restore` in your rust project, the CargoBuild sdk will be restored from the local nuget source. You can now use the sdk locally.
 
 To clear the cargo home cache
 ```shell
