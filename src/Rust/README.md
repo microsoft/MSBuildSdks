@@ -74,10 +74,10 @@ msbuild /p:doc=true
 
 ```xml
     <packageSources>
-        <add key="local" value="C:\Users\colecarter\source\repos\MSBuildSdks\src\Rust\bin\Debug" />
+        <add key="local" value="C:\repos\MSBuildSdks\src\Rust\bin\Debug" />
     </packageSources>
  ```
- 3) In your the repo that contains your rust project, update your `global.json` to include the Sdk. Use the version number from the nupkg file above as the sdk version.
+ 3) In the repo that contains your rust project, update your `global.json` to include the Sdk. Use the version number from the nupkg file above as the sdk version.
     ```xml
     "msbuild-sdks": {
     ...,
