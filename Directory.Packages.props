@@ -5,7 +5,7 @@
     <!-- Please use caution adding a dependency to MSBuild packages. Use latest for testing and
          use the minimum version for compilation for back compat. -->
     <MicrosoftBuildPackageVersion>17.11.4</MicrosoftBuildPackageVersion>
-    <MicrosoftBuildMinimumPackageVersion>16.11.0</MicrosoftBuildMinimumPackageVersion>
+    <MicrosoftBuildMinimumPackageVersion>17.11.4</MicrosoftBuildMinimumPackageVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="CopyOnWrite" Version="0.4.2" Condition=" '$(TargetFramework)' != 'net46' " />
@@ -13,7 +13,7 @@
     <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildPackageVersion)" />
     <PackageVersion Include="Microsoft.Win32.Registry" Version="5.0.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageVersion Include="System.CodeDom" Version="8.0.0" />
+    <PackageVersion Include="System.CodeDom" Version="9.0.0" />
     <PackageVersion Include="System.Collections.Immutable" Version="8.0.0" />
 
     <!-- Suppress high vuln Component Governance alert. >8.0.4 breaks downlevel VS installations. VS team working to fix. -->
