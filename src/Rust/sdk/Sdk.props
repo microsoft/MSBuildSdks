@@ -76,7 +76,7 @@
 
 	<!-- For CPS/VS support. Importing in .props allows any subsequent targets to redefine this if needed -->
 	<Target Name="CompileDesignTime" />
-	
+
 	<!-- Rust specific props -->
 	<PropertyGroup>
 		<AuthMode Condition="'$(AuthMode)' == '' and '$(Q_SESSION_GUID)' != ''">false</AuthMode>
@@ -88,5 +88,6 @@
 		<CleanCommandArgs Condition="'$(CleanCommandArgs)' == ''"></CleanCommandArgs>
 		<RunCommandArgs Condition="'$(RunCommandArgs)' == ''"></RunCommandArgs>
 		<DocCommandArgs Condition="'$(DocCommandArgs)' == ''"></DocCommandArgs>
+		<UseMsRustup Condition="'$(UseMsRustup)' == ''">false</UseMsRustup>
 	</PropertyGroup>
 </Project>

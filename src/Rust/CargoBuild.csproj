@@ -17,7 +17,11 @@
 		<NoWarn>$(NoWarn);NU1504;NU5100;NU5110;NU5111</NoWarn>
 	</PropertyGroup>
 	<ItemGroup>
-	  <None Include="README.md" />
+		<None Include="dist\msrustup.ps1">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Pack>true</Pack>
+		</None>
+		<None Include="README.md" />
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Build.Utilities.Core" VersionOverride="17.3.2" />
