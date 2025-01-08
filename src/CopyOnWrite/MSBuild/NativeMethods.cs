@@ -2,17 +2,21 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.ComponentModel;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using Microsoft.Win32;
+using Microsoft.Win32.SafeHandles;
 
-#nullable disable
+#nullable enable
 
 namespace Microsoft.Build.Framework;
 
 internal static class NativeMethods
 {
     internal const uint ERROR_ACCESS_DENIED = 0x5;
+    internal const int ERROR_INVALID_FILENAME = -2147024773; // Illegal characters in name
     internal const int FILE_ATTRIBUTE_READONLY = 0x00000001;
     internal const int FILE_ATTRIBUTE_DIRECTORY = 0x00000010;
     
@@ -101,9 +105,9 @@ internal static class NativeMethods
 
     private static bool IsLongPathsEnabledRegistry()
     {
-        using (RegistryKey fileSystemKey = Registry.LocalMachine.OpenSubKey(WINDOWS_FILE_SYSTEM_REGISTRY_KEY))
+        using (RegistryKey? fileSystemKey = Registry.LocalMachine.OpenSubKey(WINDOWS_FILE_SYSTEM_REGISTRY_KEY))
         {
-            object longPathsEnabledValue = fileSystemKey?.GetValue(WINDOWS_LONG_PATHS_ENABLED_VALUE_NAME, 0);
+            object? longPathsEnabledValue = fileSystemKey?.GetValue(WINDOWS_LONG_PATHS_ENABLED_VALUE_NAME, 0);
             return fileSystemKey != null && Convert.ToInt32(longPathsEnabledValue) == 1;
         }
     }
@@ -131,7 +135,7 @@ internal static class NativeMethods
     [DllImport("libc", SetLastError = true)]
     internal static extern int link(string oldpath, string newpath);
 
-    internal static bool MakeHardLink(string newFileName, string exitingFileName, ref string errorMessage)
+    internal static bool MakeHardLink(string newFileName, string exitingFileName, ref string? errorMessage)
     {
         bool hardLinkCreated;
         if (IsWindows)
@@ -151,29 +155,29 @@ internal static class NativeMethods
     //------------------------------------------------------------------------------
     // CreateSymbolicLink
     //------------------------------------------------------------------------------
-    internal enum SymbolicLink
+    private enum SymbolicLink
     {
         File = 0,
         Directory = 1
     }
     [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
     [return: MarshalAs(UnmanagedType.I1)]
-    internal static extern bool CreateSymbolicLink(string symLinkFileName, string targetFileName, SymbolicLink dwFlags);
+    private static extern bool CreateSymbolicLink(string symLinkFileName, string targetFileName, SymbolicLink dwFlags);
 
     [DllImport("libc", SetLastError = true)]
-    internal static extern int symlink(string oldpath, string newpath);
+    private static extern int symlink(string oldpath, string newpath);
 
-    internal static bool MakeSymbolicLink(string newFileName, string exitingFileName, ref string errorMessage)
+    public static bool MakeSymbolicLink(string newFileName, string existingFileName, ref string? errorMessage)
     {
         bool symbolicLinkCreated;
         if (IsWindows)
         {
-            symbolicLinkCreated = CreateSymbolicLink(newFileName, exitingFileName, SymbolicLink.File);
+            symbolicLinkCreated = CreateSymbolicLink(newFileName, existingFileName, SymbolicLink.File);
             errorMessage = symbolicLinkCreated ? null : Marshal.GetExceptionForHR(Marshal.GetHRForLastWin32Error()).Message;
         }
         else
         {
-            symbolicLinkCreated = symlink(exitingFileName, newFileName) == 0;
+            symbolicLinkCreated = symlink(existingFileName, newFileName) == 0;
             errorMessage = symbolicLinkCreated ? null : "The link() library call failed with the following error code: " + Marshal.GetLastWin32Error();
         }
 

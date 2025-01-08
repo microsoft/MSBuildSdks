@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net472;net8.0;net9.0</TargetFrameworks>
+    <Nullable>Enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="CopyOnWrite" />
+    <PackageReference Include="Microsoft.Build" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Microsoft.Win32.Registry" />
+    <PackageReference Include="MSBuild.ProjectCreation" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="Shouldly" />
+    <PackageReference Include="System.CodeDom" />
+    <PackageReference Include="System.Collections.Immutable" />
+    <PackageReference Include="System.Text.Json" Condition="'$(TargetFramework)' != 'net8.0' " />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.analyzers" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CopyOnWrite\Microsoft.Build.CopyOnWrite.csproj" />
+  </ItemGroup>
+</Project>

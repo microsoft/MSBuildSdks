@@ -4,10 +4,13 @@
 
 using Microsoft.Build.Utilities.ProjectCreation;
 using System;
-using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Security.Principal;
 using System.Threading;
+
+#nullable enable
 
 namespace Microsoft.Build.UnitTests.Common
 {
@@ -15,7 +18,7 @@ namespace Microsoft.Build.UnitTests.Common
     {
         private readonly string _testRootPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
-        public MSBuildSdkTestBase()
+        protected MSBuildSdkTestBase()
         {
             File.WriteAllText(
                 Path.Combine(TestRootPath, "NuGet.config"),
@@ -26,11 +29,11 @@ namespace Microsoft.Build.UnitTests.Common
     <add key=""NuGet.org"" value=""https://api.nuget.org/v3/index.json"" />
   </packageSources>
 </configuration>");
-
-            Environment.CurrentDirectory = TestRootPath;
         }
 
-        public string TestRootPath
+        protected bool IsWindows { get; } = Environment.OSVersion.Platform == PlatformID.Win32NT;
+
+        protected string TestRootPath
         {
             get
             {
@@ -51,9 +54,9 @@ namespace Microsoft.Build.UnitTests.Common
 
             foreach (FileInfo file in files.Select(i => new FileInfo(Path.Combine(directory.FullName, i))))
             {
-                file.Directory.Create();
+                file.Directory?.Create();
 
-                File.WriteAllBytes(file.FullName, new byte[0]);
+                File.WriteAllText(file.FullName, file.FullName.Substring(directory.FullName.Length + 1));
             }
 
             return directory;
@@ -86,6 +89,21 @@ namespace Microsoft.Build.UnitTests.Common
             }
         }
 
+#pragma warning disable SA1204  // OS-specific - internal logic guards from non-Windows usage
+        [SuppressMessage("Interoperability", "CA1416: Validate platform compatibility", Justification = "Internal logic guards from non-Windows usage")]
+        protected bool IsAdministratorOnWindows()
+        {
+            if (!IsWindows)
+            {
+                throw new InvalidOperationException();
+            }
+
+            using WindowsIdentity identity = WindowsIdentity.GetCurrent();
+            WindowsPrincipal principal = new WindowsPrincipal(identity);
+            return principal.IsInRole(WindowsBuiltInRole.Administrator);
+        }
+#pragma warning restore SA1204
+
         protected string GetTempFile(string name)
         {
             if (name == null)
@@ -96,7 +114,7 @@ namespace Microsoft.Build.UnitTests.Common
             return Path.Combine(TestRootPath, name);
         }
 
-        protected string GetTempFileWithExtension(string extension = null)
+        protected string GetTempFileWithExtension(string? extension = null)
         {
             return Path.Combine(TestRootPath, $"{Path.GetRandomFileName()}{extension ?? string.Empty}");
         }

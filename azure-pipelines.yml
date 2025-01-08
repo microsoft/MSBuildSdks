@@ -5,9 +5,8 @@ variables:
   ArtifactsDirectoryName: 'artifacts'
   BuildConfiguration: 'Debug'
   BuildPlatform: 'Any CPU'
-  DotNet3Version: '3.x'
-  DotNet6Version: '6.x'
-  DotNet7Version: '7.x'
+  DotNet8Version: '8.x'
+  DotNet9Version: '9.x'
   MSBuildArgs: '"/p:Platform=$(BuildPlatform)" "/p:Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
   SignType: 'Test'
 
@@ -37,19 +36,15 @@ jobs:
   steps:
 
   - task: UseDotNet@2
-    displayName: 'Install .NET Core $(DotNet3Version)'
+    displayName: 'Install .NET $(DotNet8Version)'
     inputs:
-      version: '$(DotNet3Version)'
+      version: '$(DotNet8Version)'
 
   - task: UseDotNet@2
-    displayName: 'Install .NET $(DotNet6Version)'
+    displayName: 'Install .NET $(DotNet9Version)'
     inputs:
-      version: '$(DotNet6Version)'
-
-  - task: UseDotNet@2
-    displayName: 'Install .NET $(DotNet7Version)'
-    inputs:
-      version: '$(DotNet7Version)'
+      version: '$(DotNet9Version)'
+      includePreviewVersions: true
 
   - task: DotNetCoreCLI@2
     displayName: 'Build Solution'
@@ -66,19 +61,19 @@ jobs:
     condition: succeededOrFailed()
 
   - task: DotNetCoreCLI@2
-    displayName: 'Run Unit Tests (.NET Core 3.0)'
+    displayName: 'Run Unit Tests (.NET 8.0)'
     inputs:
       command: 'test'
-      arguments: '--no-restore --no-build --framework netcoreapp3.1 /noautorsp'
-      testRunTitle: 'Windows .NET Core 3.0'
+      arguments: '--no-restore --no-build --framework net8.0 /noautorsp'
+      testRunTitle: 'Windows .NET 8.0'
     condition: succeededOrFailed()
 
   - task: DotNetCoreCLI@2
-    displayName: 'Run Unit Tests (.NET 6.0)'
+    displayName: 'Run Unit Tests (.NET 9.0)'
     inputs:
       command: 'test'
-      arguments: '--no-restore --no-build --framework net6.0 /noautorsp'
-      testRunTitle: 'Windows .NET 6.0'
+      arguments: '--no-restore --no-build --framework net9.0 /noautorsp'
+      testRunTitle: 'Windows .NET 9.0'
     condition: succeededOrFailed()
 
   - task: PublishBuildArtifacts@1
@@ -95,14 +90,15 @@ jobs:
   steps:
 
   - task: UseDotNet@2
-    displayName: 'Install .NET $(DotNet6Version)'
+    displayName: 'Install .NET $(DotNet8Version)'
     inputs:
-      version: '$(DotNet6Version)'
+      version: '$(DotNet8Version)'
 
   - task: UseDotNet@2
-    displayName: 'Install .NET $(DotNet7Version)'
+    displayName: 'Install .NET $(DotNet9Version)'
     inputs:
-      version: '$(DotNet7Version)'
+      version: '$(DotNet9Version)'
+      includePreviewVersions: true
 
   - task: DotNetCoreCLI@2
     displayName: 'dotnet build'
@@ -111,11 +107,19 @@ jobs:
       arguments: '$(MSBuildArgs)'
 
   - task: DotNetCoreCLI@2
-    displayName: 'Run Unit Tests (.NET 6.0)'
+    displayName: 'Run Unit Tests (.NET 8.0)'
     inputs:
       command: 'test'
-      arguments: '--no-restore --no-build --framework net6.0 /noautorsp'
-      testRunTitle: 'Linux .NET 6.0'
+      arguments: '--no-restore --no-build --framework net8.0 /noautorsp'
+      testRunTitle: 'Linux .NET 8.0'
+    condition: succeededOrFailed()
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Run Unit Tests (.NET 9.0)'
+    inputs:
+      command: 'test'
+      arguments: '--no-restore --no-build --framework net9.0 /noautorsp'
+      testRunTitle: 'Linux .NET 9.0'
     condition: succeededOrFailed()
 
   - task: PublishBuildArtifacts@1
@@ -132,14 +136,15 @@ jobs:
   steps:
 
   - task: UseDotNet@2
-    displayName: 'Install .NET $(DotNet6Version)'
+    displayName: 'Install .NET $(DotNet8Version)'
     inputs:
-      version: '$(DotNet6Version)'
+      version: '$(DotNet8Version)'
 
   - task: UseDotNet@2
-    displayName: 'Install .NET $(DotNet7Version)'
+    displayName: 'Install .NET $(DotNet9Version)'
     inputs:
-      version: '$(DotNet7Version)'
+      version: '$(DotNet9Version)'
+      includePreviewVersions: true
 
   - task: DotNetCoreCLI@2
     displayName: 'dotnet build'
@@ -148,11 +153,19 @@ jobs:
       arguments: '$(MSBuildArgs)'
 
   - task: DotNetCoreCLI@2
-    displayName: 'Run Unit Tests (.NET 6.0)'
+    displayName: 'Run Unit Tests (.NET 8.0)'
     inputs:
       command: 'test'
-      arguments: '--no-restore --no-build --framework net6.0 /noautorsp'
-      testRunTitle: 'MacOS .NET 6.0'
+      arguments: '--no-restore --no-build --framework net8.0 /noautorsp'
+      testRunTitle: 'MacOS .NET 8.0'
+    condition: succeededOrFailed()
+
+  - task: DotNetCoreCLI@2
+    displayName: 'Run Unit Tests (.NET 9.0)'
+    inputs:
+      command: 'test'
+      arguments: '--no-restore --no-build --framework net9.0 /noautorsp'
+      testRunTitle: 'MacOS .NET 9.0'
     condition: succeededOrFailed()
 
   - task: PublishBuildArtifacts@1

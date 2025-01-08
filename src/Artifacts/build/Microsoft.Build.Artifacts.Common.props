@@ -6,6 +6,13 @@
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
+    <!--
+      Disable default functionality if the project has opted into the .NET SDK's built-in artifacts
+      functionality. Robocopy or explicit <Artifact> items are still copied.
+    -->
+    <EnableDefaultArtifacts Condition="'$(UseArtifactsOutput)' == 'true'">false</EnableDefaultArtifacts>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(EnableArtifacts)' != 'false'">
     <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
 
     <UsingMicrosoftArtifactsSdk>true</UsingMicrosoftArtifactsSdk>

@@ -12,7 +12,9 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>    
   </PropertyGroup>
-
+  <ItemGroup>
+    <Compile Include="..\Shared\CopyExceptionHandling.cs" />
+  </ItemGroup>
   <ItemGroup>
     <None Include="build\Microsoft.Build.CopyOnWrite.targets">
       <PackagePath>build\</PackagePath>
@@ -21,20 +23,33 @@
     <None Include=".editorconfig" />
   </ItemGroup>
   <ItemGroup>
-    <FilesToSign Include="$(TargetPath)" Authenticode="Microsoft400" StrongName="StrongName" />
+    <FilesToSign Include="$(TargetPath)"
+                 Authenticode="Microsoft400"
+                 StrongName="StrongName" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CopyOnWrite" GeneratePathProperty="True" PrivateAssets="All" />
-	  <PackageReference Include="Microsoft.Build.Tasks.Core" PrivateAssets="all" ExcludeAssets="Runtime">
-      <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
+    <PackageReference Include="CopyOnWrite"
+                      GeneratePathProperty="True"
+                      PrivateAssets="All" />
+    <!-- Note this is an API dependencies to support a minimum version of MSBuild. -->
+    <PackageReference Include="Microsoft.Build.Tasks.Core"
+                      VersionOverride="$(MicrosoftBuildMinimumPackageVersion)"
+                      PrivateAssets="all"
+                      ExcludeAssets="Runtime"
+                      IncludeAssets="compile; build; native; contentfiles; analyzers; buildtransitive" />
   </ItemGroup>
-
-  <Target Name="IncludeReferenceCopyLocalPathsInBuildOutputInPackage" BeforeTargets="_GetBuildOutputFilesWithTfm" DependsOnTargets="ResolveReferences;ResolvePackageDependenciesForBuild">
+  <Target Name="IncludeReferenceCopyLocalPathsInBuildOutputInPackage"
+          BeforeTargets="_GetBuildOutputFilesWithTfm"
+          DependsOnTargets="ResolveReferences;ResolvePackageDependenciesForBuild">
     <ItemGroup>
-      <BuildOutputInPackage Include="@(RuntimeCopyLocalItems-&gt;WithMetadataValue('AssetType', 'runtime'))" TargetPath="%(RuntimeCopyLocalItems.DestinationSubDirectory)%(Filename)%(Extension)" />
-      <BuildOutputInPackage Include="@(RuntimeCopyLocalItems-&gt;WithMetadataValue('CopyLocal', 'true'))" TargetPath="%(RuntimeCopyLocalItems.DestinationSubDirectory)%(Filename)%(Extension)" />
+      <BuildOutputInPackage Include="@(RuntimeCopyLocalItems-&gt;WithMetadataValue('AssetType', 'runtime'))"
+                            TargetPath="%(RuntimeCopyLocalItems.DestinationSubDirectory)%(Filename)%(Extension)" />
+      <BuildOutputInPackage Include="@(RuntimeCopyLocalItems-&gt;WithMetadataValue('CopyLocal', 'true'))"
+                            TargetPath="%(RuntimeCopyLocalItems.DestinationSubDirectory)%(Filename)%(Extension)" />
     </ItemGroup>
   </Target>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Build.CopyOnWrite.UnitTests" />
+  </ItemGroup>
 </Project>

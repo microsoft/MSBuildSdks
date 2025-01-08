@@ -8,7 +8,7 @@
   <Import Project="$(CustomBeforeArtifactsTargets)"
           Condition="'$(CustomBeforeArtifactsTargets)' != '' And Exists('$(CustomBeforeArtifactsTargets)')" />
 
-  <PropertyGroup>
+  <PropertyGroup Condition="'$(EnableArtifacts)' != 'false'">
     <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
 
     <!--
@@ -17,7 +17,7 @@
     <CopyArtifactsAfterTargets Condition="'$(CopyArtifactsAfterTargets)' == '' And '$(GeneratePackageOnBuild)' == 'true'">Pack</CopyArtifactsAfterTargets>
   </PropertyGroup>
 
-   <PropertyGroup Condition="'$(EnableDefaultArtifacts)' != 'false' And '$(DefaultArtifactsSource)' == '' And '$(TargetFrameworks)' == ''">
+   <PropertyGroup Condition="'$(EnableArtifacts)' != 'false' And '$(EnableDefaultArtifacts)' != 'false' And '$(DefaultArtifactsSource)' == '' And '$(TargetFrameworks)' == ''">
       <!--
          Default artifacts source is the output path unless AppendTargetFrameworkToOutputPath is true in which case the parent folder is the default.
        -->
@@ -26,12 +26,12 @@
       <DefaultArtifactsSource Condition="'$(AppendTargetFrameworkToOutputPath)' == 'true' And $(OutputPath.EndsWith('/'))">$([System.IO.Path]::GetDirectoryName($(OutputPath.TrimEnd('/'))))/</DefaultArtifactsSource>
    </PropertyGroup>
 
-  <ItemGroup Condition="'$(EnableDefaultArtifacts)' != 'false' And '$(ArtifactsPath)' != '' And '$(DefaultArtifactsSource)' != '' And '$(TargetFrameworks)' == ''">
+  <ItemGroup Condition="'$(EnableArtifacts)' != 'false' And '$(EnableDefaultArtifacts)' != 'false' And '$(ArtifactsPath)' != '' And '$(DefaultArtifactsSource)' != '' And '$(TargetFrameworks)' == ''">
     <!--
       By default copy the contents of $(DefaultArtifactsSource) (default is $(OutputPath)) to $(ArtifactsPath) unless:
-       * EnableDefaultArtifacts is 'false'
+       * $(EnableDefaultArtifacts) is 'false'
        * $(ArtifactsPath) is not specified
-       * $(TargetFramworks) is specified in which case the artifacts are copied in the outer build
+       * $(TargetFrameworks) is specified in which case the artifacts are copied in the outer build
     -->
     <Artifact Include="$(DefaultArtifactsSource)"
               DestinationFolder="$(ArtifactsPath)"

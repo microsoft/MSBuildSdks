@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net46;net472;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <BuildOutputTargetFolder>build\</BuildOutputTargetFolder>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>Build logic for staging artifacts from build outputs.</Description>
@@ -10,36 +10,34 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);GetMyPackageFiles</TargetsForTfmSpecificContentInPackage>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="CopyOnWrite" GeneratePathProperty="True" PrivateAssets="All" Condition="'$(TargetFramework)' != 'net46'" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" PrivateAssets="All" />
-    <PackageReference Include="System.Threading.Tasks.Dataflow" />
+    <Compile Include="..\Shared\CopyExceptionHandling.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="build\*" Pack="true" PackagePath="build\" />
-    <None Include="buildMultiTargeting\*" Pack="true" PackagePath="buildMultiTargeting\" />
+    <PackageReference Include="CopyOnWrite" GeneratePathProperty="True" PrivateAssets="All" />
+
+    <!-- Note these are API dependencies to support a minimum version of MSBuild. -->
+    <PackageReference Include="Microsoft.Build.Tasks.Core" VersionOverride="$(MicrosoftBuildMinimumPackageVersion)" ExcludeAssets="Runtime" PrivateAssets="All" />
+    <PackageReference Include="System.Threading.Tasks.Dataflow" VersionOverride="4.9.0" PrivateAssets="All" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="build\*"
+          Pack="true"
+          PackagePath="build\" />
+    <None Include="buildMultiTargeting\*"
+          Pack="true"
+          PackagePath="buildMultiTargeting\" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.Build.Artifacts.UnitTests" />
   </ItemGroup>
   <ItemGroup>
-    <FilesToSign Include="$(TargetPath)" Authenticode="Microsoft400" StrongName="StrongName" />
+    <FilesToSign Include="$(TargetPath)"
+                 Authenticode="Microsoft400"
+                 StrongName="StrongName" />
   </ItemGroup>
   <Target Name="SignNuGetPackage" />
-  <Target Name="GetMyPackageFiles" DependsOnTargets="ResolveProjectReferences" Condition=" '$(TargetFramework)' != 'net46' ">
-    <PropertyGroup>
-      <CoWFramework Condition=" '$(TargetFramework)' == 'net472' or '$(TargetFramework)' == 'netstandard2.0' ">netstandard2.0</CoWFramework>
-      <CoWFramework Condition=" '$(TargetFramework)' == 'net6.0' ">net6.0</CoWFramework>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <TfmSpecificPackageFile Include="$(PkgCopyOnWrite)\lib\$(CoWFramework)\CopyOnWrite.dll"
-                              Pack="true"
-                              PackagePath="\build\$(TargetFramework)" />
-    </ItemGroup>
-  </Target>
   <Target Name="CopyArtifacts"
           AfterTargets="Pack"
           DependsOnTargets="SignNuGetPackage"
@@ -47,10 +45,19 @@
     <ItemGroup>
       <Artifact Include="$(OutputPath)\**" />
     </ItemGroup>
-
     <Copy SourceFiles="@(Artifact)"
           DestinationFiles="@(Artifact->'$(ArtifactsPath)%(RecursiveDir)%(Filename)%(Extension)')"
           SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
           OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)" />
+  </Target>
+  <Target Name="IncludeReferenceCopyLocalPathsInBuildOutputInPackage"
+          BeforeTargets="_GetBuildOutputFilesWithTfm"
+          DependsOnTargets="ResolveReferences;ResolvePackageDependenciesForBuild">
+    <ItemGroup>
+      <BuildOutputInPackage Include="@(RuntimeCopyLocalItems-&gt;WithMetadataValue('AssetType', 'runtime'))"
+                            TargetPath="%(RuntimeCopyLocalItems.DestinationSubDirectory)%(Filename)%(Extension)" />
+      <BuildOutputInPackage Include="@(RuntimeCopyLocalItems-&gt;WithMetadataValue('CopyLocal', 'true'))"
+                            TargetPath="%(RuntimeCopyLocalItems.DestinationSubDirectory)%(Filename)%(Extension)" />
+    </ItemGroup>
   </Target>
 </Project>

@@ -11,12 +11,6 @@ The MSBuild project SDKs are used to configure and extend your build.
 
 Supports creating traversal projects which are MSBuild projects that indicate what projects to include when building your tree.  For large project trees, they are replacements for Visual Studio solution files.
 
-### [Microsoft.Build.CentralPackageVersions](src/CentralPackageVersions)
-[![NuGet](https://img.shields.io/nuget/v/Microsoft.Build.CentralPackageVersions.svg)](https://www.nuget.org/packages/Microsoft.Build.CentralPackageVersions)
- [![NuGet](https://img.shields.io/nuget/dt/Microsoft.Build.CentralPackageVersions.svg)](https://www.nuget.org/packages/Microsoft.Build.CentralPackageVersions)
-
-Supports centrally managing NuGet package versions in a code base.  Also allows adding global package references to all projects.
-
 ### [Microsoft.Build.NoTargets](src/NoTargets)
 [![NuGet](https://img.shields.io/nuget/v/Microsoft.Build.NoTargets.svg)](https://www.nuget.org/packages/Microsoft.Build.NoTargets)
  [![NuGet](https://img.shields.io/nuget/dt/Microsoft.Build.NoTargets.svg)](https://www.nuget.org/packages/Microsoft.Build.NoTargets)
@@ -33,7 +27,13 @@ Supports staging artifacts from build outputs.
 [![NuGet](https://img.shields.io/nuget/v/Microsoft.Build.CopyOnWrite.svg)](https://www.nuget.org/packages/Microsoft.Build.CopyOnWrite)
  [![NuGet](https://img.shields.io/nuget/dt/Microsoft.Build.CopyOnWrite.svg)](https://www.nuget.org/packages/Microsoft.Build.CopyOnWrite)
 
-Enables Copy on Write for faster file copies.
+Enables Copy on Write on Windows Dev Drive and ReFS for faster file copies.
+
+### [Microsoft.Build.RunVSTest](src/RunTests)
+[![NuGet](https://img.shields.io/nuget/v/Microsoft.Build.RunVSTest.svg)](https://www.nuget.org/packages/Microsoft.Build.RunVSTest)
+ [![NuGet](https://img.shields.io/nuget/dt/Microsoft.Build.RunVSTest.svg)](https://www.nuget.org/packages/Microsoft.Build.RunVSTest)
+
+Hooks VSTest to the Test target, allowing running tests concurrently with the build via `msbuild /t:Build;Test`.
 
 ## How can I use these SDKs?
 
@@ -74,7 +74,7 @@ MSBuild 15.0 introduced new project XML for .NET Core that we refer to as SDK-st
 At evaluation time, MSBuild adds implicit imports at the top and bottom of the project like this:
 
 ```xml
-<Project Sdk="Microsoft.Cpp.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>

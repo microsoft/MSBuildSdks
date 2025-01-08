@@ -89,7 +89,11 @@ namespace Microsoft.Build.NoTargets.UnitTests
         {
             ProjectCreator projectA = ProjectCreator.Templates.SdkCsproj(
                     path: Path.Combine(TestRootPath, "ProjectA", "ProjectA.csproj"),
-                    targetFramework: "netcoreapp2.1")
+#if NETFRAMEWORK || NET8_0
+                    targetFramework: "net8.0")
+#elif NET9_0
+                    targetFramework: "net9.0")
+#endif
                 .Save();
 
             ProjectCreator noTargetsProject = ProjectCreator.Templates.NoTargetsProject(
@@ -262,33 +266,76 @@ namespace Microsoft.Build.NoTargets.UnitTests
             buildOutput.Messages.High.ShouldContain("86F00AF59170450E9D687652D74A6394");
         }
 
-        [Theory]
-        [InlineData(".csproj")]
-        [InlineData(".proj", Skip = "Currently broken because of a regression in Static Graph when the extension is .proj")]
-        public void StaticGraphBuildsSucceed(string projectExtension)
+        [Fact]
+        public void StaticGraphBuildsSucceed()
         {
             ProjectCreator sdkReference = ProjectCreator.Templates.SdkCsproj(
                 Path.Combine(TestRootPath, "sdkstyle", "sdkstyle.csproj"))
                 .Save();
-#if NETFRAMEWORK
-            ProjectCreator legacyReference = ProjectCreator.Templates.LegacyCsproj(
-                    Path.Combine(TestRootPath, "legacy", "legacy.csproj"),
-                    targetFrameworkVersion: "v4.7.2")
-                .Save();
-#endif
 
             ProjectCreator noTargets = ProjectCreator.Templates.NoTargetsProject(
                 path: Path.Combine(TestRootPath, "notargets", "notargets.csproj"),
                 customAction: creator =>
                 {
                     creator.ItemProjectReference(sdkReference, referenceOutputAssembly: false);
-#if NETFRAMEWORK
-                    creator.ItemProjectReference(legacyReference, referenceOutputAssembly: false);
-#endif
                 }).Save();
 
             ProjectCreator project = ProjectCreator.Templates.SdkCsproj(
-                    Path.Combine(TestRootPath, "main", $"main{projectExtension}"),
+                    Path.Combine(TestRootPath, "main", $"main.csproj"),
+                    projectCreator: creator =>
+                    {
+                        creator.ItemProjectReference(noTargets, referenceOutputAssembly: false);
+                    })
+                .Save()
+                .TryBuild("Restore", out bool result, out BuildOutput restoreOutput);
+
+            result.ShouldBeTrue(restoreOutput.GetConsoleLog());
+
+            using (BuildManager buildManager = new BuildManager())
+            using (ProjectCollection projectCollection = new ProjectCollection())
+            {
+                try
+                {
+                    BuildOutput buildOutput = BuildOutput.Create();
+
+                    buildManager.BeginBuild(
+                        new BuildParameters(projectCollection)
+                        {
+                            Loggers = new[] { buildOutput },
+                            IsolateProjects = true,
+                        });
+                    GraphBuildResult graphResult = buildManager.BuildRequest(
+                        new GraphBuildRequestData(
+                            [new ProjectGraphEntryPoint(project.FullPath, new Dictionary<string, string>())],
+                            new List<string> { "Build" }));
+                    var console = buildOutput.GetConsoleLog();
+                    graphResult.OverallResult.ShouldBe(BuildResultCode.Success, graphResult.Exception?.ToString());
+                }
+                finally
+                {
+                    buildManager.EndBuild();
+                }
+            }
+        }
+
+#if NETFRAMEWORK
+        [Fact]
+        public void StaticGraphBuildsSucceedLegacyCsproj()
+        {
+            ProjectCreator legacyReference = ProjectCreator.Templates.LegacyCsproj(
+                    Path.Combine(TestRootPath, "legacy", "legacy.csproj"),
+                    targetFrameworkVersion: "v4.7.2")
+                .Save();
+
+            ProjectCreator noTargets = ProjectCreator.Templates.NoTargetsProject(
+                path: Path.Combine(TestRootPath, "notargets", "notargets.csproj"),
+                customAction: creator =>
+                {
+                    creator.ItemProjectReference(legacyReference, referenceOutputAssembly: false);
+                }).Save();
+
+            ProjectCreator project = ProjectCreator.Templates.SdkCsproj(
+                    Path.Combine(TestRootPath, "main", $"main.csproj"),
                     projectCreator: creator =>
                     {
                         creator.ItemProjectReference(noTargets, referenceOutputAssembly: false);
@@ -314,10 +361,10 @@ namespace Microsoft.Build.NoTargets.UnitTests
 
                     GraphBuildResult graphResult = buildManager.BuildRequest(
                         new GraphBuildRequestData(
-                            new[] { new ProjectGraphEntryPoint(project.FullPath) },
-                            new[] { "Build" }));
+                            new[] { new ProjectGraphEntryPoint(project.FullPath, new Dictionary<string, string>()) },
+                            new List<string> { "Build" }));
 
-                    graphResult.OverallResult.ShouldBe(BuildResultCode.Success, buildOutput.GetConsoleLog());
+                    graphResult.OverallResult.ShouldBe(BuildResultCode.Success, graphResult.Exception?.ToString());
                 }
                 finally
                 {
@@ -325,6 +372,7 @@ namespace Microsoft.Build.NoTargets.UnitTests
                 }
             }
         }
+#endif
 
         [Theory]
         [InlineData(".csproj", "Build")]

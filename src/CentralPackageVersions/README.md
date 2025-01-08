@@ -1,4 +1,7 @@
-# Microsoft.Build.CentralPackageVersions
+# Deprecated
+🎉 This feature is now fully supported in Visual Studio / MSBuild! See [Central Package Management](https://learn.microsoft.com/en-us/nuget/consume-packages/Central-Package-Management) page for details. The migration should be very straightforward with some small differences. See [Migration](Migration.md) for details.
+
+## Microsoft.Build.CentralPackageVersions
 [![NuGet](https://img.shields.io/nuget/v/Microsoft.Build.CentralPackageVersions.svg)](https://www.nuget.org/packages/Microsoft.Build.CentralPackageVersions)
  [![NuGet](https://img.shields.io/nuget/dt/Microsoft.Build.CentralPackageVersions.svg)](https://www.nuget.org/packages/Microsoft.Build.CentralPackageVersions)
  

@@ -8,6 +8,7 @@ using Microsoft.CopyOnWrite;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 
 #nullable enable
 
@@ -34,6 +35,11 @@ namespace Microsoft.Build.Artifacts
         /// Gets the OS-specific path comparer.
         /// </summary>
         public static StringComparer PathComparer { get; } = IsWindows ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+
+        /// <summary>
+        /// Gets the OS-specific Regex options for path regex matching.
+        /// </summary>
+        public static RegexOptions PathRegexOptions { get; } = IsWindows ? RegexOptions.IgnoreCase : RegexOptions.None;
 
         /// <summary>
         /// Gets a singleton instance of this class.

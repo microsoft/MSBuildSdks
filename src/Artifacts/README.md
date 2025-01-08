@@ -14,6 +14,8 @@ to reproduce locally.  If your build stages artifacts as part of the overall bui
 hosted build environment.
 
 
+**NOTE: When using the .NET SDK's built-in artifacts functionality, the features of Microsoft.Build.Artifacts are disabled.**
+
 
 ## Example
 The source of artifacts default to the project's `$(OutputPath)`.  You simply need to specify a destination in order to have the artifacts staged for that project.
@@ -133,7 +135,7 @@ The following properties control artifacts staging:
 | Property | Description | Default |
 |-------------------------------------|-------------|---------|
 | `EnableDefaultArtifacts` | Set this to `false` to disable the default staging of the `$(OutputPath)` to the artifacts directory.| `true` |
-| `DefaultArtifactsSource` | The default path to use as a source for staging artifacts. | `$(OutputPath)` |
+| `DefaultArtifactsSource` | The default path to use as a source for staging artifacts. | `$(OutputPath)` if `AppendTargetFrameworkToOutputPath` is not true, otherwise the parent of `$(OutputPath)` (behavior changed in version 2.0.20). If you need the old behavior, set `AppendTargetFrameworkToOutputPath` to true, or set the property value `<DefaultArtifactsSource>$(OutputPath)</DefaultArtifactsSource>`. |
 | `ArtifactsPath` | The default path to use as a destination for staging artifacts | |
 | `DefaultArtifactsFileMatch` | The default filter to use for staging artifacts | `*exe *dll *exe.config` |
 | `DefaultArtifactsFileExclude` | The default file filter to exclude when staging artifacts | |
@@ -172,7 +174,7 @@ The `<Artifact />` items specify collections of artifacts to stage.  These items
 | `IsRecursive` | Enables a recursive path search for artifacts to stage | `true` |
 | `VerifyExists`  | Enables a check that the file exists before copying | `true` |
 | `AlwaysCopy` | Enables copies even if the destination already exists | `false` |
-| `OnlyNewer`  | Enables copies only if the destnation exist and the source is newer | `false` |
+| `OnlyNewer`  | Enables copies only if the destination exists and the source is newer | `false` |
 | `FileMatch` | A list of one or more file filters seperated by a space or semicolon to include.  Wildcards include `*` and `?` | `*`|
 | `FileExclude`   | A list of one or more file filters seperated by a space or semicolon to exclude.  Wildcards include `*` and `?` | |
 | `DirExclude`   | A list of one or more directory filters seperated by a space or semicolon to exclude.  Wildcards include `*` and `?` | |

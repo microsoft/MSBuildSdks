@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (c) Microsoft Corporation. All rights reserved.
+  
+  Licensed under the MIT license.
+-->
+<Project>
+  <UsingTask TaskName="Microsoft.Build.RunVSTestTask" AssemblyFile="$(MSBuildThisFileDirectory)netstandard2.0\Microsoft.Build.RunVSTest.dll" />
+
+  <!-- Only consider non "dotnet" scenarios sinces those are already covered by Microsoft.Testing.Platform.MSBuild, which is automatically included as a dependency of MSTest.TestAdapter -->
+  <Target Name="RunVSTest" AfterTargets="Test" Condition="'$(RunVSTest)' != 'false' and '$(IsTestProject)' == 'true' and '$(MSBuildRuntimeType)' != 'Core'">
+    <!--
+      This target name is hardcoded in TerminalLogger to mean start of test workload.
+      This let's terminal logger know that it should show `Testing` in the output,
+      and not the additional internal details, such as target names.
+    -->
+    <CallTarget Targets="_TestRunStart" />
+
+    <RunVSTestTask ToolExe="$(VSTestToolExe)"
+                   ToolPath="$(VSTestToolPath)"
+                   TestFileFullPath="$(TargetPath)"
+                   VSTestSetting="$(VSTestSetting)"
+                   VSTestTestAdapterPath="$(VSTestTestAdapterPath)"
+                   VSTestFramework="$(VSTestFramework)"
+                   VSTestPlatform="$(VSTestPlatform)"
+                   VSTestTestCaseFilter="$(VSTestTestCaseFilter)"
+                   VSTestLogger="$(VSTestLogger)"
+                   VSTestListTests="$(VSTestListTests)"
+                   VSTestDiag="$(VSTestDiag)"
+                   VSTestResultsDirectory="$(VSTestResultsDirectory)"
+                   VSTestVerbosity="$(VSTestVerbosity)"
+                   VSTestCollect="$(VSTestCollect)"
+                   VSTestBlame="$(VSTestBlame)"
+                   VSTestBlameCrash="$(VSTestBlameCrash)"
+                   VSTestBlameCrashDumpType="$(VSTestBlameCrashDumpType)"
+                   VSTestBlameCrashCollectAlways="$(VSTestBlameCrashCollectAlways)"
+                   VSTestBlameHang="$(VSTestBlameHang)"
+                   VSTestBlameHangDumpType="$(VSTestBlameHangDumpType)"
+                   VSTestBlameHangTimeout="$(VSTestBlameHangTimeout)"
+                   VSTestTraceDataCollectorDirectoryPath="$(VSTestTraceDataCollectorDirectoryPath)"
+                   VSTestNoLogo="$(VSTestNoLogo)"
+                   VSTestArtifactsProcessingMode="$(VSTestArtifactsProcessingMode)"
+                   VSTestSessionCorrelationId="$(VSTestSessionCorrelationId)" />
+  </Target>
+
+  <Target Name="_TestRunStart" />
+</Project>

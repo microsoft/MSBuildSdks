@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net472;netcoreapp3.1;net6.0</TargetFrameworks>
-    <IsPackable>false</IsPackable>
+    <TargetFrameworks>net472;net8.0;net9.0</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
@@ -9,13 +8,19 @@
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="Shouldly" />
     <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.analyzers" />
     <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CentralPackageVersions\Microsoft.Build.CentralPackageVersions.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\CentralPackageVersions\Microsoft.Build.CentralPackageVersions.csproj"
+                      ReferenceOutputAssembly="false" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\CentralPackageVersions\Sdk\Sdk.props" Link="Sdk\Sdk.props" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="..\CentralPackageVersions\Sdk\Sdk.targets" Link="Sdk\Sdk.targets" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\CentralPackageVersions\Sdk\Sdk.props"
+          Link="Sdk\Sdk.props"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\CentralPackageVersions\Sdk\Sdk.targets"
+          Link="Sdk\Sdk.targets"
+          CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

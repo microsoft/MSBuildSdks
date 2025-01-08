@@ -3,6 +3,7 @@
 // Licensed under the MIT license.
 
 using Microsoft.Build.Framework;
+using Microsoft.Build.Shared;
 using Microsoft.Build.Utilities;
 using System;
 using System.Collections.Concurrent;
@@ -10,6 +11,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks.Dataflow;
 
@@ -30,11 +32,11 @@ namespace Microsoft.Build.Artifacts.Tasks
         private static readonly ExecutionDataflowBlockOptions ActionBlockOptions = new () { MaxDegreeOfParallelism = MsBuildCopyParallelism, EnsureOrdered = MsBuildCopyParallelism == 1 };
 
         private readonly ConcurrentDictionary<string, bool> _dirsCreated = new (Artifacts.FileSystem.PathComparer);
-        private readonly Dictionary<string, string> _realDirPaths = new (Artifacts.FileSystem.PathComparer);  // Cache results of symlink resolution to avoid I/O.
-        private readonly HashSet<string> _destinationPathsStarted = new (Artifacts.FileSystem.PathComparer);  // Destination paths that were dispatched to copy. Extra copies to the same destination are copied single-threaded in a second wave.
         private readonly List<CopyJob> _duplicateDestinationDelayedJobs = new ();  // Jobs that were delayed because they were to a destination path that was already dispatched to copy.
+        private readonly ConcurrentDictionary<string, Dictionary<string, FileInfo>> _destinationDirectoryFilesCopying = new (concurrencyLevel: 1, capacity: 31, Artifacts.FileSystem.PathComparer);  // Map for destination directories to track files being copied there in parallel portion of copy. Concurrent dictionaries to get TryAdd(), GetOrAdd().
         private readonly ActionBlock<CopyJob> _copyFileBlock;
-        private readonly HashSet<CopyFileDedupKey> _filesCopied = new (CopyFileDedupKey.ComparerInstance);
+        private readonly HashSet<string> _sourceFilesEncountered = new (Artifacts.FileSystem.PathComparer);  // Reusable scratch space
+
         private TimeSpan _retryWaitInMilliseconds = TimeSpan.Zero;
         private int _numFilesCopied;
         private int _numFilesSkipped;
@@ -46,7 +48,7 @@ namespace Microsoft.Build.Artifacts.Tasks
             {
                 // Break from synchronous thread context of caller to get onto global thread pool thread for synchronous copy operations.
                 await System.Threading.Tasks.Task.Yield();
-                CopyFileImpl(job.SourceFile, job.DestFile, job.Metadata);
+                CopyFileImpl(job.SourceFile, job.DestFile, job.Metadata, job.ReplacementSourceFile);
             }, ActionBlockOptions);
         }
 
@@ -66,7 +68,7 @@ namespace Microsoft.Build.Artifacts.Tasks
         public bool ShowDiagnosticTrace { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether to log errors on retries
+        /// Gets or sets a value indicating whether to log errors on retries.
         /// </summary>
         public bool ShowErrorOnRetry { get; set; }
 
@@ -104,16 +106,18 @@ namespace Microsoft.Build.Artifacts.Tasks
                 CopyItems(bucket);
             }
 
+            // Complete the parallel part of the copy job.
             _copyFileBlock.Complete();
             _copyFileBlock.Completion.GetAwaiter().GetResult();
 
+            // Remaining jobs must run single-threaded in order to ensure ordering of filesystem changes.
             if (_duplicateDestinationDelayedJobs.Count > 0)
             {
-                Log.LogMessage("Finishing {0} delayed copies to same destinations as single-threaded copies", _duplicateDestinationDelayedJobs.Count);
+                Log.LogMessage($"Finishing {_duplicateDestinationDelayedJobs.Count} delayed copies to same destinations as single-threaded copies");
                 foreach (CopyJob job in _duplicateDestinationDelayedJobs)
                 {
                     job.DestFile.Refresh();
-                    CopyFileImpl(job.SourceFile, job.DestFile, job.Metadata);
+                    CopyFileImpl(job.SourceFile, job.DestFile, job.Metadata, job.ReplacementSourceFile);
                 }
             }
 
@@ -124,6 +128,25 @@ namespace Microsoft.Build.Artifacts.Tasks
                 _numErrors == 0 ? string.Empty : $", {_numErrors} errors",
                 _duplicateDestinationDelayedJobs.Count == 0 ? string.Empty : $", {_duplicateDestinationDelayedJobs.Count} copies to same destination delayed to run single-threaded");
             return !Log.HasLoggedErrors;
+        }
+
+        /// <summary>
+        /// Converts a wildcard file pattern to a regular expression string.
+        /// </summary>
+        internal static string WildcardToRegexStr(string pattern)
+        {
+            pattern = Regex.Escape(pattern);
+            pattern = pattern.Replace("\\*", ".*");
+            pattern = pattern.Replace("\\?", ".?");
+            return pattern;
+        }
+
+        /// <summary>
+        /// Converts a wildcard file pattern to a regular expression.
+        /// </summary>
+        private static Regex WildcardToRegex(string pattern)
+        {
+            return new Regex(WildcardToRegexStr(pattern), Artifacts.FileSystem.PathRegexOptions);
         }
 
         private static int GetMsBuildCopyTaskParallelism()
@@ -139,47 +162,78 @@ namespace Microsoft.Build.Artifacts.Tasks
             return parallelism;
         }
 
+        /// <summary>
+        /// Intended to be called during the parallel portion of the copy job. It may kick work out to the single-threaded portion of the job.
+        /// During single-threaded post-processing use <see cref="CopyFileImpl"/>
+        /// </summary>
         private void CopyFile(FileInfo sourceFile, FileInfo destFile, RobocopyMetadata metadata)
         {
-            // When multiple copies are targeted to the same destination, copy the 2nd and subsequent copies single-threaded.
-            // Note this will not detect the same destination via symlinks or junctions.
-            if (_destinationPathsStarted.Add(destFile.FullName))
+            // There may already be a copy to this source file path underway, indicating a link in a chained copy.
+            // This can be copied in parallel from the original source as long as the destination is unique.
+            string sourceDir = sourceFile.DirectoryName ?? string.Empty;
+            FileInfo? replacementSourceFile;
+            if (_destinationDirectoryFilesCopying.TryGetValue(sourceDir, out Dictionary<string, FileInfo>? copiesUnderwayInSourceDir))
             {
-                if (_filesCopied.Add(new CopyFileDedupKey(sourceFile.FullName, destFile.FullName)))
-                {
-                    _copyFileBlock.Post(new CopyJob(sourceFile, destFile, metadata));
-                }
-                else
-                {
-                    Log.LogMessage(MessageImportance.Low, "Skipped {0} to {1} as duplicate copy", sourceFile.FullName, destFile.FullName);
-                }
-            }
-            else if (!_filesCopied.Contains(new CopyFileDedupKey(sourceFile.FullName, destFile.FullName)))
-            {
-                Log.LogMessage("Delaying {0} to {1} as duplicate destination", sourceFile.FullName, destFile.FullName);
-                _duplicateDestinationDelayedJobs.Add(new CopyJob(sourceFile, destFile, metadata));
+                copiesUnderwayInSourceDir.TryGetValue(sourceFile.FullName, out replacementSourceFile);
             }
             else
             {
-                Log.LogMessage(MessageImportance.Low, "Skipped {0} to {1} as duplicate copy", sourceFile.FullName, destFile.FullName);
+                replacementSourceFile = null;
+            }
+
+            CopyFile(sourceFile, destFile, metadata, replacementSourceFile);
+        }
+
+        private void CopyFile(FileInfo sourceFile, FileInfo destFile, RobocopyMetadata metadata, FileInfo? replacementSourceFile)
+        {
+            string destFilePath = destFile.FullName;
+            string destDir = destFile.DirectoryName ?? string.Empty;
+            Dictionary<string, FileInfo> copiesUnderwayInDestDir = _destinationDirectoryFilesCopying.GetOrAdd(
+                destDir,
+                _ => new Dictionary<string, FileInfo>(Artifacts.FileSystem.PathComparer));
+            if (!copiesUnderwayInDestDir.TryGetValue(destFilePath, out FileInfo? sourceFileUnderway))
+            {
+                // Create the destination directory before posting to support enumerating destination directories in CopySearch().
+                if (destFile.DirectoryName is not null)
+                {
+                    CreateDirectoryWithRetries(destFile.DirectoryName);
+                }
+
+                // No other copies to this destination underway, kick off parallel copy.
+                copiesUnderwayInDestDir[destFilePath] = replacementSourceFile ?? sourceFile;
+                _copyFileBlock.Post(new CopyJob(sourceFile, destFile, metadata, replacementSourceFile));
+            }
+            else
+            {
+                string sourceFilePath = sourceFile.FullName;
+                if (!string.Equals(sourceFilePath, sourceFileUnderway.FullName, Artifacts.FileSystem.PathComparison))
+                {
+                    // When multiple copies are targeted to the same destination, copy the 2nd and subsequent copies single-threaded.
+                    // Note this will not detect the same destination via symlinks or junctions.
+                    Log.LogMessage("Delaying copying {0} to {1} as duplicate destination", sourceFile.FullName, destFilePath);
+                    _duplicateDestinationDelayedJobs.Add(new CopyJob(sourceFile, destFile, metadata, replacementSourceFile));
+                }
+                else
+                {
+                    Log.LogMessage(MessageImportance.Low, "Skipped {0} to {1} as duplicate copy", sourceFilePath, destFilePath);
+                }
             }
         }
 
-        private void CopyFileImpl(FileInfo sourceFile, FileInfo destFile, RobocopyMetadata metadata)
+        /// <summary>
+        /// Used for copying within either a parallel context in the action block or a single-threaded context in the single-threaded phase.
+        /// </summary>
+        private void CopyFileImpl(FileInfo sourceFile, FileInfo destFile, RobocopyMetadata metadata, FileInfo? replacementSourceFile)
         {
-            if (destFile.DirectoryName is not null)
-            {
-                CreateDirectoryWithRetries(destFile.DirectoryName);
-            }
-
-            string sourcePath = sourceFile.FullName;
+            string originalSourcePath = sourceFile.FullName;
             string destPath = destFile.FullName;
 
             for (int retry = 0; retry <= RetryCount; ++retry)
             {
                 try
                 {
-                    if (metadata.ShouldCopy(FileSystem, sourceFile, destFile))
+                    FileInfo sourceToActuallyCopy = replacementSourceFile ?? sourceFile;
+                    if (metadata.ShouldCopy(FileSystem, sourceToActuallyCopy, destFile))
                     {
                         bool cowLinked = false;
                         if (!DisableCopyOnWrite)
@@ -188,7 +242,7 @@ namespace Microsoft.Build.Artifacts.Tasks
                             // On any problem fall back to real copy.
                             try
                             {
-                                cowLinked = FileSystem.TryCloneFile(sourceFile, destFile);
+                                cowLinked = FileSystem.TryCloneFile(sourceToActuallyCopy, destFile);
                                 if (cowLinked)
                                 {
                                     destFile.Refresh();
@@ -196,27 +250,27 @@ namespace Microsoft.Build.Artifacts.Tasks
                             }
                             catch (Win32Exception win32Ex) when (win32Ex.NativeErrorCode == ErrorSharingViolation)
                             {
-                                Log.LogMessage("Sharing violation creating copy-on-write link from {0} to {1}, retrying with copy", sourcePath, destPath);
+                                Log.LogMessage("Sharing violation creating copy-on-write link from {0} to {1}, retrying with copy", originalSourcePath, destPath);
                             }
                             catch (Exception ex)
                             {
-                                Log.LogMessage("Exception creating copy-on-write link from {0} to {1}, retrying with copy: {2}", sourcePath, destPath, ex);
+                                Log.LogMessage("Exception creating copy-on-write link from {0} to {1}, retrying with copy: {2}", originalSourcePath, destPath, ex);
                             }
                         }
 
                         if (!cowLinked)
                         {
-                            destFile = FileSystem.CopyFile(sourceFile, destPath, overwrite: true);
+                            destFile = FileSystem.CopyFile(sourceToActuallyCopy, destPath, overwrite: true);
                         }
 
                         destFile.Attributes = FileAttributes.Normal;
                         destFile.LastWriteTimeUtc = sourceFile.LastWriteTimeUtc;
-                        Log.LogMessage("{0} {1} to {2}", cowLinked ? "Created copy-on-write link" : "Copied", sourcePath, destPath);
+                        Log.LogMessage("{0} {1}{2} to {3}", cowLinked ? "Created copy-on-write link" : "Copied", originalSourcePath, replacementSourceFile is null ? string.Empty : $" (actually {replacementSourceFile.FullName})", destPath);
                         Interlocked.Increment(ref _numFilesCopied);
                     }
                     else
                     {
-                        Log.LogMessage(MessageImportance.Low, "Skipped copying {0} to {1}", sourceFile.FullName, destFile.FullName);
+                        Log.LogMessage(MessageImportance.Low, "Skipped copying {0} to {1}", originalSourcePath, destPath);
                         Interlocked.Increment(ref _numFilesSkipped);
                     }
 
@@ -224,7 +278,11 @@ namespace Microsoft.Build.Artifacts.Tasks
                 }
                 catch (IOException e)
                 {
-                    LogCopyFailureAndSleep(retry, "Failed to copy {0} to {1}. {2}", sourcePath, destPath, e.Message);
+                    // Avoid issuing an error if the paths are actually to the same file.
+                    if (!CopyExceptionHandling.FullPathsAreIdentical(originalSourcePath, destPath))
+                    {
+                        LogCopyFailureAndSleep(retry, "Failed to copy {0} to {1}. {2}", originalSourcePath, destPath, e.Message);
+                    }
                 }
             }
         }
@@ -240,7 +298,7 @@ namespace Microsoft.Build.Artifacts.Tasks
             if (hasWildcards || isRecursive)
             {
                 string match = GetMatchString(items);
-                CopySearch(items, isRecursive, match, source, null);
+                CopySearch(items, isRecursive, match, matchRegex: null, source, subDirectory: null);
             }
             else
             {
@@ -257,32 +315,64 @@ namespace Microsoft.Build.Artifacts.Tasks
             {
                 foreach (string file in item.FileMatches)
                 {
-                    // Break down symlinks/junctions to their real paths to avoid duplicate copies.
                     string sourcePath = Path.Combine(sourceDir, file);
                     FileInfo sourceFile = new FileInfo(sourcePath);
-                    if (Verify(sourceFile, true, item.VerifyExists))
+
+                    if (VerifyExistence(sourceFile, item.VerifyExists))
                     {
                         foreach (string destDir in item.DestinationFolders)
                         {
                             string destPath = Path.Combine(destDir, file);
                             FileInfo destFile = new FileInfo(destPath);
-                            if (Verify(destFile, shouldExist: false, false))
-                            {
-                                CopyFile(sourceFile, destFile, item);
-                            }
+                            CopyFile(sourceFile, destFile, item);
                         }
                     }
                 }
             }
         }
 
-        private void CopySearch(IList<RobocopyMetadata> bucket, bool isRecursive, string match, DirectoryInfo source, string? subDirectory)
+        /// <summary>
+        /// Enumerates a directory, adding and substituting file entries where a copy is in progress into the directory.
+        /// This allows full copy parallelism - we can copy from the original source file instead of having to wait for the
+        /// first copy to complete.
+        /// </summary>
+        private IEnumerable<(FileInfo, FileInfo?)> EnumerateCurrentAndInProgressFilesInSourceDir(DirectoryInfo sourceDir, string match, Regex matchRegex)
         {
-            string sourceDir = source.FullName;
+            string sourceDirPath = sourceDir.FullName;
+            Dictionary<string, FileInfo> copiesUnderwayIntoDir = _destinationDirectoryFilesCopying.GetOrAdd(
+                sourceDirPath,
+                _ => new Dictionary<string, FileInfo>(Artifacts.FileSystem.PathComparer));
+            foreach (FileInfo sourceFile in FileSystem.EnumerateFiles(sourceDir, match))
+            {
+                // If this is a direct match for an in-progress copy, supply the original source to be used as a replacement.
+                string sourceFilePath = sourceFile.FullName;
+                copiesUnderwayIntoDir.TryGetValue(sourceFilePath, out FileInfo? replacementSourceFile);
+                yield return (sourceFile, replacementSourceFile);
+                _sourceFilesEncountered.Add(sourceFilePath);
+            }
 
+            // Next enumerate the in-progress copies that match the search but may not have begun to actually copy into the
+            // destination yet because they are in the copy queue.
+            if (copiesUnderwayIntoDir.Count > 0)
+            {
+                foreach (KeyValuePair<string, FileInfo> kvp in copiesUnderwayIntoDir
+                    .Where(kvp => !_sourceFilesEncountered.Contains(kvp.Key) &&
+                           matchRegex.IsMatch(Path.GetFileName(kvp.Key))))
+                {
+                    // The FileInfo will show the file missing initially but fulfills the needs of logging the file path.
+                    yield return (new FileInfo(kvp.Key), kvp.Value);
+                }
+            }
+
+            _sourceFilesEncountered.Clear();
+        }
+
+        private void CopySearch(IList<RobocopyMetadata> bucket, bool isRecursive, string match, Regex? matchRegex, DirectoryInfo source, string? subDirectory)
+        {
             bool hasSubDirectory = !string.IsNullOrEmpty(subDirectory);
+            matchRegex ??= WildcardToRegex(match);
 
-            foreach (FileInfo sourceFile in FileSystem.EnumerateFiles(source, match))
+            foreach ((FileInfo sourceFile, FileInfo? replacementSourceFile) in EnumerateCurrentAndInProgressFilesInSourceDir(source, match, matchRegex))
             {
                 foreach (RobocopyMetadata item in bucket)
                 {
@@ -294,18 +384,18 @@ namespace Microsoft.Build.Artifacts.Tasks
                             string destDir = hasSubDirectory ? Path.Combine(destinationDir, subDirectory!) : destinationDir;
                             string destPath = Path.Combine(destDir, fileName);
                             FileInfo destFile = new FileInfo(destPath);
-                            if (Verify(destFile, shouldExist: false, false))
-                            {
-                                CopyFile(sourceFile, destFile, item);
-                            }
+                            CopyFile(sourceFile, destFile, item, replacementSourceFile);
                         }
                     }
                 }
             }
 
-            // Doing recursion manually so we can consider DirExcludes
+            // Doing recursion manually so we can consider DirExcludes.
             if (isRecursive)
             {
+                // For correctness when copying from another destination directory we rely on
+                // destination directories being created before launching an async copy, so that we
+                // can enumerate a real, but possibly empty or partially copied-to, directory.
                 foreach (DirectoryInfo childSource in FileSystem.EnumerateDirectories(source))
                 {
                     // per dir we need to re-items for those items excluding a specific dir
@@ -319,7 +409,7 @@ namespace Microsoft.Build.Artifacts.Tasks
                         }
                     }
 
-                    CopySearch(subBucket, isRecursive: true, match, childSource, childSubDirectory);
+                    CopySearch(subBucket, isRecursive: true, match, matchRegex, childSource, childSubDirectory);
                 }
             }
         }
@@ -373,11 +463,7 @@ namespace Microsoft.Build.Artifacts.Tasks
                 RobocopyMetadata first = allSources.First();
                 allSources.RemoveAt(0);
 
-                List<RobocopyMetadata> bucket = new List<RobocopyMetadata>
-                {
-                    first,
-                };
-
+                List<RobocopyMetadata> bucket = new List<RobocopyMetadata> { first };
                 allBuckets.Add(bucket);
 
                 if (ShowDiagnosticTrace)
@@ -413,7 +499,7 @@ namespace Microsoft.Build.Artifacts.Tasks
             string match = "*";
             if (bucket.Count == 1)
             {
-                bucket[0].GetMatchString();
+                match = bucket[0].GetMatchString();
             }
 
             return match;
@@ -444,9 +530,17 @@ namespace Microsoft.Build.Artifacts.Tasks
             }
         }
 
-        private bool Verify(FileInfo file, bool shouldExist, bool verifyExists)
+        private bool VerifyExistence(FileInfo file, bool verifyExists)
         {
-            if (!shouldExist || FileSystem.FileExists(file))
+            if (FileSystem.FileExists(file))
+            {
+                return true;
+            }
+
+            // Virtual existence: If a copy operation to this source file is already underway,
+            // the copy logic can short-circuit to copy from the original source in parallel.
+            if (_destinationDirectoryFilesCopying.TryGetValue(file.DirectoryName, out Dictionary<string, FileInfo> copiesInProgressToFileDir) &&
+                copiesInProgressToFileDir.ContainsKey(file.FullName))
             {
                 return true;
             }
@@ -459,43 +553,14 @@ namespace Microsoft.Build.Artifacts.Tasks
             return false;
         }
 
-        // Internal for unit testing.
-        internal readonly struct CopyFileDedupKey
-        {
-            private readonly string _sourcePath;
-            private readonly string _destPath;
-
-            public CopyFileDedupKey(string source, string dest)
-            {
-                _sourcePath = source;
-                _destPath = dest;
-            }
-
-            public static Comparer ComparerInstance { get; } = new ();
-
-            public sealed class Comparer : IEqualityComparer<CopyFileDedupKey>
-            {
-                public bool Equals(CopyFileDedupKey x, CopyFileDedupKey y)
-                {
-                    return x._sourcePath.Equals(y._sourcePath, Artifacts.FileSystem.PathComparison) &&
-                           x._destPath.Equals(y._destPath, Artifacts.FileSystem.PathComparison);
-                }
-
-                public int GetHashCode(CopyFileDedupKey obj)
-                {
-                    return Artifacts.FileSystem.PathComparer.GetHashCode(obj._destPath) ^
-                           Artifacts.FileSystem.PathComparer.GetHashCode(obj._sourcePath);
-                }
-            }
-        }
-
         private sealed class CopyJob
         {
-            public CopyJob(FileInfo sourceFile, FileInfo destFile, RobocopyMetadata metadata)
+            public CopyJob(FileInfo sourceFile, FileInfo destFile, RobocopyMetadata metadata, FileInfo? replacementSourceFile)
             {
                 SourceFile = sourceFile;
                 DestFile = destFile;
                 Metadata = metadata;
+                ReplacementSourceFile = replacementSourceFile;
             }
 
             public FileInfo SourceFile { get; }
@@ -503,6 +568,8 @@ namespace Microsoft.Build.Artifacts.Tasks
             public FileInfo DestFile { get; }
 
             public RobocopyMetadata Metadata { get; }
+
+            public FileInfo? ReplacementSourceFile { get; }
         }
     }
 }

@@ -7,5 +7,14 @@
     <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
     <NoWarn>$(NoWarn);NU5128;SA0001</NoWarn>
     <RestoreUseStaticGraphEvaluation>true</RestoreUseStaticGraphEvaluation>
+    <RestoreSerializeGlobalProperties>true</RestoreSerializeGlobalProperties>
+    <UseArtifactsOutput>false</UseArtifactsOutput>
+    <IsTestProject Condition="$(MSBuildProjectName.EndsWith('UnitTests'))">true</IsTestProject>
+    <IsPackable Condition="'$(IsTestProject)' != 'true'">true</IsPackable>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+    <UseArtifactsOutput>false</UseArtifactsOutput>
+
+    <!-- Suppress spam about using a preview version of .NET -->
+    <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
   </PropertyGroup>
 </Project>

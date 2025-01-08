@@ -62,12 +62,13 @@ namespace Microsoft.Build.Artifacts.UnitTests
             string outputPath = $"{Path.Combine("bin", "Debug")}{Path.DirectorySeparatorChar}";
 
             ProjectCreator.Templates.ProjectWithArtifacts(
+                path: Path.Combine(TestRootPath, "ProjectA.csproj"),
                 outputPath: outputPath,
                 appendTargetFrameworkToOutputPath: false,
                 artifactsPath: artifactPaths)
-                .TryGetItems("Artifact", out IReadOnlyCollection<ProjectItem> artifactItems)
-                .TryGetPropertyValue("DefaultArtifactsSource", out string defaultArtifactsSource)
-                .TryBuild(out bool result, out BuildOutput buildOutput);
+                    .TryGetItems("Artifact", out IReadOnlyCollection<ProjectItem> artifactItems)
+                    .TryGetPropertyValue("DefaultArtifactsSource", out string defaultArtifactsSource)
+                    .TryBuild(out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeTrue(buildOutput.GetConsoleLog());
 
@@ -108,9 +109,10 @@ namespace Microsoft.Build.Artifacts.UnitTests
             DirectoryInfo distribPath = new DirectoryInfo(Path.Combine(TestRootPath, "artifacts"));
 
             ProjectCreator.Templates.ProjectWithArtifacts(
-                    outputPath: outputPath.FullName)
-                .ItemRobocopy(outputPath.FullName, distribPath.FullName, "*exe *dll *exe.config")
-                .TryBuild(out bool result, out BuildOutput buildOutput);
+                path: Path.Combine(TestRootPath, "ProjectA.csproj"),
+                outputPath: outputPath.FullName)
+                    .ItemRobocopy(outputPath.FullName, distribPath.FullName, "*exe *dll *exe.config")
+                    .TryBuild(out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeTrue(buildOutput.GetConsoleLog());
 
@@ -133,9 +135,10 @@ namespace Microsoft.Build.Artifacts.UnitTests
             string artifactsPath = Path.Combine(TestRootPath, "artifacts");
 
             ProjectCreator.Templates.ProjectWithArtifacts(
-                    artifactsPath: artifactsPath)
-                .Property(propertyName, actual)
-                .TryGetItems("Artifact", out IReadOnlyCollection<ProjectItem> artifactItems);
+                path: Path.Combine(TestRootPath, "ProjectA.csproj"),
+                artifactsPath: artifactsPath)
+                    .Property(propertyName, actual)
+                    .TryGetItems("Artifact", out IReadOnlyCollection<ProjectItem> artifactItems);
 
             ProjectItem artifactItem = artifactItems.ShouldHaveSingleItem();
 
@@ -166,12 +169,13 @@ namespace Microsoft.Build.Artifacts.UnitTests
             string outputPath = $"{(appendTargetFrameworkToOutputPath ? Path.Combine("bin", "Debug", "net472") : Path.Combine("bin", "Debug"))}{Path.DirectorySeparatorChar}";
 
             ProjectCreator.Templates.ProjectWithArtifacts(
+                path: Path.Combine(TestRootPath, "ProjectA.csproj"),
                 outputPath: outputPath,
                 appendTargetFrameworkToOutputPath: appendTargetFrameworkToOutputPath,
                 artifactsPath: artifactsPath.FullName)
-                .TryGetItems("Artifact", out IReadOnlyCollection<ProjectItem> artifactItems)
-                .TryGetPropertyValue("DefaultArtifactsSource", out string defaultArtifactsSource)
-                .TryBuild(out bool result, out BuildOutput buildOutput);
+                    .TryGetItems("Artifact", out IReadOnlyCollection<ProjectItem> artifactItems)
+                    .TryGetPropertyValue("DefaultArtifactsSource", out string defaultArtifactsSource)
+                    .TryBuild(out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeTrue(buildOutput.GetConsoleLog());
 
@@ -218,11 +222,12 @@ namespace Microsoft.Build.Artifacts.UnitTests
             DirectoryInfo artifactsPath = new DirectoryInfo(Path.Combine(TestRootPath, "artifacts"));
 
             ProjectCreator.Templates.ProjectWithArtifacts(
+                path: Path.Combine(TestRootPath, "ProjectA.csproj"),
                 outputPath: outputPath.FullName,
                 artifactsPath: artifactsPath.FullName)
-                .Property("DefaultArtifactsDirExclude", string.Join(separator, new[] { "one", "two" }))
-                .TryGetItems("Artifact", out IReadOnlyCollection<ProjectItem> artifactItems)
-                .TryBuild(out bool result, out BuildOutput buildOutput);
+                    .Property("DefaultArtifactsDirExclude", string.Join(separator, new[] { "one", "two" }))
+                    .TryGetItems("Artifact", out IReadOnlyCollection<ProjectItem> artifactItems)
+                    .TryBuild(out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeTrue(buildOutput.GetConsoleLog());
 
@@ -236,6 +241,33 @@ namespace Microsoft.Build.Artifacts.UnitTests
                         "foo.exe.config",
                     }.Select(i => Path.Combine(artifactsPath.FullName, i)),
                     ignoreOrder: true);
+        }
+
+        [Fact]
+        public void DisabledDefaultArtifactsWhenBuiltInArtifactsEnabled()
+        {
+            DirectoryInfo projectDirectory = CreateFiles("ClassLibrary1");
+
+            ProjectCreator.Create()
+                .Property("UseArtifactsOutput", bool.TrueString)
+                .Property("ArtifactsPath", Path.Combine(TestRootPath, "artifacts"))
+                .Save(Path.Combine(TestRootPath, "Directory.Build.props"));
+
+            ProjectCreator.Templates.ProjectWithArtifacts(
+                    path: Path.Combine(TestRootPath, "ProjectA.csproj"),
+                    sdk: "Microsoft.NET.Sdk")
+                .Save()
+                .TryGetItems("Artifact", out IReadOnlyCollection<ProjectItem> artifactItems)
+                .TryGetPropertyValue("DefaultArtifactsSource", out string defaultArtifactsSource)
+                .TryGetPropertyValue("EnableArtifacts", out string enableArtifacts)
+                .TryGetPropertyValue("UsingMicrosoftArtifactsSdk", out string usingMicrosoftArtifactsSdk)
+                .TryGetPropertyValue("EnableDefaultArtifacts", out string enableDefaultArtifacts);
+
+            artifactItems.ShouldBeEmpty();
+            defaultArtifactsSource.ShouldBe(string.Empty);
+            enableArtifacts.ShouldBe(string.Empty);
+            usingMicrosoftArtifactsSdk.ShouldBe(bool.TrueString, StringCompareShould.IgnoreCase);
+            enableDefaultArtifacts.ShouldBe(bool.FalseString, StringCompareShould.IgnoreCase);
         }
 
         [Fact]
@@ -259,12 +291,13 @@ namespace Microsoft.Build.Artifacts.UnitTests
             string outputPath = $"{Path.Combine("bin", "Debug")}{Path.DirectorySeparatorChar}";
 
             ProjectCreator.Templates.ProjectWithArtifacts(
+                path: Path.Combine(TestRootPath, "ProjectA.csproj"),
                 outputPath: outputPath,
                 appendTargetFrameworkToOutputPath: false,
                 artifactsPath: artifactPaths)
-                .TryGetItems("Artifact", out IReadOnlyCollection<ProjectItem> _)
-                .TryGetPropertyValue("DefaultArtifactsSource", out string _)
-                .TryBuild(out bool result, out BuildOutput buildOutput);
+                    .TryGetItems("Artifact", out IReadOnlyCollection<ProjectItem> _)
+                    .TryGetPropertyValue("DefaultArtifactsSource", out string _)
+                    .TryBuild(out bool result, out BuildOutput buildOutput);
 
             string consoleLog = buildOutput.GetConsoleLog();
             result.ShouldBeFalse(consoleLog);
@@ -329,6 +362,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
             DirectoryInfo artifactsPath = new DirectoryInfo(Path.Combine(TestRootPath, "artifacts"));
 
             ProjectCreator.Templates.SdkProjectWithArtifacts(
+                    path: Path.Combine(TestRootPath, "ProjectA.csproj"),
                     outputPath: appendTargetFrameworkToOutputPath ? Path.Combine("bin", "Debug", "net472") : Path.Combine("bin", "Debug"),
                     artifactsPath: artifactsPath.FullName,
                     appendTargetFrameworkToOutputPath: appendTargetFrameworkToOutputPath)
