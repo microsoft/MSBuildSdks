@@ -5,8 +5,8 @@
 		<TargetFrameworks>net6.0;net472</TargetFrameworks>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageVersion>1.0.0</PackageVersion>
-		<PackageId>MSBuild.CargoBuild</PackageId>
-		<Description>https://www.1eswiki.com/wiki/Using_Rust_with_CloudBuild</Description>
+		<PackageId>Microsoft.Build.CargoBuild</PackageId>
+		<Description>Builds rust projects within msbuild using cargo.</Description>
 		<NoDefaultExcludes>true</NoDefaultExcludes>
 		<BuildOutputTargetFolder>build\</BuildOutputTargetFolder>
 		<AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
@@ -24,10 +24,9 @@
 		<None Include="README.md" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Build.Utilities.Core" VersionOverride="17.3.2" />
-		<PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" VersionOverride="17.3.2" />
-		<PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" VersionOverride="17.3.2" />
+		<PackageReference Include="Microsoft.Build.Utilities.Core"  VersionOverride="17.3.2" />
+		<PackageReference Include="Microsoft.Build" ExcludeAssets="runtime"   VersionOverride="17.3.2" />
+		<PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime"  VersionOverride="17.3.2" />
 		<PackageReference Include="System.Net.Http" NoWarn="RT0003" />
 	</ItemGroup>
 </Project>
-

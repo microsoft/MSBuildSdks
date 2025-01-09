@@ -6,7 +6,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
 	<PropertyGroup>
-		<UsingMicrosoftNoTargetsSdk>true</UsingMicrosoftNoTargetsSdk>
+		<UsingMicrosoftCargoBuildSdk>true</UsingMicrosoftCargoBuildSdk>
 		<MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
 	</PropertyGroup>
 

@@ -7,13 +7,13 @@ To use this sdk you will need the following:
 ```json
  "msbuild-sdks": {
     ...,
-    "MSBuild.CargoBuild": "1.0.270-gf406f8eaa0"
+    "Microsoft.Build.CargoBuild": "1.0.270-gf406f8eaa0"
   },
 ```
 
-2) foreach rust project a csproj project file at the same level as your cargo.toml file. The project file should import the CargoBuild sdk.
+2) foreach rust project a .cargosproj project file at the same level as your cargo.toml file. The project file should import the CargoBuild sdk.
 ```xml
-<Project Sdk="MSBuild.CargoBuild">
+<Project Sdk="Microsoft.Build.CargoBuild">
     <PropertyGroup>
         <TargetFramework>net472</TargetFramework>
     </PropertyGroup>
@@ -24,10 +24,10 @@ To use this sdk you will need the following:
 ```xml
 <Project Sdk="Microsoft.Build.Traversal">
   <ItemGroup>
-    <ProjectFile Include="projects\**\*.csproj" />
+    <ProjectFile Include="projects\**\*.cargosproj" />
   </ItemGroup>
   <!-- Chains restoring Cargo crates packages after restore. -->
-  <Sdk Name="MSBuild.CargoBuild" />
+  <Sdk Name="Microsoft.Build.CargoBuild" />
 </Project>
 ```
 
@@ -72,7 +72,7 @@ msbuild /t:clearcargocache
 ```
 ### How to test locally
 
-1) After building the cargo build project, a nupkg file will be created in the `bin\Debug` or `bin\Release` folder. A file like `MSBuild.CargoBuild.<someversionnumber>.nupkg` will be created
+1) After building the cargo build project, a nupkg file will be created in the `bin\Debug` or `bin\Release` folder. A file like `Microsoft.Build.CargoBuild.<someversionnumber>.nupkg` will be created
 
 2) In repo that contains your rust project(s), update your nuget.config file to point to the CargoBuild `bin\Debug` or `bin\Release` folder.
 
@@ -85,7 +85,7 @@ msbuild /t:clearcargocache
     ```xml
     "msbuild-sdks": {
     ...,
-    "MSBuild.CargoBuild": "<someversionnumber>"
+    "Microsoft.Build.CargoBuild": "<someversionnumber>"
     }
     ```
  4) Once you run `msbuild /restore` in your rust project, the CargoBuild sdk will be restored from the local nuget source. You can now use the sdk locally.

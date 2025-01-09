@@ -104,8 +104,8 @@
 	<!-- Disables the _CopyFilesMarkedCopyLocal target to not copy references when SkipCopyFilesMarkedCopyLocal is set to true. -->
 	<Import Project="DisableCopyFilesMarkedCopyLocal.targets" Condition="'$(SkipCopyFilesMarkedCopyLocal)' == 'true'" />
 	<!-- Rust specific targets -->
-	<UsingTask TaskName="MSBuild.CargoBuild.CargoBuildTask" AssemblyFile="$(MSBuildThisFileDirectory)..\build\net6.0\CargoBuild.dll" Condition="'$(MSBuildRuntimeType)' == 'Core'"/>
-	<UsingTask TaskName="MSBuild.CargoBuild.CargoBuildTask" AssemblyFile="$(MSBuildThisFileDirectory)..\build\net472\CargoBuild.dll" Condition="'$(MSBuildRuntimeType)' != 'Core'"/>
+	<UsingTask TaskName="MSBuild.CargoBuild.CargoBuildTask" AssemblyFile="$(MSBuildThisFileDirectory)..\build\net6.0\Microsoft.Build.CargoBuild.dll" Condition="'$(MSBuildRuntimeType)' == 'Core'"/>
+	<UsingTask TaskName="MSBuild.CargoBuild.CargoBuildTask" AssemblyFile="$(MSBuildThisFileDirectory)..\build\net472\Microsoft.Build.CargoBuild.dll" Condition="'$(MSBuildRuntimeType)' != 'Core'"/>
 	<Target Name="CargoFetch" AfterTargets="Restore">
 		<CargoBuildTask EnableAuth="False" StartupProj="$(MSBuildProjectFullPath)" RegistryFeedName="$(CargoRegistryFeedName)" Command="fetch" />
 	</Target>

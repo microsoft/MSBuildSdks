@@ -34,6 +34,7 @@ namespace MSBuild.CargoBuild
         private static readonly string _msRustupBinary = $"{_tempPath}\\cargohome\\bin\\msrustup.exe";
         private static readonly Dictionary<string, string> _envVars = new () { { "CARGO_HOME", _cargoHome }, { "RUSTUP_HOME", _rustupHome }, };
         private static readonly string _rustupDownloadLink = "https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe";
+        private static readonly string _checkSumVerifyUrl = "https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe.sha256";
         private bool _shouldCleanRustPath;
         private string? _currentRustupInitExeCheckSum;
 
@@ -78,8 +79,6 @@ namespace MSBuild.CargoBuild
         /// <inheritdoc/>
         public override bool Execute()
         {
-            Debugger.Launch();
-
             // download & install rust if necessary
             if (DownloadRustupAsync().GetAwaiter().GetResult())
             {
@@ -98,7 +97,7 @@ namespace MSBuild.CargoBuild
                 }
             }
 
-            if (!Command.Equals("fetch", StringComparison.InvariantCultureIgnoreCase)) // build
+            if (!Command.Equals("fetch", StringComparison.InvariantCultureIgnoreCase))
             {
                 var dir = Directory.GetParent(StartupProj!);
                 bool cargoFile = File.Exists(Path.Combine(dir!.FullName, "cargo.toml"));
@@ -111,7 +110,7 @@ namespace MSBuild.CargoBuild
 
         private async Task<ExitCode> CargoRunCommandAsync(string command, string args)
         {
-            Log.LogMessage(MessageImportance.Normal, $"Running cargo command: {command} {args}");
+            Log.LogMessage(MessageImportance.Normal, $"Executing cargo command: {command} {args}");
             return await ExecuteProcessAsync(_cargoPath, $"{command} {args}", ".", _envVars);
         }
 
@@ -414,14 +413,13 @@ namespace MSBuild.CargoBuild
 
         private async Task<string> GetHashAsync()
         {
-            string checkSumVerifyUrl = $"https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe.sha256";
             if (!string.IsNullOrEmpty(_currentRustupInitExeCheckSum))
             {
                 return _currentRustupInitExeCheckSum!;
             }
 
             using var client = new HttpClient();
-            string response = await client.GetStringAsync(checkSumVerifyUrl);
+            string response = await client.GetStringAsync(_checkSumVerifyUrl);
             _currentRustupInitExeCheckSum = response.Split('\n')[0];
 
             _currentRustupInitExeCheckSum = _currentRustupInitExeCheckSum!.ToUpperInvariant();
