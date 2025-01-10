@@ -88,6 +88,7 @@
 		<CleanCommandArgs Condition="'$(CleanCommandArgs)' == ''"></CleanCommandArgs>
 		<RunCommandArgs Condition="'$(RunCommandArgs)' == ''"></RunCommandArgs>
 		<DocCommandArgs Condition="'$(DocCommandArgs)' == ''"></DocCommandArgs>
+		<!--For internal Microsoft use only, ignore.-->
 		<UseMsRustup Condition="'$(UseMsRustup)' == ''">false</UseMsRustup>
 	</PropertyGroup>
 </Project>
