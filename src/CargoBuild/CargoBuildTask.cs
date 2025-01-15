@@ -23,7 +23,7 @@ namespace MSBuild.CargoBuild
     /// </summary>
     public class CargoBuildTask : Task
     {
-        private static readonly string _tempPath = $"{Environment.GetEnvironmentVariable("TEMP")}";
+        private static readonly string? _tempPath = Environment.GetEnvironmentVariable("TEMP");
         private static readonly string _rustUpBinary = $"{_tempPath}\\cargohome\\bin\\rustup.exe";
         private static readonly string _cargoPath = $"{_tempPath}\\cargohome\\bin\\cargo.exe";
         private static readonly string _rustInstallPath = $"{_tempPath}\\rustinstall";
@@ -62,11 +62,6 @@ namespace MSBuild.CargoBuild
         public bool EnableAuth { get; set; } = false;
 
         /// <summary>
-        /// Gets or sets a feed name.
-        /// </summary>
-        public string RegistryFeedName { get; set; } = string.Empty;
-
-        /// <summary>
         /// Gets or sets optional cargo command args.
         /// </summary>
         public string CommandArgs { get; set; } = string.Empty;
@@ -79,33 +74,51 @@ namespace MSBuild.CargoBuild
         /// <inheritdoc/>
         public override bool Execute()
         {
-            // download & install rust if necessary
-            if (DownloadRustupAsync().GetAwaiter().GetResult())
+            return ExecuteAsync().GetAwaiter().GetResult();
+        }
+
+        private static void CleanupRustPath()
+        {
+            if (Directory.Exists(_rustUpInitBinary))
             {
-                if (InstallRust().GetAwaiter().GetResult())
+                Directory.Delete(_rustUpInitBinary, true);
+            }
+        }
+
+        private async Task<bool> ExecuteAsync()
+        {
+            // download & install rust if necessary
+            if (Command.Equals("fetch") && await DownloadRustupAsync())
+            {
+                if (await InstallRust())
                 {
                     _shouldCleanRustPath = true;
                 }
-            }
 
-            if (Command.Equals("clearcargocache", StringComparison.InvariantCultureIgnoreCase))
+                return await FetchCratesAsync(StartupProj);
+            }
+            else if (Command.Equals("clearcargocache", StringComparison.InvariantCultureIgnoreCase))
             {
                 if (Directory.Exists(_cargoHome))
                 {
                     Log.LogMessage(MessageImportance.Normal, $"Clearing cargo cache at {_cargoHome}");
                     Directory.Delete(_cargoHome, true);
                 }
-            }
 
-            if (!Command.Equals("fetch", StringComparison.InvariantCultureIgnoreCase))
+                return true;
+            }
+            else
             {
-                var dir = Directory.GetParent(StartupProj!);
-                bool cargoFile = File.Exists(Path.Combine(dir!.FullName, "cargo.toml"));
+                var dir = Directory.GetParent(StartupProj) ?? throw new InvalidOperationException("Invalid project path");
+                bool cargoFileExists = File.Exists(Path.Combine(dir.FullName, "cargo.toml")); // toml file should be the same dir as the cargoproj file.
+                if (!cargoFileExists)
+                {
+                    Log.LogError("Cargo.toml file not found in the project directory.");
+                    return false;
+                }
 
-                return !cargoFile || CargoRunCommandAsync(Command.ToLower(), CommandArgs).GetAwaiter().GetResult() == ExitCode.Succeeded;
+                return await CargoRunCommandAsync(Command.ToLower(), CommandArgs) == ExitCode.Succeeded;
             }
-
-            return FetchCratesAsync(StartupProj!).GetAwaiter().GetResult();
         }
 
         private async Task<ExitCode> CargoRunCommandAsync(string command, string args)
@@ -120,7 +133,7 @@ namespace MSBuild.CargoBuild
             try
             {
                 stopwatch.Start();
-                Log.LogMessage(MessageImportance.Normal, $"---- CargoBuild fetch Starting ----\n\n");
+                Log.LogMessage(MessageImportance.Normal, "CargoBuild fetch Starting");
                 var graphLoadStopWatch = new Stopwatch();
                 graphLoadStopWatch.Start();
 
@@ -131,7 +144,7 @@ namespace MSBuild.CargoBuild
                     ProjectCollection.GlobalProjectCollection,
                     (string projectPath, Dictionary<string, string> globalProperties, ProjectCollection projCollection) =>
                     {
-                        var loadSettings = ProjectLoadSettings.DoNotEvaluateElementsWithFalseCondition;
+                        var loadSettings = ProjectLoadSettings.IgnoreEmptyImports | ProjectLoadSettings.IgnoreInvalidImports | ProjectLoadSettings.IgnoreMissingImports | ProjectLoadSettings.DoNotEvaluateElementsWithFalseCondition;
 
                         var projectOptions = new ProjectOptions
                         {
@@ -176,16 +189,17 @@ namespace MSBuild.CargoBuild
                     tasks.Add(fetchTask);
                 }
 
-                await Tasks.Task.WhenAll(tasks.ToArray());
-                bool success = tasks.Select(x => (int)x.Result).Sum() == 0;
+                await Tasks.Task.WhenAll(tasks);
+                ExitCode[] exitCodes = await Tasks.Task.WhenAll(tasks);
+                bool success = exitCodes.All(exitCode => exitCode == ExitCode.Succeeded);
                 stopwatch.Stop();
                 if (success)
                 {
-                    Log.LogMessage(MessageImportance.Normal, $"---- CargoBuild fetching Completed Successfully in {stopwatch.Elapsed.Seconds} seconds ----\n\n");
+                    Log.LogMessage(MessageImportance.Normal, $"CargoBuild fetching Completed Successfully in {stopwatch.Elapsed.Seconds} seconds");
                 }
                 else
                 {
-                    Log.LogError($"---- CargoBuild fetching had an issue. Check the build log for details. ----\n\n");
+                    Log.LogError("CargoBuild fetching had an issue. Check the build log for details.");
                 }
 
                 return success;
@@ -223,17 +237,13 @@ namespace MSBuild.CargoBuild
         {
             ExitCode authResult = authorize ? await DoRegistryAuthAsync(workingDir) : ExitCode.Succeeded;
 
-            if (authorize && authResult == ExitCode.Succeeded || !authorize)
+            if (authResult == ExitCode.Succeeded)
             {
-                string path;
-                string args;
-                const int RetryCnt = 2;
-
-                path = _cargoPath;
-                args = "fetch";
+                string path = _cargoPath;
+                string args = "fetch";
 
                 Log.LogMessage(MessageImportance.Normal, $"Fetching cargo crates for project in {workingDir}");
-                var exitCode = await ExecuteWithRetriesAsync(path, processArgs: args, workingDir, retryCount: RetryCnt, processRetryArgs: args);
+                var exitCode = await ExecuteProcessAsync(path, args, workingDir);
                 Log.LogMessage(MessageImportance.Normal, $"Finished fetching cargo crates for project in  {workingDir}");
                 return exitCode;
             }
@@ -241,27 +251,9 @@ namespace MSBuild.CargoBuild
             return authResult;
         }
 
-        private async Task<ExitCode> ExecuteWithRetriesAsync(string processFileName, string processArgs, string workingDir, int retryCount, string? processRetryArgs = null)
-        {
-            ExitCode exitCode = await ExecuteProcessAsync(processFileName, processArgs, workingDir);
-            const int InitialWaitTimeSec = 3;
-            int retries = 0;
-            while (exitCode != 0 && retries < retryCount)
-            {
-                retries++;
-                int wait = InitialWaitTimeSec * 1000 * retries;
-                Log.LogMessage(MessageImportance.Normal, $"Process failed with exit code: {exitCode}. Retry #{retries}: {processFileName}. Waiting {wait / 600} seconds before retrying.");
-
-                await Tasks.Task.Delay(wait);
-                exitCode = await ExecuteProcessAsync(processFileName, processRetryArgs ?? processArgs, workingDir);
-            }
-
-            return exitCode;
-        }
-
         private async Task<ExitCode> DoRegistryAuthAsync(string workingDir)
         {
-            return await ExecuteWithRetriesAsync(_cargoPath, $"login --registry {RegistryFeedName}", workingDir, retryCount: 2);
+            return await ExecuteProcessAsync(_cargoPath, $"login", workingDir);
         }
 
         private async Task<ExitCode> ExecuteProcessAsync(string fileName, string args, string workingDir, Dictionary<string, string>? envars = null)
@@ -314,22 +306,24 @@ namespace MSBuild.CargoBuild
                 });
 
                 processTask.Start();
-                return (ExitCode)await processTask;
+                int exitCode = await processTask;
+                return exitCode == 0 ? ExitCode.Succeeded : ExitCode.Failed;
             }
             catch (Exception ex)
             {
                 Log.LogWarningFromException(ex);
-                return await Tasks.Task.FromResult(ExitCode.Failed);
+                return ExitCode.Failed;
             }
         }
 
         private async Task<bool> DownloadRustupAsync()
         {
-            if (File.Exists(_rustUpInitBinary) && await VerifyInitHashAsync())
+            var rustupBinExists = File.Exists(_rustUpInitBinary);
+            if (rustupBinExists && await VerifyInitHashAsync())
             {
                 return true;
             }
-            else if (File.Exists(_rustUpInitBinary))
+            else if (rustupBinExists)
             {
                 // If the hash doesn't match, that likely means there is a new version of rustup-init.exe available.
                 File.Delete(_rustUpInitBinary);
@@ -337,18 +331,17 @@ namespace MSBuild.CargoBuild
 
             string rustupDownloadLink = _rustupDownloadLink;
             Log.LogMessage(MessageImportance.Normal, $"Downloading -- {rustupDownloadLink}");
-            using (var client = new HttpClient())
+            using var client = new HttpClient();
+            HttpResponseMessage response = await client.GetAsync(rustupDownloadLink);
+            response.EnsureSuccessStatusCode();
+            if (!Directory.Exists(_rustInstallPath))
             {
-                Task<HttpResponseMessage> response = client.GetAsync(rustupDownloadLink);
-                if (!Directory.Exists(_rustInstallPath))
-                {
-                    Directory.CreateDirectory(_rustInstallPath);
-                }
-
-                using var responseStream = new FileStream(_rustUpInitBinary, FileMode.CreateNew);
-                HttpResponseMessage res = await response;
-                await res.Content.CopyToAsync(responseStream);
+                Directory.CreateDirectory(_rustInstallPath);
             }
+
+            using var fileStream = new FileStream(_rustUpInitBinary, FileMode.CreateNew);
+            HttpResponseMessage res = response;
+            await res.Content.CopyToAsync(fileStream);
 
             return await VerifyInitHashAsync();
         }
@@ -356,7 +349,7 @@ namespace MSBuild.CargoBuild
         private async Task<bool> InstallRust()
         {
             var rustupBinary = UseMsRustUp ? _msRustupBinary : _rustUpBinary;
-            if (File.Exists(_cargoPath) && Directory.Exists(_rustupHome) && File.Exists(_rustUpBinary) || File.Exists(_cargoHome) && UseMsRustUp != true || File.Exists(_msRustupBinary))
+            if ((File.Exists(_cargoPath) && Directory.Exists(_rustupHome) && File.Exists(_rustUpBinary)) || (File.Exists(_cargoHome) && UseMsRustUp != true) || File.Exists(_msRustupBinary))
             {
                 return false;
             }
@@ -372,15 +365,11 @@ namespace MSBuild.CargoBuild
                 }
             }
 
-            foreach (var envVar in _envVars)
-            {
-                Environment.SetEnvironmentVariable(envVar.Key, envVar.Value);
-            }
-
             ExitCode exitCode = ExitCode.Succeeded;
             ExitCode exitCodeToolChainLatest = ExitCode.Succeeded;
             ExitCode exitCodeLatest = ExitCode.Succeeded;
 
+            // toml should be relative to the project dir.
             if (UseMsRustUp && File.Exists("rust-toolchain.toml"))
             {
                 Log.LogMessage(MessageImportance.Normal, "Installing Custom Toolchain");
@@ -408,7 +397,7 @@ namespace MSBuild.CargoBuild
 #else
             converted = converted.Replace("-", string.Empty, StringComparison.Ordinal);
 #endif
-            return converted == await GetHashAsync();
+            return converted.Equals(await GetHashAsync(), StringComparison.InvariantCultureIgnoreCase);
         }
 
         private async Task<string> GetHashAsync()
@@ -421,17 +410,12 @@ namespace MSBuild.CargoBuild
             using var client = new HttpClient();
             string response = await client.GetStringAsync(_checkSumVerifyUrl);
             _currentRustupInitExeCheckSum = response.Split('\n')[0];
-
-            _currentRustupInitExeCheckSum = _currentRustupInitExeCheckSum!.ToUpperInvariant();
-            return _currentRustupInitExeCheckSum;
-        }
-
-        private void CleanupRustPath()
-        {
-            if (Directory.Exists(_rustUpInitBinary))
+            if (_currentRustupInitExeCheckSum == null)
             {
-                Directory.Delete(_rustUpInitBinary, true);
+                throw new InvalidOperationException("Failed to get the checksum of the rustup-init.exe");
             }
+
+            return _currentRustupInitExeCheckSum;
         }
     }
 }

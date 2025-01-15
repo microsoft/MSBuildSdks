@@ -47,5 +47,37 @@ namespace Microsoft.Build.CargoBuild.UnitTests
                 .CustomAction(customAction)
                 .Import(Path.Combine(ThisAssemblyDirectory, "Sdk", "Sdk.targets"));
         }
+
+        public static ProjectCreator VcxProjProject(
+            this ProjectCreatorTemplates templates,
+            Action<ProjectCreator> customAction = null,
+            string path = null,
+#if NETFRAMEWORK
+            string targetFramework = "net472",
+#else
+            string targetFramework = "netstandard2.0",
+#endif
+            string defaultTargets = null,
+            string initialTargets = null,
+            string sdk = null,
+            string toolsVersion = null,
+            string treatAsLocalProperty = null,
+            ProjectCollection projectCollection = null,
+            IDictionary<string, string> globalProperties = null,
+            NewProjectFileOptions? projectFileOptions = NewProjectFileOptions.None)
+        {
+            return ProjectCreator.Create(
+                    path,
+                    defaultTargets,
+                    initialTargets,
+                    sdk,
+                    toolsVersion,
+                    treatAsLocalProperty,
+                    projectCollection,
+                    projectFileOptions,
+                    globalProperties)
+                .Property("TargetFramework", targetFramework)
+                .CustomAction(customAction);
+        }
     }
 }

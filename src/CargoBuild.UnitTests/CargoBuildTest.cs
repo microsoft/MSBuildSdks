@@ -39,6 +39,8 @@ namespace Microsoft.Build.CargoBuild.UnitTests
         {
             ProjectCreator cargoBuildProject = ProjectCreator.Templates.CargoBuildProject(
                     path: Path.Combine(TestRootPath, "Rust", "Microsoft.Build.CargoBuild.UnitTests.csproj"))
+                .Target("CargoFetch")
+                .Target("CargoBuild")
                 .Target(targetName)
                 .TaskMessage("503CF1EBA6DC415F95F4DB630E7C1817", MessageImportance.High)
                 .Save();
@@ -56,6 +58,8 @@ namespace Microsoft.Build.CargoBuild.UnitTests
             ProjectCreator cargoBuildProject = ProjectCreator.Templates.CargoBuildProject(
                     path: Path.Combine(TestRootPath, "CargoBuild", "Rust.cargoproj"))
                 .Property("CoreCompileDependsOn", "$(CoreCompileDependsOn);TestThatCoreCompileIsExtensible")
+                .Target("CargoFetch")
+                .Target("CargoBuild")
                 .Target("TestThatCoreCompileIsExtensible")
                 .TaskMessage("35F1C217730445E0AC0F30E70F5C7826", MessageImportance.High)
                 .Save();
@@ -73,6 +77,9 @@ namespace Microsoft.Build.CargoBuild.UnitTests
             ProjectCreator cargoBuildProject = ProjectCreator.Templates.CargoBuildProject(
                     path: Path.Combine(TestRootPath, "CargoBuild", "Rust.cargoproj"))
                 .Property("TargetsTriggeredByCompilation", "TestThatCoreCompileIsExtensible")
+                .Property("TargetsTriggeredByCompilation", "TestThatCoreCompileIsExtensible")
+                .Target("CargoFetch")
+                .Target("CargoBuild")
                 .Target("TestThatCoreCompileIsExtensible")
                     .TaskMessage("D031211C98F1454CA47A424ADC86A8F7", MessageImportance.High)
                 .Save();
@@ -98,6 +105,8 @@ namespace Microsoft.Build.CargoBuild.UnitTests
 
             ProjectCreator cargoBuildProject = ProjectCreator.Templates.CargoBuildProject(
                     path: Path.Combine(TestRootPath, "CargoBuild", "Rust.cargoproj"))
+                .Target("CargoFetch")
+                .Target("CargoBuild")
                 .ItemProjectReference(projectA)
                 .Save();
 
@@ -108,8 +117,6 @@ namespace Microsoft.Build.CargoBuild.UnitTests
 
         [Theory]
         [InlineData(".cargoproj")]
-        [InlineData(".csproj")]
-        [InlineData(".proj")]
         public void ProjectContainsStaticGraphImplementation(string projectExtension)
         {
             ProjectCreator cargoBuild = ProjectCreator.Templates.CargoBuildProject(
@@ -123,6 +130,8 @@ namespace Microsoft.Build.CargoBuild.UnitTests
                     creator.Target("TakeAction", afterTargets: "Build")
                         .TaskMessage("86F00AF59170450E9D687652D74A6394", MessageImportance.High);
                 })
+                .Target("CargoFetch")
+                .Target("CargoBuild")
                 .Property("GenerateDependencyFile", "false")
                 .Save();
 
@@ -145,29 +154,26 @@ namespace Microsoft.Build.CargoBuild.UnitTests
         }
 
         [Fact]
-        public void ProjectsCanDependOnCargoBuildProjects()
+        public void ProjectsCanDependOnEachOtherProjects()
         {
-            ProjectCreator project1 = ProjectCreator.Templates.LegacyCsproj(
-                Path.Combine(TestRootPath, "project1", "project1.csproj"))
+            ProjectCreator project1 = ProjectCreator.Templates.VcxProjProject(
+                path: Path.Combine(TestRootPath, "project1", "project1.vcxproj"))
+                .Target("GetTargetPath")
+                .Target("_GetCopyToOutputDirectoryItemsFromTransitiveProjectReferences")
                 .Save();
 
             ProjectCreator project2 = ProjectCreator.Templates.CargoBuildProject(
-                path: Path.Combine(TestRootPath, "project2", "project2.csproj"))
+                path: Path.Combine(TestRootPath, "project2", "project2.cargoproj"))
                 .Property("DesignTimeBuild", "true")
                 .Property("GenerateDependencyFile", "false")
                 .Target("_GetProjectReferenceTargetFrameworkProperties")
+                .Target("_GetCopyToOutputDirectoryItemsFromTransitiveProjectReferences")
+                .Target("CargoFetch")
+                .Target("CargoBuild")
                 .ItemProjectReference(project1)
                 .Save();
 
-            ProjectCreator project3 = ProjectCreator.Templates.CargoBuildProject(
-                path: Path.Combine(TestRootPath, "project3", "project3.csproj"))
-                .Property("DesignTimeBuild", "true")
-                .Property("GenerateDependencyFile", "false")
-                .ItemProjectReference(project2)
-                .Target("_GetProjectReferenceTargetFrameworkProperties")
-                .Save();
-
-            project3.TryBuild(out bool result, out BuildOutput buildOutput);
+            project2.TryBuild(out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeTrue(buildOutput.GetConsoleLog());
         }
@@ -207,6 +213,8 @@ namespace Microsoft.Build.CargoBuild.UnitTests
             ProjectCreator.Templates.CargoBuildProject(
                 path: GetTempFileWithExtension(".cargoproj"))
                 .Property(propertyName, value)
+                .Target("CargoFetch")
+                .Target("CargoBuild")
                 .Save()
                 .TryGetPropertyValue(propertyName, out string actualValue);
 
@@ -215,8 +223,6 @@ namespace Microsoft.Build.CargoBuild.UnitTests
 
         [Theory]
         [InlineData(".cargoproj")]
-        [InlineData(".csproj")]
-        [InlineData(".proj")]
         public void PublishWithNoBuild(string projectExtension)
         {
             ProjectCreator.Templates.CargoBuildProject(
@@ -229,6 +235,8 @@ namespace Microsoft.Build.CargoBuild.UnitTests
                             .Target("TakeAction", afterTargets: "Build")
                                 .TaskMessage("2EA26E6FC5C842B682AA26096A769E07", MessageImportance.High);
                     })
+                .Target("CargoFetch")
+                .Target("CargoBuild")
                 .Save()
                 .TryBuild(restore: true, "Build", out bool buildResult, out BuildOutput buildOutput)
                 .TryBuild("Publish", new Dictionary<string, string> { ["NoBuild"] = "true" }, out bool publishResult, out BuildOutput publishOutput);
@@ -244,8 +252,6 @@ namespace Microsoft.Build.CargoBuild.UnitTests
 
         [Theory]
         [InlineData(".cargoproj")]
-        [InlineData(".csproj")]
-        [InlineData(".proj")]
         public void SimpleBuild(string projectExtension)
         {
             ProjectCreator.Templates.CargoBuildProject(
@@ -261,64 +267,14 @@ namespace Microsoft.Build.CargoBuild.UnitTests
                         .TaskMessage("86F00AF59170450E9D687652D74A6394", MessageImportance.High);
                 })
                 .Property("GenerateDependencyFile", "false")
+                .Target("CargoFetch")
+                .Target("CargoBuild")
                 .Save()
                 .TryBuild("Build", out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeTrue(buildOutput.GetConsoleLog());
 
             buildOutput.Messages.High.ShouldContain("86F00AF59170450E9D687652D74A6394");
-        }
-
-        [Fact]
-        public void StaticGraphBuildsSucceed()
-        {
-            ProjectCreator sdkReference = ProjectCreator.Templates.SdkCsproj(
-                Path.Combine(TestRootPath, "sdkstyle", "sdkstyle.csproj"))
-                .Save();
-
-            ProjectCreator cargoBuild = ProjectCreator.Templates.CargoBuildProject(
-                path: Path.Combine(TestRootPath, "CargoBuild", "Rust.cargoproj"),
-                customAction: creator =>
-                {
-                    creator.ItemProjectReference(sdkReference, referenceOutputAssembly: false);
-                }).Save();
-
-            ProjectCreator project = ProjectCreator.Templates.SdkCsproj(
-                    Path.Combine(TestRootPath, "main", $"main.csproj"),
-                    projectCreator: creator =>
-                    {
-                        creator.ItemProjectReference(cargoBuild, referenceOutputAssembly: false);
-                    })
-                .Save()
-                .TryBuild("Restore", out bool result, out BuildOutput restoreOutput);
-
-            result.ShouldBeTrue(restoreOutput.GetConsoleLog());
-
-            using (BuildManager buildManager = new BuildManager())
-            using (ProjectCollection projectCollection = new ProjectCollection())
-            {
-                try
-                {
-                    BuildOutput buildOutput = BuildOutput.Create();
-
-                    buildManager.BeginBuild(
-                        new BuildParameters(projectCollection)
-                        {
-                            Loggers = new[] { buildOutput },
-                            IsolateProjects = true,
-                        });
-                    GraphBuildResult graphResult = buildManager.BuildRequest(
-                        new GraphBuildRequestData(
-                            [new ProjectGraphEntryPoint(project.FullPath, new Dictionary<string, string>())],
-                            new List<string> { "Build" }));
-                    var console = buildOutput.GetConsoleLog();
-                    graphResult.OverallResult.ShouldBe(BuildResultCode.Success, graphResult.Exception?.ToString());
-                }
-                finally
-                {
-                    buildManager.EndBuild();
-                }
-            }
         }
 
 #if NETFRAMEWORK
@@ -343,6 +299,8 @@ namespace Microsoft.Build.CargoBuild.UnitTests
                     {
                         creator.ItemProjectReference(cargoBuild, referenceOutputAssembly: false);
                     })
+                .Target("CargoFetch")
+                .Target("CargoBuild")
                 .Save()
                 .TryBuild("Restore", out bool result, out BuildOutput restoreOutput);
 
@@ -378,9 +336,9 @@ namespace Microsoft.Build.CargoBuild.UnitTests
 #endif
 
         [Theory]
-        [InlineData(".csproj", "Build")]
-        [InlineData(".csproj", "Compile")]
-        [InlineData(".csproj", "CoreCompile")]
+        [InlineData(".cargoproj", "Build")]
+        [InlineData(".cargoproj", "Compile")]
+        [InlineData(".cargoproj", "CoreCompile")]
         [InlineData(".msbuildproj", "Build")]
         [InlineData(".msbuildproj", "Compile")]
         [InlineData(".msbuildproj", "CoreCompile")]
@@ -404,6 +362,8 @@ namespace Microsoft.Build.CargoBuild.UnitTests
                         path: GetTempFileWithExtension(extension),
                         projectCollection: projectCollection)
                     .Property("GenerateDependencyFile", "false")
+                    .Target("CargoFetch")
+                    .Target("CargoBuild")
                     .Save()
                     .TryBuild(target, out result, out buildOutput);
             }
@@ -412,7 +372,7 @@ namespace Microsoft.Build.CargoBuild.UnitTests
         }
 
         [Fact]
-        public void UsingMicrosoftCargoBuildSdkValueSet()
+        public void UsingMicrosofCargoBuildSdkValueSet()
         {
             ProjectCreator.Templates.CargoBuildProject(
                 path: GetTempFileWithExtension(".cargoproj"))

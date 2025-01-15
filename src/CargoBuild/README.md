@@ -11,73 +11,46 @@ To use this sdk you will need the following:
   },
 ```
 
-2) foreach rust project a .cargosproj project file at the same level as your cargo.toml file. The project file should import the CargoBuild sdk.
+2) For each rust project a .cargoproj project file at the same level as your cargo.toml file. The project file should include the CargoBuild sdk.
 ```xml
 <Project Sdk="Microsoft.Build.CargoBuild">
-  <PropertyGroup>
-    <TargetFramework> your framework version </TargetFramework>
-  </PropertyGroup>
 </Project>
 ```
 
 ### Usage
 To restore rust dependencies, you can use the following msbuild command:
 ```shell
-msbuild /t:Restore
+msbuild /t:restore
 ```
-or 
-```shell
-msbuild /restore
-``` 
 
 To build a rust project, you can use the following msbuild command:
 ```shell
-msbuild /t:Build
+msbuild
 ```
 
 To clean a rust project, you can use the following msbuild command:
 ```shell
-msbuild /p:clean=true
+msbuild /t:clean
 ```
 
 To run a rust project, you can use the following msbuild command:
 ```shell
-msbuild /p:run=true
+msbuild /t:run
 ```
 
 To run cargo tests:
 ```shell
-msbuild /p:test=true
+msbuild /t:test
 ```
 
 For cargo docs
 ```shell
-msbuild /p:doc=true
+msbuild /t:doc
 ```
 
 To clear the cargo home cache
 ```shell
 msbuild /t:clearcargocache
-```
-
-### Opening .cargoproj files in Visual Studio
-To work with .cargoproj files in Visual Studio, you will need to add the following to your .cargoproj file. 
-Specifically an itemgroup with a None item for the rust source files.
-
-```xml
-<Project Sdk="Microsoft.Build.CargoBuild">
-  <PropertyGroup>
-    <TargetFrameworks> your framework version </TargetFrameworks>
-      <OutputDir>target</OutputDir>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Include="src/*.rs" />
-  </ItemGroup>
-</Project>
-```
-Next you will need to run [slngen](https://github.com/microsoft/slngen) to generate the .sln file for the project. 
-```shell
-slngen <path to your .cargoproj file>
 ```
 
 ### How to test locally
