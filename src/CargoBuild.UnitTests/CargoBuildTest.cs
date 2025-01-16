@@ -26,6 +26,7 @@ namespace Microsoft.Build.CargoBuild.UnitTests
             ProjectCreator.Templates.CargoBuildProject(
                 path: GetTempFileWithExtension(".cargoproj"))
                 .Property("SkipCopyFilesMarkedCopyLocal", bool.TrueString)
+                .Property("ShouldImportSkdDll", bool.FalseString)
                 .ItemInclude("ReferenceCopyLocalPaths", Assembly.GetExecutingAssembly().Location)
                 .TryBuild("_CopyFilesMarkedCopyLocal", out bool result, out BuildOutput buildOutput);
 
@@ -38,7 +39,8 @@ namespace Microsoft.Build.CargoBuild.UnitTests
         public void CompileIsExtensibleWithBeforeAfterTargets(string targetName)
         {
             ProjectCreator cargoBuildProject = ProjectCreator.Templates.CargoBuildProject(
-                    path: Path.Combine(TestRootPath, "Rust", "Microsoft.Build.CargoBuild.UnitTests.csproj"))
+                    path: Path.Combine(TestRootPath, "CargoBuild", "rust.cargoproj"))
+                .Property("ShouldImportSkdDll", bool.FalseString)
                 .Target("CargoFetch")
                 .Target("CargoBuild")
                 .Target(targetName)
@@ -56,8 +58,9 @@ namespace Microsoft.Build.CargoBuild.UnitTests
         public void CoreCompileIsExtensibleWithCoreCompileDependsOn()
         {
             ProjectCreator cargoBuildProject = ProjectCreator.Templates.CargoBuildProject(
-                    path: Path.Combine(TestRootPath, "CargoBuild", "Rust.cargoproj"))
+                    path: Path.Combine(TestRootPath, "CargoBuild", "rust.cargoproj"))
                 .Property("CoreCompileDependsOn", "$(CoreCompileDependsOn);TestThatCoreCompileIsExtensible")
+                .Property("ShouldImportSkdDll", bool.FalseString)
                 .Target("CargoFetch")
                 .Target("CargoBuild")
                 .Target("TestThatCoreCompileIsExtensible")
@@ -75,9 +78,10 @@ namespace Microsoft.Build.CargoBuild.UnitTests
         public void CoreCompileIsExtensibleWithTargetsTriggeredByCompilation()
         {
             ProjectCreator cargoBuildProject = ProjectCreator.Templates.CargoBuildProject(
-                    path: Path.Combine(TestRootPath, "CargoBuild", "Rust.cargoproj"))
+                    path: Path.Combine(TestRootPath, "CargoBuild", "rust.cargoproj"))
                 .Property("TargetsTriggeredByCompilation", "TestThatCoreCompileIsExtensible")
                 .Property("TargetsTriggeredByCompilation", "TestThatCoreCompileIsExtensible")
+                .Property("ShouldImportSkdDll", bool.FalseString)
                 .Target("CargoFetch")
                 .Target("CargoBuild")
                 .Target("TestThatCoreCompileIsExtensible")
@@ -104,7 +108,8 @@ namespace Microsoft.Build.CargoBuild.UnitTests
                 .Save();
 
             ProjectCreator cargoBuildProject = ProjectCreator.Templates.CargoBuildProject(
-                    path: Path.Combine(TestRootPath, "CargoBuild", "Rust.cargoproj"))
+                    path: Path.Combine(TestRootPath, "CargoBuild", "rust.cargoproj"))
+                .Property("ShouldImportSkdDll", bool.FalseString)
                 .Target("CargoFetch")
                 .Target("CargoBuild")
                 .ItemProjectReference(projectA)
@@ -166,6 +171,7 @@ namespace Microsoft.Build.CargoBuild.UnitTests
                 path: Path.Combine(TestRootPath, "project2", "project2.cargoproj"))
                 .Property("DesignTimeBuild", "true")
                 .Property("GenerateDependencyFile", "false")
+                .Property("ShouldImportSkdDll", bool.FalseString)
                 .Target("_GetProjectReferenceTargetFrameworkProperties")
                 .Target("_GetCopyToOutputDirectoryItemsFromTransitiveProjectReferences")
                 .Target("CargoFetch")
@@ -213,6 +219,7 @@ namespace Microsoft.Build.CargoBuild.UnitTests
             ProjectCreator.Templates.CargoBuildProject(
                 path: GetTempFileWithExtension(".cargoproj"))
                 .Property(propertyName, value)
+                .Property("ShouldImportSkdDll", bool.FalseString)
                 .Target("CargoFetch")
                 .Target("CargoBuild")
                 .Save()
@@ -235,6 +242,7 @@ namespace Microsoft.Build.CargoBuild.UnitTests
                             .Target("TakeAction", afterTargets: "Build")
                                 .TaskMessage("2EA26E6FC5C842B682AA26096A769E07", MessageImportance.High);
                     })
+                .Property("ShouldImportSkdDll", bool.FalseString)
                 .Target("CargoFetch")
                 .Target("CargoBuild")
                 .Save()
@@ -267,6 +275,7 @@ namespace Microsoft.Build.CargoBuild.UnitTests
                         .TaskMessage("86F00AF59170450E9D687652D74A6394", MessageImportance.High);
                 })
                 .Property("GenerateDependencyFile", "false")
+                .Property("ShouldImportSkdDll", bool.FalseString)
                 .Target("CargoFetch")
                 .Target("CargoBuild")
                 .Save()
@@ -291,7 +300,9 @@ namespace Microsoft.Build.CargoBuild.UnitTests
                 customAction: creator =>
                 {
                     creator.ItemProjectReference(legacyReference, referenceOutputAssembly: false);
-                }).Save();
+                })
+                .Property("ShouldImportSkdDll", bool.FalseString)
+                .Save();
 
             ProjectCreator project = ProjectCreator.Templates.SdkCsproj(
                     Path.Combine(TestRootPath, "main", $"main.csproj"),
@@ -362,6 +373,7 @@ namespace Microsoft.Build.CargoBuild.UnitTests
                         path: GetTempFileWithExtension(extension),
                         projectCollection: projectCollection)
                     .Property("GenerateDependencyFile", "false")
+                    .Property("ShouldImportSkdDll", bool.FalseString)
                     .Target("CargoFetch")
                     .Target("CargoBuild")
                     .Save()
