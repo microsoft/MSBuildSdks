@@ -24,12 +24,4 @@
         Link="Sdk\%(RecursiveDir)%(Filename)%(Extension)"
         CopyToOutputDirectory="PreserveNewest" />
 	</ItemGroup>
-	<Target Name="CopyBuildFiles" AfterTargets="Build" DependsOnTargets="Build">
-		<ItemGroup>
-			<ParentFiles Include="$(ProjectDir)..\CargoBuild\bin\$(Configuration)\net*\**\Microsoft.Build.CargoBuild.*" />
-		</ItemGroup>
-			<Copy SourceFiles="@(ParentFiles)"
-					DestinationFolder="$(TargetDir)\build\$(TargetFramework)" 
-					SkipUnchangedFiles="true"/>
-	</Target>
 </Project>
