@@ -2,7 +2,7 @@
   <PropertyGroup>
   <ImplicitUsings>enable</ImplicitUsings>
   <Nullable>enable</Nullable>
-  <TargetFrameworks>net8.0;net472</TargetFrameworks>
+  <TargetFrameworks>net472;net8.0;net9.0</TargetFrameworks>
 	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	<PackageId>Microsoft.Build.CargoBuild</PackageId>
 	<Description>Builds rust projects within msbuild using cargo.</Description>

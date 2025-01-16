@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>net8.0</TargetFrameworks>
+		<TargetFrameworks>net472;net8.0;net9.0</TargetFrameworks>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="AssemblyShader" />
@@ -17,7 +17,7 @@
 		<PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" VersionOverride="17.11.4"/>
 	</ItemGroup>
 	<ItemGroup>
-		<ProjectReference Include="..\CargoBuild\Microsoft.Build.CargoBuild.csproj" />
+		<ProjectReference Include="..\CargoBuild\Microsoft.Build.CargoBuild.csproj" ReferenceOutputAssembly="false" />
 	</ItemGroup>
 	<ItemGroup>
 		<None Include="..\CargoBuild\Sdk\**\*"
