@@ -4,6 +4,7 @@
   <Nullable>enable</Nullable>
   <TargetFrameworks>net472;net8.0;net9.0</TargetFrameworks>
   <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  <ArtifactsPath>$(BaseArtifactsPath)$(MSBuildProjectName)\</ArtifactsPath>
   <PackageId>Microsoft.Build.Cargo</PackageId>
   <Description>Builds rust projects within msbuild using cargo.</Description>
   <NoDefaultExcludes>true</NoDefaultExcludes>
