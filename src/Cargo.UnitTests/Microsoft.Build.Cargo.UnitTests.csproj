@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net472;net8.0;net9.0</TargetFrameworks>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="AssemblyShader" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk"
+              ShadeDependencies="NuGet.Frameworks" />
+    <PackageReference Include="MSBuild.ProjectCreation" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="Shouldly" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.analyzers" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" />
+    <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime"  />
+    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Cargo\Microsoft.Build.Cargo.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Cargo\sdk\**\*"
+        Link="Sdk\%(RecursiveDir)%(Filename)%(Extension)"
+        CopyToOutputDirectory="PreserveNewest" >
+    </None>
+  </ItemGroup>
+</Project>

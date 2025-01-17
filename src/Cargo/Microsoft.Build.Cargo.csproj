@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+  <ImplicitUsings>enable</ImplicitUsings>
+  <Nullable>enable</Nullable>
+  <TargetFrameworks>net472;net8.0;net9.0</TargetFrameworks>
+  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  <PackageId>Microsoft.Build.Cargo</PackageId>
+  <Description>Builds rust projects within msbuild using cargo.</Description>
+  <NoDefaultExcludes>true</NoDefaultExcludes>
+  <BuildOutputTargetFolder>build\</BuildOutputTargetFolder>
+  <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
+  <DevelopmentDependency>true</DevelopmentDependency>
+  <!-- This package contains MSBuild tasks only, so avoid dependencies. -->
+  <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+  <OutputFileNamesWithoutVersion>false</OutputFileNamesWithoutVersion>
+  <NoWarn>$(NoWarn);NU1504;NU5100;NU5110;NU5111</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="dist\msrustup.ps1">
+  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <Pack>true</Pack>
+      </None>
+      <None Include="README.md" />
+    </ItemGroup>
+ <ItemGroup>
+   <PackageReference Include="Microsoft.Build.Utilities.Core" VersionOverride="17.11.4" />
+   <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" VersionOverride="17.11.4" />
+   <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" VersionOverride="17.11.4" />
+   <PackageReference Include="System.Net.Http" NoWarn="RT0003" />
+ </ItemGroup>
+ <ItemGroup>
+   <None Include="sdk\Sdk.props">
+     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+   </None>
+ </ItemGroup>
+ <ItemGroup>
+   <None Include="sdk\Sdk.targets">
+     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+   </None>
+ </ItemGroup>
+ <ItemGroup>
+   <None Include="sdk\DisableCopyFilesMarkedCopyLocal.targets">
+     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+   </None>
+ </ItemGroup>
+</Project>
