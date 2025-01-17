@@ -29,17 +29,17 @@
    <PackageReference Include="System.Net.Http" NoWarn="RT0003" />
  </ItemGroup>
  <ItemGroup>
-   <None Include="Sdk\Sdk.props">
+   <None Include="sdk\Sdk.props">
      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
    </None>
  </ItemGroup>
  <ItemGroup>
-   <None Include="Sdk\Sdk.targets">
+   <None Include="sdk\Sdk.targets">
      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
    </None>
  </ItemGroup>
  <ItemGroup>
-   <None Include="Sdk\DisableCopyFilesMarkedCopyLocal.targets">
+   <None Include="sdk\DisableCopyFilesMarkedCopyLocal.targets">
      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
    </None>
  </ItemGroup>

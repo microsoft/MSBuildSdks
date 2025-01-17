@@ -20,7 +20,7 @@
     <ProjectReference Include="..\Cargo\Microsoft.Build.Cargo.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Cargo\Sdk\**\*"
+    <None Include="..\Cargo\sdk\**\*"
         Link="Sdk\%(RecursiveDir)%(Filename)%(Extension)"
         CopyToOutputDirectory="PreserveNewest" >
     </None>

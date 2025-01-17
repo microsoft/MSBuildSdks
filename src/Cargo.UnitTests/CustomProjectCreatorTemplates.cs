@@ -42,13 +42,13 @@ namespace Microsoft.Build.Cargo.UnitTests
                     projectCollection,
                     projectFileOptions,
                     globalProperties)
-                .Import(Path.Combine(ThisAssemblyDirectory, "Sdk", "Sdk.props"))
+                .Import(Path.Combine(ThisAssemblyDirectory, "sdk", "Sdk.props"))
                 .Property("TargetFramework", targetFramework)
                 .Property("TargetPlatformSdkPath", Path.Combine(ThisAssemblyDirectory, "Sdk"))
                 .Property("TargetPlatformDisplayName", "Windows, 7.0")
                 .Property("ShouldImportSkdDll", bool.FalseString)
                 .CustomAction(customAction)
-                .Import(Path.Combine(ThisAssemblyDirectory, "Sdk", "Sdk.targets"));
+                .Import(Path.Combine(ThisAssemblyDirectory, "sdk", "Sdk.targets"));
         }
 
         public static ProjectCreator VcxProjProject(
