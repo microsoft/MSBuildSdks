@@ -9,7 +9,7 @@ To use this sdk you will need the following:
     ...,
     "Microsoft.Build.Cargo": "1.0.270-gf406f8eaa0"
   },
-```
+```  
 
 2) For each rust project a .cargoproj project file at the same level as your cargo.toml file. The project file should include the Cargo sdk.
 ```xml
