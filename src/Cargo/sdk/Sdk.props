@@ -5,9 +5,9 @@
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-		<UsingMicrosoftCargoBuildSdk>true</UsingMicrosoftCargoBuildSdk>
-		<MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
-	</PropertyGroup>
+    <UsingMicrosoftCargoSdk>true</UsingMicrosoftCargoSdk>
+    <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
+  </PropertyGroup>
 
   <PropertyGroup>
     <ManagedLanguageTargetsGotImported Condition="'$(MSBuildProjectExtension)' == '.csproj'">true</ManagedLanguageTargetsGotImported>
@@ -15,19 +15,19 @@
     <ManagedLanguageTargetsGotImported Condition="'$(MSBuildProjectExtension)' == '.fsproj'">true</ManagedLanguageTargetsGotImported>
   </PropertyGroup>
 
-  <Import Project="$(CustomBeforeCargoBuildProps)" Condition=" '$(CustomBeforeCargoBuildProps)' != '' And Exists('$(CustomBeforeCargoBuildProps)') " />
+  <Import Project="$(CustomBeforeCargoProps)" Condition=" '$(CustomBeforeCargoProps)' != '' And Exists('$(CustomBeforeCargoProps)') " />
 
   <PropertyGroup>
-    <!-- Disable default Compile and EmbeddedResource items for CargoBuild projects -->
-		<EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-		<EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
-		
-		<!--
-      NuGet should always restore CargoBuild projects with "PackageReference" style restore.  Setting this property will cause the right thing to happen even if there aren't any PackageReference items in the project.
+    <!-- Disable default Compile and EmbeddedResource items for Cargo projects -->
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+    
+    <!--
+      NuGet should always restore Cargo projects with "PackageReference" style restore.  Setting this property will cause the right thing to happen even if there aren't any PackageReference items in the project.
     -->
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
 
-    <!-- Targeting packs shouldn't be referenced as CargoBuild projects don't compile .net code. -->
+    <!-- Targeting packs shouldn't be referenced as Cargo projects don't compile .net code. -->
     <DisableImplicitFrameworkReferences Condition="'$(DisableImplicitFrameworkReferences)' == ''">true</DisableImplicitFrameworkReferences>
 
     <!-- Disable publish actions -->
@@ -46,7 +46,7 @@
     <!-- Don't log the high priority message mentioning this project's name (or copy the product we didn't build). -->
     <SkipCopyBuildProduct Condition="'$(SkipCopyBuildProduct)' == ''">true</SkipCopyBuildProduct>
 
-    <!-- Don't automatically reference assembly packages since CargoBuild don't need reference assemblies -->
+    <!-- Don't automatically reference assembly packages since Cargo don't need reference assemblies -->
     <AutomaticallyUseReferenceAssemblyPackages Condition="'$(AutomaticallyUseReferenceAssemblyPackages)' == ''">false</AutomaticallyUseReferenceAssemblyPackages>
     <NoCompilerStandardLib Condition="'$(NoCompilerStandardLib)' == ''">false</NoCompilerStandardLib>
     <NoStdLib Condition="'$(NoStdLib)' == ''">true</NoStdLib>
@@ -58,7 +58,7 @@
   <ItemDefinitionGroup>
     <ProjectReference>
       <!--
-        Setting ReferenceOutputAssembly skips target framework cross-project validation in NuGet.  Since CargoBuild projects don't define runtime
+        Setting ReferenceOutputAssembly skips target framework cross-project validation in NuGet.  Since Cargo projects don't define runtime
         constraints like a target framework, there's no point in checking the compatibilty of project references.
       -->
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
@@ -70,7 +70,7 @@
 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" Condition=" '$(MicrosoftCommonPropsHasBeenImported)' != 'true' "/>
 
-  <Import Project="$(CustomAfterCargoBuildProps)" Condition=" '$(CustomAfterCargoBuildProps)' != '' And Exists('$(CustomAfterCargoBuildProps)') " />
+  <Import Project="$(CustomAfterCargoProps)" Condition=" '$(CustomAfterCargoProps)' != '' And Exists('$(CustomAfterCargoProps)') " />
 
   <!-- For CPS/VS support. Importing in .props allows any subsequent targets to redefine this if needed -->
   <Target Name="CompileDesignTime" />
@@ -85,8 +85,8 @@
     <DocCommandArgs Condition="'$(DocCommandArgs)' == ''"></DocCommandArgs>
     <!--For internal Microsoft use only.-->
     <UseMsRustup Condition="'$(UseMsRustup)' == ''">false</UseMsRustup>
-	</PropertyGroup>
-	<ItemGroup>
-		<None Include="**\*.rs" />
-	</ItemGroup>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="**\*.rs" />
+  </ItemGroup>
 </Project>

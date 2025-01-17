@@ -16,17 +16,18 @@ using System.Linq;
 using System.Reflection;
 using Xunit;
 
-namespace Microsoft.Build.CargoBuild.UnitTests
+namespace Microsoft.Build.Cargo.UnitTests
 {
-    public class CargoBuildTest : MSBuildSdkTestBase
+    public class CargoTest : MSBuildSdkTestBase
     {
+        private static readonly string ThisAssemblyDirectory = Path.GetDirectoryName(typeof(CustomProjectCreatorTemplates).Assembly.Location);
+
         [Fact]
         public void CanDisableCopyFilesMarkedCopyLocal()
         {
-            ProjectCreator.Templates.CargoBuildProject(
+            ProjectCreator.Templates.CargoProject(
                 path: GetTempFileWithExtension(".cargoproj"))
                 .Property("SkipCopyFilesMarkedCopyLocal", bool.TrueString)
-                .Property("ShouldImportSkdDll", bool.FalseString)
                 .ItemInclude("ReferenceCopyLocalPaths", Assembly.GetExecutingAssembly().Location)
                 .TryBuild("_CopyFilesMarkedCopyLocal", out bool result, out BuildOutput buildOutput);
 
@@ -38,16 +39,15 @@ namespace Microsoft.Build.CargoBuild.UnitTests
         [InlineData("AfterCompile")]
         public void CompileIsExtensibleWithBeforeAfterTargets(string targetName)
         {
-            ProjectCreator cargoBuildProject = ProjectCreator.Templates.CargoBuildProject(
-                    path: Path.Combine(TestRootPath, "CargoBuild", "rust.cargoproj"))
-                .Property("ShouldImportSkdDll", bool.FalseString)
+            ProjectCreator cargoProject = ProjectCreator.Templates.CargoProject(
+                    path: Path.Combine(TestRootPath, "Cargo", "rust.cargoproj"))
                 .Target("CargoFetch")
                 .Target("CargoBuild")
                 .Target(targetName)
                 .TaskMessage("503CF1EBA6DC415F95F4DB630E7C1817", MessageImportance.High)
                 .Save();
 
-            cargoBuildProject.TryBuild(restore: true, out bool result, out BuildOutput buildOutput);
+            cargoProject.TryBuild(restore: true, out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeTrue(buildOutput.GetConsoleLog());
 
@@ -57,17 +57,16 @@ namespace Microsoft.Build.CargoBuild.UnitTests
         [Fact]
         public void CoreCompileIsExtensibleWithCoreCompileDependsOn()
         {
-            ProjectCreator cargoBuildProject = ProjectCreator.Templates.CargoBuildProject(
-                    path: Path.Combine(TestRootPath, "CargoBuild", "rust.cargoproj"))
+            ProjectCreator cargoProject = ProjectCreator.Templates.CargoProject(
+                    path: Path.Combine(TestRootPath, "Cargo", "rust.cargoproj"))
                 .Property("CoreCompileDependsOn", "$(CoreCompileDependsOn);TestThatCoreCompileIsExtensible")
-                .Property("ShouldImportSkdDll", bool.FalseString)
                 .Target("CargoFetch")
                 .Target("CargoBuild")
                 .Target("TestThatCoreCompileIsExtensible")
                 .TaskMessage("35F1C217730445E0AC0F30E70F5C7826", MessageImportance.High)
                 .Save();
 
-            cargoBuildProject.TryBuild(restore: true, out bool result, out BuildOutput buildOutput);
+            cargoProject.TryBuild(restore: true, out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeTrue(buildOutput.GetConsoleLog());
 
@@ -77,18 +76,17 @@ namespace Microsoft.Build.CargoBuild.UnitTests
         [Fact]
         public void CoreCompileIsExtensibleWithTargetsTriggeredByCompilation()
         {
-            ProjectCreator cargoBuildProject = ProjectCreator.Templates.CargoBuildProject(
-                    path: Path.Combine(TestRootPath, "CargoBuild", "rust.cargoproj"))
+            ProjectCreator cargoProject = ProjectCreator.Templates.CargoProject(
+                    path: Path.Combine(TestRootPath, "Cargo", "rust.cargoproj"))
                 .Property("TargetsTriggeredByCompilation", "TestThatCoreCompileIsExtensible")
                 .Property("TargetsTriggeredByCompilation", "TestThatCoreCompileIsExtensible")
-                .Property("ShouldImportSkdDll", bool.FalseString)
                 .Target("CargoFetch")
                 .Target("CargoBuild")
                 .Target("TestThatCoreCompileIsExtensible")
                     .TaskMessage("D031211C98F1454CA47A424ADC86A8F7", MessageImportance.High)
                 .Save();
 
-            cargoBuildProject.TryBuild(restore: true, out bool result, out BuildOutput buildOutput);
+            cargoProject.TryBuild(restore: true, out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeTrue(buildOutput.GetConsoleLog());
 
@@ -107,15 +105,15 @@ namespace Microsoft.Build.CargoBuild.UnitTests
 #endif
                 .Save();
 
-            ProjectCreator cargoBuildProject = ProjectCreator.Templates.CargoBuildProject(
-                    path: Path.Combine(TestRootPath, "CargoBuild", "rust.cargoproj"))
-                .Property("ShouldImportSkdDll", bool.FalseString)
+            ProjectCreator cargoProject = ProjectCreator.Templates.CargoProject(
+                    path: Path.Combine(TestRootPath, "Cargo", "rust.cargoproj"))
+
                 .Target("CargoFetch")
                 .Target("CargoBuild")
                 .ItemProjectReference(projectA)
                 .Save();
 
-            cargoBuildProject.TryRestore(out bool result, out BuildOutput buildOutput);
+            cargoProject.TryRestore(out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeTrue(buildOutput.GetConsoleLog());
         }
@@ -124,7 +122,7 @@ namespace Microsoft.Build.CargoBuild.UnitTests
         [InlineData(".cargoproj")]
         public void ProjectContainsStaticGraphImplementation(string projectExtension)
         {
-            ProjectCreator cargoBuild = ProjectCreator.Templates.CargoBuildProject(
+            ProjectCreator cargoProject = ProjectCreator.Templates.CargoProject(
                 path: GetTempFileWithExtension(projectExtension),
                 globalProperties: new Dictionary<string, string>
                 {
@@ -140,7 +138,7 @@ namespace Microsoft.Build.CargoBuild.UnitTests
                 .Property("GenerateDependencyFile", "false")
                 .Save();
 
-            ICollection<ProjectItem> projectReferenceTargets = cargoBuild.Project.GetItems("ProjectReferenceTargets");
+            ICollection<ProjectItem> projectReferenceTargets = cargoProject.Project.GetItems("ProjectReferenceTargets");
 
             TargetProtocolShouldContainValuesForTarget("Build");
             TargetProtocolShouldContainValuesForTarget("Clean");
@@ -167,11 +165,11 @@ namespace Microsoft.Build.CargoBuild.UnitTests
                 .Target("_GetCopyToOutputDirectoryItemsFromTransitiveProjectReferences")
                 .Save();
 
-            ProjectCreator project2 = ProjectCreator.Templates.CargoBuildProject(
+            ProjectCreator project2 = ProjectCreator.Templates.CargoProject(
                 path: Path.Combine(TestRootPath, "project2", "project2.cargoproj"))
                 .Property("DesignTimeBuild", "true")
                 .Property("GenerateDependencyFile", "false")
-                .Property("ShouldImportSkdDll", bool.FalseString)
+
                 .Target("_GetProjectReferenceTargetFrameworkProperties")
                 .Target("_GetCopyToOutputDirectoryItemsFromTransitiveProjectReferences")
                 .Target("CargoFetch")
@@ -216,10 +214,10 @@ namespace Microsoft.Build.CargoBuild.UnitTests
         [InlineData("SkipCopyFilesMarkedCopyLocal", null, "")]
         public void PropertiesHaveExpectedValues(string propertyName, string value, string expectedValue)
         {
-            ProjectCreator.Templates.CargoBuildProject(
+            ProjectCreator.Templates.CargoProject(
                 path: GetTempFileWithExtension(".cargoproj"))
                 .Property(propertyName, value)
-                .Property("ShouldImportSkdDll", bool.FalseString)
+
                 .Target("CargoFetch")
                 .Target("CargoBuild")
                 .Save()
@@ -232,7 +230,7 @@ namespace Microsoft.Build.CargoBuild.UnitTests
         [InlineData(".cargoproj")]
         public void PublishWithNoBuild(string projectExtension)
         {
-            ProjectCreator.Templates.CargoBuildProject(
+            ProjectCreator.Templates.CargoProject(
                     path: GetTempFileWithExtension(projectExtension),
                     customAction: creator =>
                     {
@@ -242,7 +240,7 @@ namespace Microsoft.Build.CargoBuild.UnitTests
                             .Target("TakeAction", afterTargets: "Build")
                                 .TaskMessage("2EA26E6FC5C842B682AA26096A769E07", MessageImportance.High);
                     })
-                .Property("ShouldImportSkdDll", bool.FalseString)
+
                 .Target("CargoFetch")
                 .Target("CargoBuild")
                 .Save()
@@ -262,7 +260,7 @@ namespace Microsoft.Build.CargoBuild.UnitTests
         [InlineData(".cargoproj")]
         public void SimpleBuild(string projectExtension)
         {
-            ProjectCreator.Templates.CargoBuildProject(
+            ProjectCreator.Templates.CargoProject(
                 path: GetTempFileWithExtension(projectExtension),
                 projectCollection: new ProjectCollection(
                     new Dictionary<string, string>
@@ -275,7 +273,7 @@ namespace Microsoft.Build.CargoBuild.UnitTests
                         .TaskMessage("86F00AF59170450E9D687652D74A6394", MessageImportance.High);
                 })
                 .Property("GenerateDependencyFile", "false")
-                .Property("ShouldImportSkdDll", bool.FalseString)
+
                 .Target("CargoFetch")
                 .Target("CargoBuild")
                 .Save()
@@ -285,66 +283,6 @@ namespace Microsoft.Build.CargoBuild.UnitTests
 
             buildOutput.Messages.High.ShouldContain("86F00AF59170450E9D687652D74A6394");
         }
-
-#if NETFRAMEWORK
-        [Fact]
-        public void StaticGraphBuildsSucceedLegacyCsproj()
-        {
-            ProjectCreator legacyReference = ProjectCreator.Templates.LegacyCsproj(
-                    Path.Combine(TestRootPath, "legacy", "legacy.csproj"),
-                    targetFrameworkVersion: "v4.7.2")
-                .Save();
-
-            ProjectCreator cargoBuild = ProjectCreator.Templates.CargoBuildProject(
-                path: Path.Combine(TestRootPath, "CargoBuild", "Rust.cargoproj"),
-                customAction: creator =>
-                {
-                    creator.ItemProjectReference(legacyReference, referenceOutputAssembly: false);
-                })
-                .Property("ShouldImportSkdDll", bool.FalseString)
-                .Save();
-
-            ProjectCreator project = ProjectCreator.Templates.SdkCsproj(
-                    Path.Combine(TestRootPath, "main", $"main.csproj"),
-                    projectCreator: creator =>
-                    {
-                        creator.ItemProjectReference(cargoBuild, referenceOutputAssembly: false);
-                    })
-                .Target("CargoFetch")
-                .Target("CargoBuild")
-                .Save()
-                .TryBuild("Restore", out bool result, out BuildOutput restoreOutput);
-
-            result.ShouldBeTrue(restoreOutput.GetConsoleLog());
-
-            using (BuildManager buildManager = new BuildManager())
-            using (ProjectCollection projectCollection = new ProjectCollection())
-            {
-                try
-                {
-                    BuildOutput buildOutput = BuildOutput.Create();
-
-                    buildManager.BeginBuild(
-                        new BuildParameters(projectCollection)
-                        {
-                            Loggers = new[] { buildOutput },
-                            IsolateProjects = true,
-                        });
-
-                    GraphBuildResult graphResult = buildManager.BuildRequest(
-                        new GraphBuildRequestData(
-                            new[] { new ProjectGraphEntryPoint(project.FullPath, new Dictionary<string, string>()) },
-                            new List<string> { "Build" }));
-
-                    graphResult.OverallResult.ShouldBe(BuildResultCode.Success, graphResult.Exception?.ToString());
-                }
-                finally
-                {
-                    buildManager.EndBuild();
-                }
-            }
-        }
-#endif
 
         [Theory]
         [InlineData(".cargoproj", "Build")]
@@ -369,11 +307,11 @@ namespace Microsoft.Build.CargoBuild.UnitTests
                     .Target("EnableIntermediateOutputPathMismatchWarning")
                     .Save(Path.Combine(TestRootPath, "Directory.Build.targets"));
 
-                ProjectCreator.Templates.CargoBuildProject(
+                ProjectCreator.Templates.CargoProject(
                         path: GetTempFileWithExtension(extension),
                         projectCollection: projectCollection)
                     .Property("GenerateDependencyFile", "false")
-                    .Property("ShouldImportSkdDll", bool.FalseString)
+
                     .Target("CargoFetch")
                     .Target("CargoBuild")
                     .Save()
@@ -384,11 +322,11 @@ namespace Microsoft.Build.CargoBuild.UnitTests
         }
 
         [Fact]
-        public void UsingMicrosofCargoBuildSdkValueSet()
+        public void UsingMicrosofCargoSdkValueSet()
         {
-            ProjectCreator.Templates.CargoBuildProject(
+            ProjectCreator.Templates.CargoProject(
                 path: GetTempFileWithExtension(".cargoproj"))
-                .TryGetPropertyValue("UsingMicrosoftCargoBuildSdk", out string propertyValue);
+                .TryGetPropertyValue("UsingMicrosoftCargoSdk", out string propertyValue);
 
             propertyValue.ShouldBe("true");
         }

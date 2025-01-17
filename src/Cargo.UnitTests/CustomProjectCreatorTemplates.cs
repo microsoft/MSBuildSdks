@@ -8,13 +8,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Microsoft.Build.CargoBuild.UnitTests
+namespace Microsoft.Build.Cargo.UnitTests
 {
     public static class CustomProjectCreatorTemplates
     {
         private static readonly string ThisAssemblyDirectory = Path.GetDirectoryName(typeof(CustomProjectCreatorTemplates).Assembly.Location);
 
-        public static ProjectCreator CargoBuildProject(
+        public static ProjectCreator CargoProject(
             this ProjectCreatorTemplates templates,
             Action<ProjectCreator> customAction = null,
             string path = null,
@@ -44,6 +44,9 @@ namespace Microsoft.Build.CargoBuild.UnitTests
                     globalProperties)
                 .Import(Path.Combine(ThisAssemblyDirectory, "Sdk", "Sdk.props"))
                 .Property("TargetFramework", targetFramework)
+                .Property("TargetPlatformSdkPath", Path.Combine(ThisAssemblyDirectory, "Sdk"))
+                .Property("TargetPlatformDisplayName", "Windows, 7.0")
+                .Property("ShouldImportSkdDll", bool.FalseString)
                 .CustomAction(customAction)
                 .Import(Path.Combine(ThisAssemblyDirectory, "Sdk", "Sdk.targets"));
         }

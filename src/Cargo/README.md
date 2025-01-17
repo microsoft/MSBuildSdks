@@ -7,13 +7,13 @@ To use this sdk you will need the following:
 ```json
  "msbuild-sdks": {
     ...,
-    "Microsoft.Build.CargoBuild": "1.0.270-gf406f8eaa0"
+    "Microsoft.Build.Cargo": "1.0.270-gf406f8eaa0"
   },
 ```
 
-2) For each rust project a .cargoproj project file at the same level as your cargo.toml file. The project file should include the CargoBuild sdk.
+2) For each rust project a .cargoproj project file at the same level as your cargo.toml file. The project file should include the Cargo sdk.
 ```xml
-<Project Sdk="Microsoft.Build.CargoBuild">
+<Project Sdk="Microsoft.Build.Cargo">
 </Project>
 ```
 
@@ -57,7 +57,7 @@ msbuild /t:clearcargocache
 
 1) After building the cargo build project, a nupkg file will be created in the `bin\Debug` or `bin\Release` folder. A file like `Microsoft.Build.CargoBuild.<someversionnumber>.nupkg` will be created
 
-2) In repo that contains your rust project(s), update your nuget.config file to point to the CargoBuild `bin\Debug` or `bin\Release` folder.
+2) In repo that contains your rust project(s), update your nuget.config file to point to the Cargo `bin\Debug` or `bin\Release` folder.
 
 ```xml
 <packageSources>
@@ -69,10 +69,10 @@ msbuild /t:clearcargocache
 ```json
   "msbuild-sdks": {
    ...,
-   "Microsoft.Build.CargoBuild": "<someversionnumber>"
+   "Microsoft.Build.Cargo": "<someversionnumber>"
    }
 ```
- 4) Once you run `msbuild /restore` in your rust project, the CargoBuild sdk will be restored from the local nuget source. You can now use the sdk locally.
+ 4) Once you run `msbuild /restore` in your rust project, the Cargo sdk will be restored from the local nuget source. You can now use the sdk locally.
 
 
  ### Using MSRustup (Microsoft internal use only)

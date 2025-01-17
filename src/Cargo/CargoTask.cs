@@ -16,12 +16,12 @@ using File = System.IO.File;
 using Task = Microsoft.Build.Utilities.Task;
 using Tasks = System.Threading.Tasks;
 
-namespace MSBuild.CargoBuild
+namespace Microsoft.Build.Cargo
 {
     /// <summary>
     /// Builds rust projects using cargo.
     /// </summary>
-    public class CargoBuildTask : Task
+    public class CargoTask : Task
     {
         private static readonly string? _tempPath = Environment.GetEnvironmentVariable("TEMP");
         private static readonly string _rustUpBinary = $"{_tempPath}\\cargohome\\bin\\rustup.exe";
@@ -133,7 +133,7 @@ namespace MSBuild.CargoBuild
             try
             {
                 stopwatch.Start();
-                Log.LogMessage(MessageImportance.Normal, "CargoBuild fetch Starting");
+                Log.LogMessage(MessageImportance.Normal, "Cargo fetch Starting");
                 var graphLoadStopWatch = new Stopwatch();
                 graphLoadStopWatch.Start();
 
@@ -162,7 +162,7 @@ namespace MSBuild.CargoBuild
 
                 Log.LogMessage(
                     MessageImportance.Normal,
-                    $"CargoBuild fetch: Static graph loaded in {{0}} seconds: {{1}} nodes, {{2}} edges",
+                    $"Cargo fetch: Static graph loaded in {{0}} seconds: {{1}} nodes, {{2}} edges",
                     Math.Round(graph.ConstructionMetrics.ConstructionTime.TotalSeconds, 3),
                     graph.ConstructionMetrics.NodeCount,
                     graph.ConstructionMetrics.EdgeCount);
@@ -179,7 +179,7 @@ namespace MSBuild.CargoBuild
 
                 var tasks = new List<Task<ExitCode>>();
 
-                Log.LogMessage(MessageImportance.Normal, $"CargoBuild, Auth Enabled: {EnableAuth}");
+                Log.LogMessage(MessageImportance.Normal, $"Cargo, Auth Enabled: {EnableAuth}");
 
                 foreach (var projects in rustProjects)
                 {
@@ -189,17 +189,17 @@ namespace MSBuild.CargoBuild
                     tasks.Add(fetchTask);
                 }
 
-                await Tasks.Task.WhenAll(tasks);
-                ExitCode[] exitCodes = await Tasks.Task.WhenAll(tasks);
+                await System.Threading.Tasks.Task.WhenAll(tasks);
+                ExitCode[] exitCodes = await System.Threading.Tasks.Task.WhenAll(tasks);
                 bool success = exitCodes.All(exitCode => exitCode == ExitCode.Succeeded);
                 stopwatch.Stop();
                 if (success)
                 {
-                    Log.LogMessage(MessageImportance.Normal, $"CargoBuild fetching Completed Successfully in {stopwatch.Elapsed.Seconds} seconds");
+                    Log.LogMessage(MessageImportance.Normal, $"Cargo fetching Completed Successfully in {stopwatch.Elapsed.Seconds} seconds");
                 }
                 else
                 {
-                    Log.LogError("CargoBuild fetching had an issue. Check the build log for details.");
+                    Log.LogError("Cargo fetching had an issue. Check the build log for details.");
                 }
 
                 return success;

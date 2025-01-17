@@ -21,7 +21,7 @@
     <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
-  <Import Project="$(CustomBeforeCargoBuild)" Condition="'$(CustomBeforeCargoBuild)' != '' and Exists('$(CustomBeforeCargoBuild)')" />
+  <Import Project="$(CustomBeforeCargo)" Condition="'$(CustomBeforeCargo)' != '' and Exists('$(CustomBeforeCargo)')" />
 
   <PropertyGroup>
     <!-- Don't include build output in a package since CargoProj projects don't emit an assembly. -->
@@ -65,13 +65,13 @@
   </ItemGroup>
 
   <!--
-    The CopyFilesToOutputDirectory target is hard coded to depend on ComputeIntermediateSatelliteAssemblies.  CargoBuild projects do no generate resource assemblies
+    The CopyFilesToOutputDirectory target is hard coded to depend on ComputeIntermediateSatelliteAssemblies.  Cargo projects do no generate resource assemblies
     so the target is replaced with a no-op
   -->
   <Target Name="ComputeIntermediateSatelliteAssemblies" />
 
   <!--
-    CargoBuild projects do not build an assembly so dependent projects shouldn't get a path to the target.  Override the GetTargetPath to do nothing.
+    Cargo projects do not build an assembly so dependent projects shouldn't get a path to the target.  Override the GetTargetPath to do nothing.
   -->
   <Target Name="GetTargetPath" />
 
@@ -86,7 +86,7 @@
   <Target Name="GetFrameworkPaths" DependsOnTargets="$(GetFrameworkPathsDependsOn)" />
   <Target Name="GetReferenceAssemblyPaths" DependsOnTargets="$(GetReferenceAssemblyPathsDependsOn)" />
 
-  <Import Project="$(CustomAfterCargoBuild)" Condition="'$(CustomAfterCargoBuild)' != '' and Exists('$(CustomAfterCargoBuild)')" />
+  <Import Project="$(CustomAfterCargo)" Condition="'$(CustomAfterCargo)' != '' and Exists('$(CustomAfterCargo)')" />
 
   <!-- 
     Microsoft.Managed.Targets is imported by the managed language target files in MSBuild 16.0 and above, but most of the msbuild tasks are actually in Microsoft.Common.Currentversion.targets.
@@ -106,27 +106,27 @@
   <!-- Disables the _CopyFilesMarkedCopyLocal target to not copy references when SkipCopyFilesMarkedCopyLocal is set to true. -->
   <Import Project="DisableCopyFilesMarkedCopyLocal.targets" Condition="'$(SkipCopyFilesMarkedCopyLocal)' == 'true'" />
   <!-- Rust specific targets -->
-  <UsingTask TaskName="MSBuild.CargoBuild.CargoBuildTask" AssemblyFile="$(MSBuildThisFileDirectory)..\build\net8.0\Microsoft.Build.CargoBuild.dll" Condition="'$(MSBuildRuntimeType)' == 'Core' And '$(ShouldImportSdkDll)' !='false'"/>
-  <UsingTask TaskName="MSBuild.CargoBuild.CargoBuildTask" AssemblyFile="$(MSBuildThisFileDirectory)..\build\net472\Microsoft.Build.CargoBuild.dll" Condition="'$(MSBuildRuntimeType)' != 'Core' And '$(ShouldImportSdkDll)' !='false'"/>
+  <UsingTask TaskName="Microsoft.Build.Cargo.CargoTask" AssemblyFile="$(MSBuildThisFileDirectory)..\build\net8.0\Microsoft.Build.Cargo.dll" Condition="'$(MSBuildRuntimeType)' == 'Core' And '$(ShouldImportSdkDll)' != 'false'"/>
+  <UsingTask TaskName="Microsoft.Build.Cargo.CargoTask" AssemblyFile="$(MSBuildThisFileDirectory)..\build\net472\Microsoft.Build.Cargo.dll" Condition="'$(MSBuildRuntimeType)' != 'Core' And '$(ShouldImportSdkDll)' != 'false'"/>
   <Target Name="CargoFetch" AfterTargets="Restore">
-    <CargoBuildTask EnableAuth="$(AuthMode)" StartupProj="$(MSBuildProjectFullPath)" Command="fetch" />
+    <CargoTask EnableAuth="$(AuthMode)" StartupProj="$(MSBuildProjectFullPath)" Command="fetch" />
   </Target>
-  <Target Name="CargoBuild" AfterTargets="CoreCompile">
-    <CargoBuildTask EnableAuth="$(AuthMode)" StartupProj="$(MSBuildProjectFullPath)" Command="build" CommandArgs="$(BuildCommandArgs)" />
+  <Target Name="CargoBuild" AfterTargets="CoreCompile" DependsOnTargets="CargoFetch">
+    <CargoTask EnableAuth="$(AuthMode)" StartupProj="$(MSBuildProjectFullPath)" Command="build" CommandArgs="$(BuildCommandArgs)" />
   </Target>
-  <Target Name="Test" DependsOnTargets="CargoBuild">
-    <CargoBuildTask StartupProj="$(MSBuildProjectFullPath)" Command="test" CommandArgs="$(TestCommandArgs)" />
+  <Target Name="Test" DependsOnTargets="Cargo">
+    <CargoTask StartupProj="$(MSBuildProjectFullPath)" Command="test" CommandArgs="$(TestCommandArgs)" />
   </Target>
   <Target Name="Clean">
-    <CargoBuildTask StartupProj="$(MSBuildProjectFullPath)" Command="clean" CommandArgs="$(CleanCommandArgs)" />
+    <CargoTask StartupProj="$(MSBuildProjectFullPath)" Command="clean" CommandArgs="$(CleanCommandArgs)" />
   </Target>
-  <Target Name="Run" DependsOnTargets="CargoBuild">
-    <CargoBuildTask StartupProj="$(MSBuildProjectFullPath)" Command="run" CommandArgs="$(RunCommandArgs)" />
+  <Target Name="Run" DependsOnTargets="Cargo">
+    <CargoTask StartupProj="$(MSBuildProjectFullPath)" Command="run" CommandArgs="$(RunCommandArgs)" />
   </Target>
-  <Target Name="Doc" DependsOnTargets="CargoBuild">
-    <CargoBuildTask StartupProj="$(MSBuildProjectFullPath)" Command="doc" CommandArgs="$(DocCommandArgs)" />
+  <Target Name="Doc" DependsOnTargets="Cargo">
+    <CargoTask StartupProj="$(MSBuildProjectFullPath)" Command="doc" CommandArgs="$(DocCommandArgs)" />
   </Target>
   <Target Name="ClearCargoCache">
-    <CargoBuildTask StartupProj="$(MSBuildProjectFullPath)" Command="clearcargocache" CommandArgs="$(DocCommandArgs)" />
+    <CargoTask StartupProj="$(MSBuildProjectFullPath)" Command="clearcargocache" CommandArgs="$(DocCommandArgs)" />
   </Target>
 </Project>
