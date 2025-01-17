@@ -1,4 +1,4 @@
-### CargoBuild Sdk Prototype
+### Cargo Sdk Prototype
 
 ### Project Setup
 To use this sdk you will need the following:
@@ -55,7 +55,7 @@ msbuild /t:clearcargocache
 
 ### How to test locally
 
-1) After building the cargo build project, a nupkg file will be created in the `bin\Debug` or `bin\Release` folder. A file like `Microsoft.Build.CargoBuild.<someversionnumber>.nupkg` will be created
+1) After building the cargo build project, a nupkg file will be created in the `bin\Debug` or `bin\Release` folder. A file like `Microsoft.Build.Cargo.<someversionnumber>.nupkg` will be created
 
 2) In repo that contains your rust project(s), update your nuget.config file to point to the Cargo `bin\Debug` or `bin\Release` folder.
 

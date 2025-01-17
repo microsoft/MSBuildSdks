@@ -25,8 +25,22 @@
  <ItemGroup>
    <PackageReference Include="Microsoft.Build.Utilities.Core" VersionOverride="17.11.4" />
    <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" VersionOverride="17.11.4" />
-   <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime"
-      VersionOverride="17.11.4" />
+   <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" VersionOverride="17.11.4" />
    <PackageReference Include="System.Net.Http" NoWarn="RT0003" />
+ </ItemGroup>
+ <ItemGroup>
+   <None Update="Sdk\Sdk.props">
+     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+   </None>
+ </ItemGroup>
+ <ItemGroup>
+   <None Update="Sdk\Sdk.targets">
+     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+   </None>
+ </ItemGroup>
+ <ItemGroup>
+   <None Update="Sdk\DisableCopyFilesMarkedCopyLocal.targets">
+     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+   </None>
  </ItemGroup>
 </Project>
