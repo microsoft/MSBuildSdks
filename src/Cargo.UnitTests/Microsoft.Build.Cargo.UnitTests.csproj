@@ -16,10 +16,13 @@
     <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime"  />
     <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" />
   </ItemGroup>
-
+  <ItemGroup>
+    <ProjectReference Include="..\Cargo\Microsoft.Build.Cargo.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
   <ItemGroup>
     <None Include="..\Cargo\Sdk\**\*"
         Link="Sdk\%(RecursiveDir)%(Filename)%(Extension)"
-        CopyToOutputDirectory="PreserveNewest" />
+        CopyToOutputDirectory="PreserveNewest" >
+    </None>
   </ItemGroup>
 </Project>
