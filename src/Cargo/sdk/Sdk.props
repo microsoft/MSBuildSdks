@@ -85,6 +85,7 @@
     <DocCommandArgs Condition="'$(DocCommandArgs)' == ''"></DocCommandArgs>
     <!--For internal Microsoft use only.-->
     <UseMsRustup Condition="'$(UseMsRustup)' == ''">false</UseMsRustup>
+    <StartupProj Condition="'$(StartupProj)' == ''">$(MSBuildProjectFullPath)</StartupProj>
   </PropertyGroup>
   <ItemGroup>
     <None Include="**\*.rs" />

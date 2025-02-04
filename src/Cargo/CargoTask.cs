@@ -14,7 +14,6 @@ using System.Security.Cryptography;
 
 using File = System.IO.File;
 using Task = Microsoft.Build.Utilities.Task;
-using Tasks = System.Threading.Tasks;
 
 namespace Microsoft.Build.Cargo
 {
@@ -32,7 +31,7 @@ namespace Microsoft.Build.Cargo
         private static readonly string _rustupHome = $"{_tempPath}\\rustuphome";
         private static readonly string _cargoHomeBin = $"{_tempPath}\\cargohome\\bin\\";
         private static readonly string _msRustupBinary = $"{_tempPath}\\cargohome\\bin\\msrustup.exe";
-        private static readonly Dictionary<string, string> _envVars = new () { { "CARGO_HOME", _cargoHome }, { "RUSTUP_HOME", _rustupHome }, };
+        private static readonly Dictionary<string, string> _envVars = new() { { "CARGO_HOME", _cargoHome }, { "RUSTUP_HOME", _rustupHome } };
         private static readonly string _rustupDownloadLink = "https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe";
         private static readonly string _checkSumVerifyUrl = "https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe.sha256";
         private bool _shouldCleanRustPath;
@@ -88,13 +87,12 @@ namespace Microsoft.Build.Cargo
         private async Task<bool> ExecuteAsync()
         {
             // download & install rust if necessary
-            if (Command.Equals("fetch") && await DownloadRustupAsync())
+            if (Command.Equals("install", StringComparison.InvariantCultureIgnoreCase))
             {
-                if (await InstallRust())
-                {
-                    _shouldCleanRustPath = true;
-                }
-
+                return await DownloadAndInstallRust();
+            }
+            else if (Command.Equals("fetch"))
+            {
                 return await FetchCratesAsync(StartupProj);
             }
             else if (Command.Equals("clearcargocache", StringComparison.InvariantCultureIgnoreCase))
@@ -125,6 +123,19 @@ namespace Microsoft.Build.Cargo
         {
             Log.LogMessage(MessageImportance.Normal, $"Executing cargo command: {command} {args}");
             return await ExecuteProcessAsync(_cargoPath, $"{command} {args}", ".", _envVars);
+        }
+
+        private async Task<bool> DownloadAndInstallRust()
+        {
+            if (await DownloadRustupAsync())
+            {
+                if (await InstallRust())
+                {
+                    _shouldCleanRustPath = true;
+                }
+            }
+
+            return true;
         }
 
         private async Task<bool> FetchCratesAsync(string project)
@@ -342,7 +353,8 @@ namespace Microsoft.Build.Cargo
             using var fileStream = new FileStream(_rustUpInitBinary, FileMode.CreateNew);
             HttpResponseMessage res = response;
             await res.Content.CopyToAsync(fileStream);
-
+            fileStream.Close();
+            Log.LogMessage(MessageImportance.Normal, $"Downloaded -- {rustupDownloadLink}");
             return await VerifyInitHashAsync();
         }
 
@@ -360,8 +372,8 @@ namespace Microsoft.Build.Cargo
                 if (Directory.Exists(workingDirPart))
                 {
                     Log.LogMessage(MessageImportance.Normal, "Installing MS Rustup");
-                    string sdkRootPath = Path.Combine(workingDirPart!, "content\\dist");
-                    ExecuteProcessAsync("powershell.exe", $".\\msrustup.ps1 '{_cargoHomeBin}'", sdkRootPath, _envVars).GetAwaiter().GetResult();
+                    string distRootPath = Path.Combine(workingDirPart!, "content\\dist");
+                    ExecuteProcessAsync("powershell.exe", $".\\msrustup.ps1 '{_cargoHomeBin}'", distRootPath, _envVars).GetAwaiter().GetResult();
                 }
             }
 
@@ -369,17 +381,15 @@ namespace Microsoft.Build.Cargo
             ExitCode exitCodeToolChainLatest = ExitCode.Succeeded;
             ExitCode exitCodeLatest = ExitCode.Succeeded;
 
+            Log.LogMessage(MessageImportance.Normal, "Installing Rust");
+            exitCode = await ExecuteProcessAsync(_rustUpInitBinary, "-y", ".", _envVars);
+            exitCodeLatest = await ExecuteProcessAsync(rustupBinary, "default stable", ".", _envVars); // ensure we have the latest stable version
+
             // toml should be relative to the project dir.
-            if (UseMsRustUp && File.Exists("rust-toolchain.toml"))
+            if (UseMsRustUp && File.Exists(Path.Combine(StartupProj, "rust-toolchain.toml")))
             {
                 Log.LogMessage(MessageImportance.Normal, "Installing Custom Toolchain");
-                exitCodeToolChainLatest = await ExecuteProcessAsync(rustupBinary, "toolchain install", ".", _envVars);
-            }
-            else
-            {
-                Log.LogMessage(MessageImportance.Normal, "Installing Rust");
-                exitCode = await ExecuteProcessAsync(_rustUpInitBinary, "-y", ".", _envVars);
-                exitCodeLatest = await ExecuteProcessAsync(rustupBinary, "default stable", ".", _envVars); // ensure we have the latest stable version
+                exitCodeToolChainLatest = await ExecuteProcessAsync(rustupBinary, "toolchain install", StartupProj, _envVars);
             }
 
             return exitCode == 0 && exitCodeToolChainLatest == 0 && exitCodeLatest == 0;
@@ -388,6 +398,7 @@ namespace Microsoft.Build.Cargo
         private async Task<bool> VerifyInitHashAsync()
         {
             using var sha256 = SHA256.Create();
+            Log.LogMessage(MessageImportance.Normal, $"Verifying hash of {_rustUpInitBinary}");
             using FileStream stream = File.OpenRead(_rustUpInitBinary);
             byte[] hash = sha256.ComputeHash(stream);
             string converted = BitConverter.ToString(hash);

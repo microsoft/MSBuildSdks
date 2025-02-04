@@ -51,12 +51,20 @@ $feed = if (Test-Path env:MSRUSTUP_FEED_URL) {
 # Get authentication token
 $token = if (Test-Path env:MSRUSTUP_ACCESS_TOKEN) {
     "Bearer $env:MSRUSTUP_ACCESS_TOKEN"
+
 } elseif (Test-Path env:MSRUSTUP_PAT) {
     "Basic $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes(":$($env:MSRUSTUP_PAT)")))"
-} elseif ((Get-Command "azureauth" -ErrorAction SilentlyContinue) -ne $null) {
+} elseif (Test-Path env:MSRUSTUP_FILE) {
+    $location = $env:MSRUSTUP_FILE
+    if (Test-Path $location) {
+        $contents = Get-Content $location -Raw
+    }
+    "Basic $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes(":$($contents)")))"
+}
+elseif ((Get-Command "azureauth" -ErrorAction SilentlyContinue) -ne $null) {
     azureauth ado token --output headervalue
 } else {
-    Write-Error "MSRUSTUP_ACCESS_TOKEN or MSRUSTUP_PAT must be set or azureauth must be present."
+    Write-Error "MSRUSTUP_ACCESS_TOKEN, MSRUSTUP_FILE or MSRUSTUP_PAT must be set or azureauth must be present."
     exit 1
 }
 

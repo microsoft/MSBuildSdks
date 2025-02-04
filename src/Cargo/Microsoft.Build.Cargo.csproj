@@ -38,6 +38,9 @@
    <None Include="sdk\Sdk.targets">
      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
    </None>
+	 <None Include="sdk\cargoinstall.proj">
+		 <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	 </None>
  </ItemGroup>
  <ItemGroup>
    <None Include="sdk\DisableCopyFilesMarkedCopyLocal.targets">
