@@ -19,14 +19,15 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.Utilities.Core" VersionOverride="17.11.4" />
     <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" VersionOverride="17.11.4" />
-    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" VersionOverride="17.11.4" />
+    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime"
+      VersionOverride="17.11.4" />
     <PackageReference Include="System.Net.Http" NoWarn="RT0003" />
   </ItemGroup>
   <ItemGroup>
     <None Include="dist\msrustup.ps1">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Pack>true</Pack>
-		</None>
+    </None>
     <None Include="README.md" />
     <None Include="sdk\Sdk.props">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

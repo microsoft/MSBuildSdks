@@ -9,26 +9,35 @@
     <TargetFramework Condition="'$(TargetFramework)' == ''">netstandard2.0</TargetFramework>
   </PropertyGroup>
   <!--
-    Set LanguageTargets to Microsoft.Common.targets for any project that the SDK won't (.proj, .noproj, etc)
-    https://github.com/dotnet/sdk/blob/50ddfbb91be94d068514e8f4b0ce1052156364a0/src/Tasks/Microsoft.NET.Build.Tasks/sdk/Sdk.targets#L28
+    Set LanguageTargets to Microsoft.Common.targets for any project that the SDK won't (.proj, .noproj,
+  etc)
+  https://github.com/dotnet/sdk/blob/50ddfbb91be94d068514e8f4b0ce1052156364a0/src/Tasks/Microsoft.NET.Build.Tasks/sdk/Sdk.targets#L28
     
-    We can't default LanguageTargets it is set in the SDK and immediately imported.  So we can only default
+    We can't default LanguageTargets it is set in the SDK and immediately imported.  So we can only
+  default
     it if we know the SDK won't.  Projects probably won't load in Visual Studio but will build from the
     command-line just fine.
   -->
   <PropertyGroup>
-    <LanguageTargets Condition=" '$(LanguageTargets)' == '' And '$(MSBuildProjectExtension)' != '.csproj' And '$(MSBuildProjectExtension)' != '.vbproj' And '$(MSBuildProjectExtension)' != '.fsproj' ">$(MSBuildToolsPath)\Microsoft.Common.targets</LanguageTargets>
-    <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
+    <LanguageTargets
+      Condition=" '$(LanguageTargets)' == '' And '$(MSBuildProjectExtension)' != '.csproj' And '$(MSBuildProjectExtension)' != '.vbproj' And '$(MSBuildProjectExtension)' != '.fsproj' ">
+      $(MSBuildToolsPath)\Microsoft.Common.targets</LanguageTargets>
+    <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">
+      $(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
-  <Import Project="$(CustomBeforeCargo)" Condition="'$(CustomBeforeCargo)' != '' and Exists('$(CustomBeforeCargo)')" />
+  <Import Project="$(CustomBeforeCargo)"
+    Condition="'$(CustomBeforeCargo)' != '' and Exists('$(CustomBeforeCargo)')" />
 
   <PropertyGroup>
     <!-- Don't include build output in a package since CargoProj projects don't emit an assembly. -->
     <IncludeBuildOutput Condition="'$(IncludeBuildOutput)' == ''">false</IncludeBuildOutput>
 
-    <!-- For CPS/VS support. See https://github.com/dotnet/project-system/blob/master/src/Microsoft.VisualStudio.ProjectSystem.Managed/ProjectSystem/DesignTimeTargets/Microsoft.Managed.DesignTime.targets#L60 -->
-    <CustomBeforeMicrosoftCommonTargets Condition="'$(ManagedLanguageTargetsGotImported)' == '' And Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed\Microsoft.Managed.DesignTime.targets')">$(CustomBeforeMicrosoftCommonTargets);$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed\Microsoft.Managed.DesignTime.targets</CustomBeforeMicrosoftCommonTargets>
+    <!-- For CPS/VS support. See
+    https://github.com/dotnet/project-system/blob/master/src/Microsoft.VisualStudio.ProjectSystem.Managed/ProjectSystem/DesignTimeTargets/Microsoft.Managed.DesignTime.targets#L60 -->
+    <CustomBeforeMicrosoftCommonTargets
+      Condition="'$(ManagedLanguageTargetsGotImported)' == '' And Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed\Microsoft.Managed.DesignTime.targets')">
+      $(CustomBeforeMicrosoftCommonTargets);$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed\Microsoft.Managed.DesignTime.targets</CustomBeforeMicrosoftCommonTargets>
   </PropertyGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" Condition=" '$(CommonTargetsPath)' == '' " />
@@ -65,18 +74,21 @@
   </ItemGroup>
 
   <!--
-    The CopyFilesToOutputDirectory target is hard coded to depend on ComputeIntermediateSatelliteAssemblies.  Cargo projects do no generate resource assemblies
+    The CopyFilesToOutputDirectory target is hard coded to depend on
+  ComputeIntermediateSatelliteAssemblies.  Cargo projects do no generate resource assemblies
     so the target is replaced with a no-op
   -->
   <Target Name="ComputeIntermediateSatelliteAssemblies" />
 
   <!--
-    Cargo projects do not build an assembly so dependent projects shouldn't get a path to the target.  Override the GetTargetPath to do nothing.
+    Cargo projects do not build an assembly so dependent projects shouldn't get a path to the target.
+  Override the GetTargetPath to do nothing.
   -->
   <Target Name="GetTargetPath" />
 
   <!--
-    The GetTargetPathWithTargetPlatformMoniker target uses a BeforeTargets so the only way to disable it is to override it with an empty target.
+    The GetTargetPathWithTargetPlatformMoniker target uses a BeforeTargets so the only way to disable
+  it is to override it with an empty target.
   -->
   <Target Name="GetTargetPathWithTargetPlatformMoniker" />
 
@@ -86,54 +98,71 @@
   <Target Name="GetFrameworkPaths" DependsOnTargets="$(GetFrameworkPathsDependsOn)" />
   <Target Name="GetReferenceAssemblyPaths" DependsOnTargets="$(GetReferenceAssemblyPathsDependsOn)" />
 
-  <Import Project="$(CustomAfterCargo)" Condition="'$(CustomAfterCargo)' != '' and Exists('$(CustomAfterCargo)')" />
+  <Import Project="$(CustomAfterCargo)"
+    Condition="'$(CustomAfterCargo)' != '' and Exists('$(CustomAfterCargo)')" />
 
   <!-- 
-    Microsoft.Managed.Targets is imported by the managed language target files in MSBuild 16.0 and above, but most of the msbuild tasks are actually in Microsoft.Common.Currentversion.targets.
+    Microsoft.Managed.Targets is imported by the managed language target files in MSBuild 16.0 and
+  above, but most of the msbuild tasks are actually in Microsoft.Common.Currentversion.targets.
     So import it when the managed targets do not get imported.
   -->
-  <Import Project="$(MSBuildToolsPath)\Microsoft.Managed.targets" Condition="'$(MSBuildAssemblyVersion)' >= '16.0' And '$(ManagedLanguageTargetsGotImported)' != 'true'" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Managed.targets"
+    Condition="'$(MSBuildAssemblyVersion)' >= '16.0' And '$(ManagedLanguageTargetsGotImported)' != 'true'" />
 
   <!-- Override stock CoreCompile target to do nothing but keep extensibility points -->
   <Target Name="CoreCompile"
-      DependsOnTargets="$(CoreCompileDependsOn)">
-    <CallTarget Targets="$(TargetsTriggeredByCompilation)" Condition="'$(TargetsTriggeredByCompilation)' != ''" />
+    DependsOnTargets="$(CoreCompileDependsOn)">
+    <CallTarget Targets="$(TargetsTriggeredByCompilation)"
+      Condition="'$(TargetsTriggeredByCompilation)' != ''" />
   </Target>
 
   <Target Name="_GenerateCompileInputs" />
   <Target Name="_GenerateCompileDependencyCache" />
 
-  <!-- Disables the _CopyFilesMarkedCopyLocal target to not copy references when SkipCopyFilesMarkedCopyLocal is set to true. -->
-  <Import Project="DisableCopyFilesMarkedCopyLocal.targets" Condition="'$(SkipCopyFilesMarkedCopyLocal)' == 'true'" />
+  <!-- Disables the _CopyFilesMarkedCopyLocal target to not copy references when
+  SkipCopyFilesMarkedCopyLocal is set to true. -->
+  <Import Project="DisableCopyFilesMarkedCopyLocal.targets"
+    Condition="'$(SkipCopyFilesMarkedCopyLocal)' == 'true'" />
   <!-- Rust specific targets -->
-  <UsingTask TaskName="Microsoft.Build.Cargo.CargoTask" AssemblyFile="$(MSBuildThisFileDirectory)..\build\net8.0\Microsoft.Build.Cargo.dll" Condition="'$(MSBuildRuntimeType)' == 'Core' And '$(ShouldImportSdkDll)' != 'false'"/>
-  <UsingTask TaskName="Microsoft.Build.Cargo.CargoTask" AssemblyFile="$(MSBuildThisFileDirectory)..\build\net472\Microsoft.Build.Cargo.dll" Condition="'$(MSBuildRuntimeType)' != 'Core' And '$(ShouldImportSdkDll)' != 'false'"/>
+  <UsingTask TaskName="Microsoft.Build.Cargo.CargoTask"
+    AssemblyFile="$(MSBuildThisFileDirectory)..\build\net8.0\Microsoft.Build.Cargo.dll"
+    Condition="'$(MSBuildRuntimeType)' == 'Core' And '$(ShouldImportSdkDll)' != 'false'" />
+  <UsingTask TaskName="Microsoft.Build.Cargo.CargoTask"
+    AssemblyFile="$(MSBuildThisFileDirectory)..\build\net472\Microsoft.Build.Cargo.dll"
+    Condition="'$(MSBuildRuntimeType)' != 'Core' And '$(ShouldImportSdkDll)' != 'false'" />
   <Target Name="CargoInstall" AfterTargets="_CollectRestoreInputs">
     <MSBuild
-       Projects="$(MSBuildThisFileDirectory)CargoInstall.proj"
-       Targets="CargoInstall"
-       Properties="EnableTelemetryLoggerCopy=$(EnableTelemetryLoggerCopy);TelemetryLoggerLocation=$(TelemetryLoggerLocation);TelemetryLoggerSourcePath=$(TelemetryLoggerSourcePath);TelemetryLoggerInstallId=$(TelemetryLoggerInstallId)"
-       RemoveProperties="NuGetInteractive;MSBuildRestoreSessionId;TargetFramework;RuntimeIdentifier" />
+      Projects="$(MSBuildThisFileDirectory)CargoInstall.proj"
+      Targets="CargoInstall"
+      Properties="EnableTelemetryLoggerCopy=$(EnableTelemetryLoggerCopy);TelemetryLoggerLocation=$(TelemetryLoggerLocation);TelemetryLoggerSourcePath=$(TelemetryLoggerSourcePath);TelemetryLoggerInstallId=$(TelemetryLoggerInstallId)"
+      RemoveProperties="NuGetInteractive;MSBuildRestoreSessionId;TargetFramework;RuntimeIdentifier" />
   </Target>
-	<Target Name="CargoFetch" AfterTargets="CargoInstall">
-    <CargoTask EnableAuth="$(AuthMode)" StartupProj="$(StartupProj)" Command="fetch" UseMsRustUp="$(UseMsRustUp)" />
+  <Target Name="CargoFetch" AfterTargets="CargoInstall">
+    <CargoTask EnableAuth="$(AuthMode)" StartupProj="$(StartupProj)" Command="fetch"
+      UseMsRustUp="$(UseMsRustUp)" />
   </Target>
   <Target Name="CargoBuild" AfterTargets="CoreCompile" DependsOnTargets="CargoFetch">
-    <CargoTask EnableAuth="$(AuthMode)" StartupProj="$(StartupProj)" Command="build" CommandArgs="$(BuildCommandArgs)" UseMsRustUp="$(UseMsRustUp)"  />
+    <CargoTask EnableAuth="$(AuthMode)" StartupProj="$(StartupProj)" Command="build"
+      CommandArgs="$(BuildCommandArgs)" UseMsRustUp="$(UseMsRustUp)" />
   </Target>
   <Target Name="Test" DependsOnTargets="Cargo">
-    <CargoTask StartupProj="$(StartupProj)" Command="test" CommandArgs="$(TestCommandArgs)" UseMsRustUp="$(UseMsRustUp)" />
+    <CargoTask StartupProj="$(StartupProj)" Command="test" CommandArgs="$(TestCommandArgs)"
+      UseMsRustUp="$(UseMsRustUp)" />
   </Target>
   <Target Name="Clean">
-    <CargoTask StartupProj="$(StartupProj)" Command="clean" CommandArgs="$(CleanCommandArgs)" UseMsRustUp="$(UseMsRustUp)" />
+    <CargoTask StartupProj="$(StartupProj)" Command="clean" CommandArgs="$(CleanCommandArgs)"
+      UseMsRustUp="$(UseMsRustUp)" />
   </Target>
   <Target Name="Run" DependsOnTargets="Cargo">
-    <CargoTask StartupProj="$(StartupProj)" Command="run" CommandArgs="$(RunCommandArgs)" UseMsRustUp="$(UseMsRustUp)" />
+    <CargoTask StartupProj="$(StartupProj)" Command="run" CommandArgs="$(RunCommandArgs)"
+      UseMsRustUp="$(UseMsRustUp)" />
   </Target>
   <Target Name="Doc" DependsOnTargets="Cargo">
-    <CargoTask StartupProj="$(StartupProj)" Command="doc" CommandArgs="$(DocCommandArgs)" UseMsRustUp="$(UseMsRustUp)" />
+    <CargoTask StartupProj="$(StartupProj)" Command="doc" CommandArgs="$(DocCommandArgs)"
+      UseMsRustUp="$(UseMsRustUp)" />
   </Target>
   <Target Name="ClearCargoCache">
-    <CargoTask StartupProj="$(StartupProj)" Command="clearcargocache" CommandArgs="$(DocCommandArgs)" UseMsRustUp="$(UseMsRustUp)" />
+    <CargoTask StartupProj="$(StartupProj)" Command="clearcargocache"
+      CommandArgs="$(DocCommandArgs)" UseMsRustUp="$(UseMsRustUp)" />
   </Target>
 </Project>
