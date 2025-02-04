@@ -31,7 +31,7 @@ namespace Microsoft.Build.Cargo
         private static readonly string _rustupHome = $"{_tempPath}\\rustuphome";
         private static readonly string _cargoHomeBin = $"{_tempPath}\\cargohome\\bin\\";
         private static readonly string _msRustupBinary = $"{_tempPath}\\cargohome\\bin\\msrustup.exe";
-        private static readonly Dictionary<string, string> _envVars = new() { { "CARGO_HOME", _cargoHome }, { "RUSTUP_HOME", _rustupHome } };
+        private static readonly Dictionary<string, string> _envVars = new () { { "CARGO_HOME", _cargoHome }, { "RUSTUP_HOME", _rustupHome } };
         private static readonly string _rustupDownloadLink = "https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe";
         private static readonly string _checkSumVerifyUrl = "https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe.sha256";
         private bool _shouldCleanRustPath;
