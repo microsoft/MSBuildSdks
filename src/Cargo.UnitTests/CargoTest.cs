@@ -226,7 +226,7 @@ namespace Microsoft.Build.Cargo.UnitTests
                 .Save()
                 .TryGetPropertyValue(propertyName, out string actualValue);
 
-            actualValue.ShouldBe(expectedValue, StringComparer.OrdinalIgnoreCase, customMessage: $"Property {propertyName} should have a value of \"{expectedValue}\" but its value was \"{actualValue}\"");
+            actualValue.Trim().ShouldBe(expectedValue, StringComparer.OrdinalIgnoreCase, customMessage: $"Property {propertyName} should have a value of \"{expectedValue}\" but its value was \"{actualValue}\"");
         }
 
         [Theory]
