@@ -22,19 +22,19 @@
     <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" VersionOverride="17.11.4" />
     <PackageReference Include="System.Net.Http" NoWarn="RT0003" />
   </ItemGroup>
-	<ItemGroup>
-		<None Include="dist\msrustup.ps1">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<Pack>true</Pack>
+  <ItemGroup>
+    <None Include="dist\msrustup.ps1">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Pack>true</Pack>
 		</None>
-		<None Include="README.md" />
+    <None Include="README.md" />
     <None Include="sdk\Sdk.props">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="sdk\Sdk.targets">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="sdk\cargoinstall.proj">
+    <None Include="sdk\CargoInstall.proj">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="sdk\DisableCopyFilesMarkedCopyLocal.targets">
