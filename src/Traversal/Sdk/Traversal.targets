@@ -104,7 +104,7 @@
     </PublishDependsOn>
 
     <PublishContainerDependsOn Condition="'$(NoBuild)' != 'true'">
-      Publish;
+      Build;
     </PublishContainerDependsOn>
 
     <PublishContainerDependsOn Condition="'$(NoBuild)' == 'true'">
