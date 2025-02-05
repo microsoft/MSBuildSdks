@@ -6,7 +6,6 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <UsingMicrosoftCargoSdk>true</UsingMicrosoftCargoSdk>
-    <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -85,6 +84,7 @@
     <DocCommandArgs Condition="'$(DocCommandArgs)' == ''"></DocCommandArgs>
     <!--For internal Microsoft use only.-->
     <UseMsRustup Condition="'$(UseMsRustup)' == ''">false</UseMsRustup>
+    <StartupProj Condition="'$(StartupProj)' == ''">$(MSBuildProjectFullPath)</StartupProj>
   </PropertyGroup>
   <ItemGroup>
     <None Include="**\*.rs" />
