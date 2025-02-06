@@ -31,7 +31,7 @@ namespace Microsoft.Build.Cargo
         private static readonly string _rustupHome = $"{_tempPath}\\rustuphome";
         private static readonly string _cargoHomeBin = $"{_tempPath}\\cargohome\\bin\\";
         private static readonly string _msRustupBinary = $"{_tempPath}\\cargohome\\bin\\msrustup.exe";
-        private static readonly Dictionary<string, string> _envVars = new () { { "CARGO_HOME", _cargoHome }, { "RUSTUP_HOME", _rustupHome } };
+        private static readonly Dictionary<string, string> _envVars = new() { { "CARGO_HOME", _cargoHome }, { "RUSTUP_HOME", _rustupHome } };
         private static readonly string _rustupDownloadLink = "https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe";
         private static readonly string _checkSumVerifyUrl = "https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe.sha256";
         private bool _shouldCleanRustPath;
@@ -64,11 +64,6 @@ namespace Microsoft.Build.Cargo
         /// Gets or sets optional cargo command args.
         /// </summary>
         public string CommandArgs { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets a value indicating whether to use msrust up or not.
-        /// </summary>
-        public bool UseMsRustUp { get; set; } = false;
 
         /// <inheritdoc/>
         public override bool Execute()
@@ -117,6 +112,12 @@ namespace Microsoft.Build.Cargo
 
                 return await CargoRunCommandAsync(Command.ToLower(), CommandArgs) == ExitCode.Succeeded;
             }
+        }
+
+        private bool IsMSToolChain(string path)
+        {
+            // Microsoft Rustup toolchain channels have the following format: ms-<version>
+            return File.ReadAllText(path).Contains("channel = \"ms-");
         }
 
         private async Task<ExitCode> CargoRunCommandAsync(string command, string args)
@@ -360,39 +361,42 @@ namespace Microsoft.Build.Cargo
 
         private async Task<bool> InstallRust()
         {
-            var rustupBinary = UseMsRustUp ? _msRustupBinary : _rustUpBinary;
-            if ((File.Exists(_cargoPath) && Directory.Exists(_rustupHome) && File.Exists(_rustUpBinary)) || (File.Exists(_cargoHome) && UseMsRustUp != true) || File.Exists(_msRustupBinary))
+            var rootToolchainPath = Path.Combine(StartupProj, "rust-toolchain.toml");
+            var useMsRustUp = File.Exists(rootToolchainPath) && IsMSToolChain(rootToolchainPath);
+            var rustupBinary = useMsRustUp ? _msRustupBinary : _rustUpBinary;
+            if ((File.Exists(_cargoPath) && Directory.Exists(_rustupHome) && File.Exists(_rustUpBinary)) || (File.Exists(_cargoHome) && useMsRustUp != true) || File.Exists(_msRustupBinary))
             {
                 return false;
             }
 
-            if (UseMsRustUp)
+            ExitCode exitCode = ExitCode.Succeeded;
+            ExitCode exitCodeLatest = ExitCode.Succeeded;
+
+            Log.LogMessage(MessageImportance.Normal, "Installing Rust");
+            exitCode = await ExecuteProcessAsync(_rustUpInitBinary, "-y", ".", _envVars);
+
+            if (useMsRustUp)
             {
                 string? workingDirPart = new DirectoryInfo(BuildEngine.ProjectFileOfTaskNode).Parent?.Parent?.FullName;
                 if (Directory.Exists(workingDirPart))
                 {
                     Log.LogMessage(MessageImportance.Normal, "Installing MS Rustup");
                     string distRootPath = Path.Combine(workingDirPart!, "content\\dist");
-                    ExecuteProcessAsync("powershell.exe", $".\\msrustup.ps1 '{_cargoHomeBin}'", distRootPath, _envVars).GetAwaiter().GetResult();
+                    await ExecuteProcessAsync("powershell.exe", $".\\msrustup.ps1 '{_cargoHomeBin}'", distRootPath, _envVars);
                 }
             }
 
-            ExitCode exitCode = ExitCode.Succeeded;
-            ExitCode exitCodeToolChainLatest = ExitCode.Succeeded;
-            ExitCode exitCodeLatest = ExitCode.Succeeded;
-
-            Log.LogMessage(MessageImportance.Normal, "Installing Rust");
-            exitCode = await ExecuteProcessAsync(_rustUpInitBinary, "-y", ".", _envVars);
-            exitCodeLatest = await ExecuteProcessAsync(rustupBinary, "default stable", ".", _envVars); // ensure we have the latest stable version
-
-            // toml should be relative to the project dir.
-            if (UseMsRustUp && File.Exists(Path.Combine(StartupProj, "rust-toolchain.toml")))
+            if (useMsRustUp)
             {
                 Log.LogMessage(MessageImportance.Normal, "Installing Custom Toolchain");
-                exitCodeToolChainLatest = await ExecuteProcessAsync(rustupBinary, "toolchain install", StartupProj, _envVars);
+                exitCodeLatest = await ExecuteProcessAsync(rustupBinary, "toolchain install", StartupProj, _envVars);
+            }
+            else
+            {
+                exitCodeLatest = await ExecuteProcessAsync(rustupBinary, "default stable", ".", _envVars); // ensure we have the latest stable version
             }
 
-            return exitCode == 0 && exitCodeToolChainLatest == 0 && exitCodeLatest == 0;
+            return exitCode == 0 && exitCodeLatest == 0;
         }
 
         private async Task<bool> VerifyInitHashAsync()

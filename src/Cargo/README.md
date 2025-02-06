@@ -73,22 +73,3 @@ msbuild /t:clearcargocache
    }
 ```
  4) Once you run `msbuild /restore` in your rust project, the Cargo sdk will be restored from the local nuget source. You can now use the sdk locally.
-
-
- ### Using MSRustup (Microsoft internal use only)
- To enable use of MSRustup, you will need to set the following MSBuild property in one of the following places:
- 
- ```shell
- msbuild /p:UseMsRustup=true
- ```
- or in your  Directory.Build.rsp
- ```
- -Property:UseMsRustup=True
- ```
- or 
- in your .cargosproj
-```xml 
-<PropertyGroup>
-  <UseMsRustup>true</UseMsRustup>
-</PropertyGroup> 
-```

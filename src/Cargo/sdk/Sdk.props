@@ -82,8 +82,6 @@
     <CleanCommandArgs Condition="'$(CleanCommandArgs)' == ''"></CleanCommandArgs>
     <RunCommandArgs Condition="'$(RunCommandArgs)' == ''"></RunCommandArgs>
     <DocCommandArgs Condition="'$(DocCommandArgs)' == ''"></DocCommandArgs>
-    <!--For internal Microsoft use only.-->
-    <UseMsRustup Condition="'$(UseMsRustup)' == ''">false</UseMsRustup>
     <StartupProj Condition="'$(StartupProj)' == ''">$(MSBuildProjectFullPath)</StartupProj>
   </PropertyGroup>
   <ItemGroup>
