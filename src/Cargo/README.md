@@ -76,8 +76,7 @@ msbuild /t:clearcargocache
 
 
  ### Using MSRustup (Microsoft internal use only)
- To enable use of MSRustup, you will need to have a rust-toolchain.toml at the root of your repo that contains the channel you want to use.
- The channel specifier should have an "ms-" prefix.
+ To enable use of MSRustup, you will need to have a rust-toolchain.toml at the root of your repo. The toml file should include a channel specifier that has "ms-" as a prefix, followed by the channel version.
  ```toml
 
  [toolchain]    
