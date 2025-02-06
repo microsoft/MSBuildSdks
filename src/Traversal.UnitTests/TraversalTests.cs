@@ -154,6 +154,7 @@ namespace Microsoft.Build.Traversal.UnitTests
         [InlineData("Clean")]
         [InlineData("Pack")]
         [InlineData("Publish")]
+        [InlineData("PublishContainer")]
         [InlineData("Test")]
         [InlineData("VSTest")]
         public void PropertiesAreSet(string target)
@@ -219,15 +220,17 @@ namespace Microsoft.Build.Traversal.UnitTests
             actualValue.ShouldBe(expectedValue, StringComparer.OrdinalIgnoreCase, customMessage: $"Property {propertyName} should have a value of \"{expectedValue}\" but its value was \"{actualValue}\"");
         }
 
-        [Fact]
-        public void PublishRespectsNoBuild()
+        [Theory]
+        [InlineData("Publish")]
+        [InlineData("PublishContainer")]
+        public void PublishRespectsNoBuild(string target)
         {
             string[] projects = new[]
             {
                 ProjectCreator.Create(path: GetTempFileWithExtension(".proj"))
                     .Target("Build")
                     .TaskMessage("02CA9347E8BB4C5E856BC0903780CC9B", MessageImportance.High)
-                    .Target("Publish")
+                    .Target(target)
                     .TaskMessage("20B044FEEC3E435D90CE721012C6577E", MessageImportance.High)
                     .Save(),
             }.Select(i => i.FullPath).ToArray();
@@ -242,7 +245,7 @@ namespace Microsoft.Build.Traversal.UnitTests
                     }),
                     path: GetTempFile("dirs.proj"))
                 .Save()
-                .TryBuild("Publish", out bool result, out BuildOutput buildOutput);
+                .TryBuild(target, out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeTrue(buildOutput.GetConsoleLog());
 
@@ -277,6 +280,7 @@ namespace Microsoft.Build.Traversal.UnitTests
         [InlineData("Rebuild")]
         [InlineData("Pack")]
         [InlineData("Publish")]
+        [InlineData("PublishContainer")]
         [InlineData("Test")]
         [InlineData("VSTest")]
         public void StaticGraphProjectReferenceTargetsAreSetForEachTraversalTarget(string target)
@@ -453,6 +457,7 @@ namespace Microsoft.Build.Traversal.UnitTests
         [InlineData("Clean")]
         [InlineData("Pack")]
         [InlineData("Publish")]
+        [InlineData("PublishContainer")]
         [InlineData("Test")]
         [InlineData("VSTest")]
         public void TraversalTargetsRun(string target)
@@ -484,6 +489,7 @@ namespace Microsoft.Build.Traversal.UnitTests
         [InlineData("Rebuild")]
         [InlineData("Pack")]
         [InlineData("Publish")]
+        [InlineData("PublishContainer")]
         [InlineData("Test")]
         [InlineData("VSTest")]
         public void TraversalTargetsShouldBeConditionedOnIsGraphBuild(string target)

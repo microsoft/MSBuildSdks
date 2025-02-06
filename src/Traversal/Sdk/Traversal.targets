@@ -40,6 +40,7 @@
     <ProjectReferenceTargets Remove="Test" />
     <ProjectReferenceTargets Remove="VSTest" />
     <ProjectReferenceTargets Remove="Publish" />
+    <ProjectReferenceTargets Remove="PublishContainer" />
     <ProjectReferenceTargets Remove="Pack" />
 
     <ProjectReferenceTargets Include="Build" Targets=".default" OuterBuild="true" />
@@ -50,6 +51,7 @@
     <ProjectReferenceTargets Include="Test" Targets="Test" />
     <ProjectReferenceTargets Include="VSTest" Targets="VSTest" />
     <ProjectReferenceTargets Include="Publish" Targets="Publish" />
+    <ProjectReferenceTargets Include="PublishContainer" Targets="PublishContainer" />
     <ProjectReferenceTargets Include="Pack" Targets="Pack" />
   </ItemGroup>
 
@@ -100,6 +102,13 @@
 
     <PublishDependsOn Condition="'$(NoBuild)' == 'true'">
     </PublishDependsOn>
+
+    <PublishContainerDependsOn Condition="'$(NoBuild)' != 'true'">
+      Build;
+    </PublishContainerDependsOn>
+
+    <PublishContainerDependsOn Condition="'$(NoBuild)' == 'true'">
+    </PublishContainerDependsOn>
 
     <GetTargetPathDependsOn></GetTargetPathDependsOn>
   </PropertyGroup>
@@ -244,6 +253,27 @@
              SkipNonexistentTargets="$(SkipNonexistentTargets)"
              StopOnFirstFailure="$(StopOnFirstFailure)"
              ContinueOnError="$([MSBuild]::ValueOrDefault('$(PublishContinueOnError)', '$(ContinueOnError)'))" />
+  </Target>
+
+  <Target Name="PublishContainer"
+          DependsOnTargets="$(PublishContainerDependsOn)"
+          Condition=" '$(IsGraphBuild)' != 'true' "
+          Returns="@(CollectedBuildOutput)">
+    <MSBuild Projects="@(ProjectReference)"
+             Properties="%(ProjectReference.SetConfiguration); %(ProjectReference.SetPlatform); %(ProjectReference.SetTargetFramework)"
+             Targets="PublishContainer"
+             Condition="'%(ProjectReference.Publish)' != 'false'"
+             BuildInParallel="$([MSBuild]::ValueOrDefault('%(ProjectReference.PublishInParallel)',
+                               $([MSBuild]::ValueOrDefault('%(ProjectReference.BuildInParallel)',
+                                $([MSBuild]::ValueOrDefault('$(PublishInParallel)', '$(BuildInParallel)'))
+                                ))
+                               ))"
+             SkipNonexistentProjects="$(SkipNonexistentProjects)"
+             SkipNonexistentTargets="$(SkipNonexistentTargets)"
+             StopOnFirstFailure="$(StopOnFirstFailure)"
+             ContinueOnError="$([MSBuild]::ValueOrDefault('$(PublishContinueOnError)', '$(ContinueOnError)'))">
+      <Output TaskParameter="TargetOutputs" ItemName="CollectedBuildOutput" />
+    </MSBuild>
   </Target>
 
   <Target Name="GetTargetPath"
