@@ -31,6 +31,17 @@
     <TargetFramework Condition="'$(TargetFramework)' == ''">net45</TargetFramework>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!--
+      If the project hasn't customized its name, use the name of the parent folder. This avoids every IDE window being named "dirs".
+
+      We check the property twice to handle the unlikely situation where the project is at the root of a drive, and thus
+      the folder would otherwise be ''.
+    -->
+    <SlnGenProjectName Condition="'$(SlnGenProjectName)' == ''">$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName($(MSBuildProjectFullPath)))))</SlnGenProjectName>
+    <SlnGenProjectName Condition="'$(SlnGenProjectName)' == ''">$(MSBuildProjectName)</SlnGenProjectName>
+  </PropertyGroup>
+
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
   <ItemGroup>
