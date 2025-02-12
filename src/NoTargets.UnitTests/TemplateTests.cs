@@ -2,7 +2,7 @@
 //
 // Licensed under the MIT license.
 
-#if NET8_0_OR_GREATER
+#if NET9_0_OR_GREATER
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
 using System.IO;
