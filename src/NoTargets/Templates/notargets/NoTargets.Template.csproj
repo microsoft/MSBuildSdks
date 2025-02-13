@@ -6,12 +6,6 @@
   -->
   <PropertyGroup>
     <!--
-      Set the project type so tools can open the project regardless of file extension.
-      See https://github.com/microsoft/MSBuildSdks/issues/155.
-    -->
-    <ProjectTypeGuids>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-
-    <!--
       Update as necessary; the project does not produce a binary, but the target framework may impact other project
       dependencies or tools.
     -->
