@@ -1,28 +1,27 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.Build.NoTargets">
 
-  <PropertyGroup>
+  <PropertyGroup Label="Package properties">
     <Title>MSBuild NoTargets templates</Title>
     <Description>Templates for common MSBuild NoTargets projects</Description>
     <PackageTags>MSBuild NoTargets project template</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <LocalizeTemplates>false</LocalizeTemplates>
+    <PackageType>Template</PackageType>
+  </PropertyGroup>
+  <PropertyGroup>
     <ArtifactsPath>$(BaseArtifactsPath)$(MSBuildProjectName)\</ArtifactsPath>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageType>Template</PackageType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <IncludeContentInPack>true</IncludeContentInPack>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <ContentTargetFolders>content</ContentTargetFolders>
     <NoWarn>$(NoWarn);NU5128</NoWarn>
     <NoDefaultExcludes>true</NoDefaultExcludes>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <LocalizeTemplates>false</LocalizeTemplates>
+    <EnableDefaultItems>false</EnableDefaultItems>
   </PropertyGroup>
 
   <ItemGroup>
     <Content Include="notargets\**\*" Exclude="notargets\**\bin\**;notargets\**\obj\**" />
-    <Compile Remove="**\*" />
   </ItemGroup>
 
   <ItemGroup>
