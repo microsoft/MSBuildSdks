@@ -11,7 +11,7 @@ using Microsoft.Build.Graph;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Security.Cryptography;
-
+using System.Text.RegularExpressions;
 using File = System.IO.File;
 using Task = Microsoft.Build.Utilities.Task;
 
@@ -28,14 +28,24 @@ namespace Microsoft.Build.Cargo
         private static readonly string _rustInstallPath = $"{_tempPath}\\rustinstall";
         private static readonly string _rustUpInitBinary = $"{_rustInstallPath}\\rustup-init.exe";
         private static readonly string _cargoHome = $"{_tempPath}\\cargohome";
-        private static readonly string _rustupHome = $"{_tempPath}\\rustuphome";
+        private static readonly string _rustUpHome = $"{_tempPath}\\rustuphome";
         private static readonly string _cargoHomeBin = $"{_tempPath}\\cargohome\\bin\\";
-        private static readonly string _msRustupBinary = $"{_tempPath}\\cargohome\\bin\\msrustup.exe";
-        private static readonly Dictionary<string, string> _envVars = new () { { "CARGO_HOME", _cargoHome }, { "RUSTUP_HOME", _rustupHome } };
-        private static readonly string _rustupDownloadLink = "https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe";
+        private static readonly string _msRustUpBinary = $"{_tempPath}\\cargohome\\bin\\msrustup.exe";
+        private static readonly Dictionary<string, string> _envVars = new() { { "CARGO_HOME", _cargoHome }, { "RUSTUP_HOME", _rustUpHome } };
+        private static readonly string _rustUpDownloadLink = "https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe";
         private static readonly string _checkSumVerifyUrl = "https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe.sha256";
+        private static readonly string _rustToolChainFileName = "rust-toolchain.toml";
+        private static readonly string _configFileName = "config.toml";
+        private static readonly string _cargoFileName = "cargo.toml";
+        private static readonly string _nugetConfigFileName = "nuget.config";
+        private static readonly string _clearCacheCommand = "clearcargocache";
+        private static readonly string _installCommand = "install";
+        private static readonly string _fetchCommand = "fetch";
+        private static readonly string _loginCommand = "login";
+        private string? _rustUpFile = Environment.GetEnvironmentVariable("MSRUSTUP_FILE");
         private bool _shouldCleanRustPath;
-        private string? _currentRustupInitExeCheckSum;
+        private bool _isMsRustUp = false;
+        private string? _currentRustUpInitExeCheckSum;
 
         private enum ExitCode
         {
@@ -56,6 +66,11 @@ namespace Microsoft.Build.Cargo
         public string StartupProj { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets start up repo root path.
+        /// </summary>
+        public string RepoRoot { get; set; } = string.Empty;
+
+        /// <summary>
         /// Gets or sets a value indicating whether to perform authorization.
         /// </summary>
         public bool EnableAuth { get; set; } = false;
@@ -64,6 +79,12 @@ namespace Microsoft.Build.Cargo
         /// Gets or sets optional cargo command args.
         /// </summary>
         public string CommandArgs { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the build configuration.
+        /// </summary>
+        public string Configuration { get; set; } = string.Empty;
+
 
         /// <inheritdoc/>
         public override bool Execute()
@@ -81,16 +102,21 @@ namespace Microsoft.Build.Cargo
 
         private async Task<bool> ExecuteAsync()
         {
+            if (!string.IsNullOrEmpty(RepoRoot))
+            {
+                _isMsRustUp = File.Exists(Path.Combine(RepoRoot, _rustToolChainFileName)) && IsMSToolChain(Path.Combine(RepoRoot, _rustToolChainFileName));
+            }
+
             // download & install rust if necessary
-            if (Command.Equals("install", StringComparison.InvariantCultureIgnoreCase))
+            if (Command.Equals(_installCommand, StringComparison.InvariantCultureIgnoreCase))
             {
                 return await DownloadAndInstallRust();
             }
-            else if (Command.Equals("fetch"))
+            else if (Command.Equals(_fetchCommand))
             {
                 return await FetchCratesAsync(StartupProj);
             }
-            else if (Command.Equals("clearcargocache", StringComparison.InvariantCultureIgnoreCase))
+            else if (Command.Equals(_clearCacheCommand, StringComparison.InvariantCultureIgnoreCase))
             {
                 if (Directory.Exists(_cargoHome))
                 {
@@ -103,7 +129,7 @@ namespace Microsoft.Build.Cargo
             else
             {
                 var dir = Directory.GetParent(StartupProj) ?? throw new InvalidOperationException("Invalid project path");
-                bool cargoFileExists = File.Exists(Path.Combine(dir.FullName, "cargo.toml")); // toml file should be the same dir as the cargoproj file.
+                bool cargoFileExists = File.Exists(Path.Combine(dir.FullName, _cargoFileName)); // toml file should be the same dir as the cargoproj file.
                 if (!cargoFileExists)
                 {
                     Log.LogError("Cargo.toml file not found in the project directory.");
@@ -123,12 +149,30 @@ namespace Microsoft.Build.Cargo
         private async Task<ExitCode> CargoRunCommandAsync(string command, string args)
         {
             Log.LogMessage(MessageImportance.Normal, $"Executing cargo command: {command} {args}");
+            if (_isMsRustUp)
+            {
+                var customCargoBin = GetCustomToolChainPath();
+                if (!string.IsNullOrEmpty(customCargoBin))
+                {
+                    bool debugConfig = true;
+                    if (!Configuration.Equals("debug", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        debugConfig = false;
+                    }
+
+                    return await ExecuteProcessAsync(customCargoBin!, $"{command} {args}  --offline {(debugConfig ? string.Empty : "--" + Configuration.ToLowerInvariant())} --config {Path.Combine(RepoRoot, _configFileName)}", ".", _envVars);
+                }
+
+                // if we don't have the toolchain, we need to install it.
+                return ExitCode.Failed;
+            }
+
             return await ExecuteProcessAsync(_cargoPath, $"{command} {args}", ".", _envVars);
         }
 
         private async Task<bool> DownloadAndInstallRust()
         {
-            if (await DownloadRustupAsync())
+            if (await DownloadRustUpAsync())
             {
                 if (await InstallRust())
                 {
@@ -182,7 +226,7 @@ namespace Microsoft.Build.Cargo
                 var rustProjects = new List<string>();
                 foreach (ProjectGraphNode node in graph.ProjectNodes)
                 {
-                    bool cargoFile = File.Exists(Path.Combine(node.ProjectInstance.Directory, "cargo.toml"));
+                    bool cargoFile = File.Exists(Path.Combine(node.ProjectInstance.Directory, _cargoFileName));
                     if (!rustProjects.Contains(node.ProjectInstance.Directory) && cargoFile)
                     {
                         rustProjects.Add(node.ProjectInstance.Directory);
@@ -192,6 +236,30 @@ namespace Microsoft.Build.Cargo
                 var tasks = new List<Task<ExitCode>>();
 
                 Log.LogMessage(MessageImportance.Normal, $"Cargo, Auth Enabled: {EnableAuth}");
+
+                if (_isMsRustUp)
+                {
+                    if (string.IsNullOrEmpty(_rustUpFile) || !File.Exists(_rustUpFile))
+                    {
+                        Log.LogError($"MSRUSTUP_FILE environment variable is not set or the file does not exist.");
+                        return false;
+                    }
+
+                    var val = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(File.ReadAllText(_rustUpFile)));
+
+                    if (_envVars.ContainsKey("CARGO_REGISTRY_GLOBAL_CREDENTIAL_PROVIDERS"))
+                    {
+                        _envVars.Remove("CARGO_REGISTRY_GLOBAL_CREDENTIAL_PROVIDERS");
+                    }
+
+                    if (_envVars.ContainsKey("CARGO_REGISTRIES_RUST_PUBLICPACKAGES_TOKEN"))
+                    {
+                        _envVars.Remove("CARGO_REGISTRIES_RUST_PUBLICPACKAGES_TOKEN");
+                    }
+
+                    _envVars.Add("CARGO_REGISTRY_GLOBAL_CREDENTIAL_PROVIDERS", "cargo:token");
+                    _envVars.Add("CARGO_REGISTRIES_RUST_PUBLICPACKAGES_TOKEN", $"Bearer {val}");
+                }
 
                 foreach (var projects in rustProjects)
                 {
@@ -207,7 +275,11 @@ namespace Microsoft.Build.Cargo
                 stopwatch.Stop();
                 if (success)
                 {
-                    Log.LogMessage(MessageImportance.Normal, $"Cargo fetching Completed Successfully in {stopwatch.Elapsed.Seconds} seconds");
+                    Log.LogMessage(MessageImportance.Normal, $"Cargo fetching completed successfully in {stopwatch.Elapsed.Seconds} seconds");
+                    if (_isMsRustUp)
+                    {
+                        _envVars.Remove("CARGO_REGISTRIES_RUST_PUBLICPACKAGES_TOKEN");
+                    }
                 }
                 else
                 {
@@ -252,10 +324,23 @@ namespace Microsoft.Build.Cargo
             if (authResult == ExitCode.Succeeded)
             {
                 string path = _cargoPath;
-                string args = "fetch";
-
+                string args = $"fetch {(_isMsRustUp ? "--config " + Path.Combine(RepoRoot, _configFileName) : string.Empty)}";
+                ExitCode exitCode = ExitCode.Failed;
                 Log.LogMessage(MessageImportance.Normal, $"Fetching cargo crates for project in {workingDir}");
-                var exitCode = await ExecuteProcessAsync(path, args, workingDir);
+
+                if (File.Exists(Path.Combine(RepoRoot, _rustToolChainFileName)))
+                {
+                    var customCargoBin = GetCustomToolChainPath();
+                    if (!string.IsNullOrEmpty(customCargoBin))
+                    {
+                        exitCode = await ExecuteProcessAsync(customCargoBin!, args, workingDir, _envVars);
+                    }
+                }
+                else
+                {
+                    exitCode = await ExecuteProcessAsync(path, args, workingDir);
+                }
+
                 Log.LogMessage(MessageImportance.Normal, $"Finished fetching cargo crates for project in  {workingDir}");
                 return exitCode;
             }
@@ -265,7 +350,7 @@ namespace Microsoft.Build.Cargo
 
         private async Task<ExitCode> DoRegistryAuthAsync(string workingDir)
         {
-            return await ExecuteProcessAsync(_cargoPath, $"login", workingDir);
+            return await ExecuteProcessAsync(_cargoPath, _loginCommand, workingDir);
         }
 
         private async Task<ExitCode> ExecuteProcessAsync(string fileName, string args, string workingDir, Dictionary<string, string>? envars = null)
@@ -285,11 +370,11 @@ namespace Microsoft.Build.Cargo
                     };
                     if (envars != null && envars.Count > 0)
                     {
-                        foreach (var envar in envars)
+                        foreach (var envVar in envars)
                         {
-                            if (!info.EnvironmentVariables.ContainsKey(envar.Key))
+                            if (!info.EnvironmentVariables.ContainsKey(envVar.Key))
                             {
-                                info.EnvironmentVariables.Add(envar.Key, envar.Value);
+                                info.EnvironmentVariables.Add(envVar.Key, envVar.Value);
                             }
                         }
                     }
@@ -328,23 +413,23 @@ namespace Microsoft.Build.Cargo
             }
         }
 
-        private async Task<bool> DownloadRustupAsync()
+        private async Task<bool> DownloadRustUpAsync()
         {
-            var rustupBinExists = File.Exists(_rustUpInitBinary);
-            if (rustupBinExists && await VerifyInitHashAsync())
+            var rustUpBinExists = File.Exists(_rustUpInitBinary);
+            if (rustUpBinExists && await VerifyInitHashAsync())
             {
                 return true;
             }
-            else if (rustupBinExists)
+            else if (rustUpBinExists)
             {
                 // If the hash doesn't match, that likely means there is a new version of rustup-init.exe available.
                 File.Delete(_rustUpInitBinary);
             }
 
-            string rustupDownloadLink = _rustupDownloadLink;
-            Log.LogMessage(MessageImportance.Normal, $"Downloading -- {rustupDownloadLink}");
+            string rustUpDownloadLink = _rustUpDownloadLink;
+            Log.LogMessage(MessageImportance.Normal, $"Downloading -- {rustUpDownloadLink}");
             using var client = new HttpClient();
-            HttpResponseMessage response = await client.GetAsync(rustupDownloadLink);
+            HttpResponseMessage response = await client.GetAsync(rustUpDownloadLink);
             response.EnsureSuccessStatusCode();
             if (!Directory.Exists(_rustInstallPath))
             {
@@ -355,48 +440,93 @@ namespace Microsoft.Build.Cargo
             HttpResponseMessage res = response;
             await res.Content.CopyToAsync(fileStream);
             fileStream.Close();
-            Log.LogMessage(MessageImportance.Normal, $"Downloaded -- {rustupDownloadLink}");
+            Log.LogMessage(MessageImportance.Normal, $"Downloaded -- {rustUpDownloadLink}");
             return await VerifyInitHashAsync();
         }
 
         private async Task<bool> InstallRust()
         {
-            var rootToolchainPath = Path.Combine(StartupProj, "rust-toolchain.toml");
+            var rootToolchainPath = Path.Combine(StartupProj, _rustToolChainFileName);
             var useMsRustUp = File.Exists(rootToolchainPath) && IsMSToolChain(rootToolchainPath);
-            var rustupBinary = useMsRustUp ? _msRustupBinary : _rustUpBinary;
-            if ((File.Exists(_cargoPath) && Directory.Exists(_rustupHome) && File.Exists(_rustUpBinary)) || (File.Exists(_cargoHome) && useMsRustUp != true) || File.Exists(_msRustupBinary))
+            var rustUpBinary = useMsRustUp ? _msRustUpBinary : _rustUpBinary;
+            if ((File.Exists(_cargoPath) && Directory.Exists(_rustUpHome) && File.Exists(_rustUpBinary)) || (File.Exists(_cargoHome) && useMsRustUp != true) || File.Exists(_msRustUpBinary))
             {
                 return false;
             }
 
             ExitCode exitCode = ExitCode.Succeeded;
             ExitCode exitCodeLatest = ExitCode.Succeeded;
-
             Log.LogMessage(MessageImportance.Normal, "Installing Rust");
             exitCode = await ExecuteProcessAsync(_rustUpInitBinary, "-y", ".", _envVars);
+            if (exitCode != ExitCode.Succeeded)
+            {
+                Log.LogMessage(MessageImportance.Normal, "Installed Rust successfully");
+            }
 
             if (useMsRustUp)
             {
                 string? workingDirPart = new DirectoryInfo(BuildEngine.ProjectFileOfTaskNode).Parent?.Parent?.FullName;
                 if (Directory.Exists(workingDirPart))
                 {
-                    Log.LogMessage(MessageImportance.Normal, "Installing MS Rustup");
+                    Log.LogMessage(MessageImportance.Normal, "Installing MSRustup");
                     string distRootPath = Path.Combine(workingDirPart!, "content\\dist");
-                    await ExecuteProcessAsync("powershell.exe", $".\\msrustup.ps1 '{_cargoHomeBin}'", distRootPath, _envVars);
+                    var installationExitCode = await ExecuteProcessAsync("powershell.exe", $".\\msrustup.ps1 '{_cargoHomeBin}'", distRootPath, _envVars);
+                    if (installationExitCode == ExitCode.Succeeded)
+                    {
+                        Log.LogMessage(MessageImportance.Normal, "Installed MSRustup successfully");
+                    }
+                    else
+                    {
+                        Log.LogError("MSRustup failed to installed successfully");
+                        return false;
+                    }
                 }
             }
 
             if (useMsRustUp)
             {
-                Log.LogMessage(MessageImportance.Normal, "Installing Custom Toolchain");
-                exitCodeLatest = await ExecuteProcessAsync(rustupBinary, "toolchain install", StartupProj, _envVars);
+                Log.LogMessage(MessageImportance.Normal, "Installing custom toolchain");
+
+                if (string.IsNullOrEmpty(_rustUpFile) || !File.Exists(_rustUpFile))
+                {
+                    Log.LogError($"MSRUSTUP_FILE environment variable is not set or the file does not exist.");
+                    return false;
+                }
+
+                var val = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(File.ReadAllText(_rustUpFile)));
+                _envVars.Add("MSRUSTUP_PAT", val);
+                _envVars.Add("MSRUSTUP_HOME", _cargoHome);
+                _envVars.Add("MSRUSTUP_FEED_URL", GetNugetFeedUrl() ?? string.Empty);
+                exitCodeLatest = await ExecuteProcessAsync(rustUpBinary, "toolchain install", StartupProj, _envVars);
+                _envVars.Remove("MSRUSTUP_PAT");
+                if (exitCodeLatest == ExitCode.Succeeded)
+                {
+                    Log.LogMessage(MessageImportance.Normal, "Installed custom toolchain successfully");
+                }
             }
             else
             {
-                exitCodeLatest = await ExecuteProcessAsync(rustupBinary, "default stable", ".", _envVars); // ensure we have the latest stable version
+                exitCodeLatest = await ExecuteProcessAsync(rustUpBinary, "default stable", ".", _envVars); // ensure we have the latest stable version
             }
 
             return exitCode == 0 && exitCodeLatest == 0;
+        }
+
+        private string? GetNugetFeedUrl()
+        {
+            var rootNugetConfig = Path.Combine(RepoRoot, _nugetConfigFileName);
+            if (File.Exists(rootNugetConfig))
+            {
+                var doc = new System.Xml.Linq.XDocument();
+                doc = System.Xml.Linq.XDocument.Load(rootNugetConfig);
+                var nugetSource = doc.Descendants("packageSources")
+                    .FirstOrDefault()?.Descendants("add")
+                    .Where(e => e.Attribute("value")?.Value.StartsWith("https") ?? false)
+                    .Select(e => e.Attribute("value")?.Value).FirstOrDefault();
+                return nugetSource ?? string.Empty;
+            }
+
+            return null;
         }
 
         private async Task<bool> VerifyInitHashAsync()
@@ -415,22 +545,55 @@ namespace Microsoft.Build.Cargo
             return converted.Equals(await GetHashAsync(), StringComparison.InvariantCultureIgnoreCase);
         }
 
+        private string GetToolChainVersion()
+        {
+            var rootToolchainPath = Path.Combine(RepoRoot, _rustToolChainFileName);
+            if (File.Exists(rootToolchainPath))
+            {
+                var toolChainFile = File.ReadAllText(rootToolchainPath);
+                Regex regex = new (@"channel\s*=\s*""(?<version>.*)""", RegexOptions.Multiline);
+                var toolchainVersion = regex.Match(regex.Match(toolChainFile).Value).Groups["version"].Value;
+                return toolchainVersion;
+            }
+
+            return string.Empty;
+        }
+
+        private string? GetCustomToolChainPath()
+        {
+            var toolchainVersion = GetToolChainVersion();
+            if (!string.IsNullOrEmpty(toolchainVersion))
+            {
+                Log.LogMessage(MessageImportance.Normal, $"Using toolchain version: {toolchainVersion}");
+                var toolchainPath = Path.Combine(_cargoHome, "toolchains", toolchainVersion);
+                if (!Directory.Exists(toolchainPath))
+                {
+                    Log.LogError($"Toolchain {toolchainVersion} not found. Please run 'cargo install' to install the required toolchain.");
+                    return null;
+                }
+
+                return Path.Combine(toolchainPath, "bin\\cargo.exe");
+            }
+
+            return null;
+        }
+
         private async Task<string> GetHashAsync()
         {
-            if (!string.IsNullOrEmpty(_currentRustupInitExeCheckSum))
+            if (!string.IsNullOrEmpty(_currentRustUpInitExeCheckSum))
             {
-                return _currentRustupInitExeCheckSum!;
+                return _currentRustUpInitExeCheckSum!;
             }
 
             using var client = new HttpClient();
             string response = await client.GetStringAsync(_checkSumVerifyUrl);
-            _currentRustupInitExeCheckSum = response.Split('\n')[0];
-            if (_currentRustupInitExeCheckSum == null)
+            _currentRustUpInitExeCheckSum = response.Split('\n')[0];
+            if (_currentRustUpInitExeCheckSum == null)
             {
                 throw new InvalidOperationException("Failed to get the checksum of the rustup-init.exe");
             }
 
-            return _currentRustupInitExeCheckSum;
+            return _currentRustUpInitExeCheckSum;
         }
     }
 }

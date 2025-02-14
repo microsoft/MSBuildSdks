@@ -83,6 +83,7 @@
     <RunCommandArgs Condition="'$(RunCommandArgs)' == ''"></RunCommandArgs>
     <DocCommandArgs Condition="'$(DocCommandArgs)' == ''"></DocCommandArgs>
     <StartupProj Condition="'$(StartupProj)' == ''">$(MSBuildProjectFullPath)</StartupProj>
+    <RepoRoot Condition="'$(RepoRoot)' == ''">$(EnlistmentRoot)</RepoRoot>
   </PropertyGroup>
   <ItemGroup>
     <None Include="**\*.rs" />

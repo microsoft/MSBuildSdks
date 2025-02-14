@@ -59,7 +59,8 @@ $token = if (Test-Path env:MSRUSTUP_ACCESS_TOKEN) {
     if (Test-Path $location) {
         $contents = Get-Content $location -Raw
     }
-    "Basic $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes(":$($contents)")))"
+    $fromBase64 = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($contents))
+    "Basic $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes(":$($fromBase64)")))"
 }
 elseif ((Get-Command "azureauth" -ErrorAction SilentlyContinue) -ne $null) {
     azureauth ado token --output headervalue

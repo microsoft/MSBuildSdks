@@ -116,10 +116,11 @@
        RemoveProperties="NuGetInteractive;MSBuildRestoreSessionId;TargetFramework;RuntimeIdentifier" />
   </Target>
   <Target Name="CargoFetch" AfterTargets="CargoInstall">
-    <CargoTask EnableAuth="$(AuthMode)" StartupProj="$(StartupProj)" Command="fetch" />
+    <CargoTask EnableAuth="$(AuthMode)" StartupProj="$(StartupProj)" Command="fetch"  RepoRoot="$(RepoRoot)" />
   </Target>
-  <Target Name="CargoBuild" AfterTargets="CoreCompile" DependsOnTargets="CargoFetch">
-    <CargoTask EnableAuth="$(AuthMode)" StartupProj="$(StartupProj)" Command="build" CommandArgs="$(BuildCommandArgs)" />
+
+  <Target Name="CargoBuild" AfterTargets="CoreCompile">
+    <CargoTask EnableAuth="$(AuthMode)" StartupProj="$(StartupProj)" Command="build" CommandArgs="$(BuildCommandArgs)" Configuration="$(Configuration)" RepoRoot="$(RepoRoot)" />
   </Target>
   <Target Name="Test" DependsOnTargets="Cargo">
     <CargoTask StartupProj="$(StartupProj)" Command="test" CommandArgs="$(TestCommandArgs)" />
