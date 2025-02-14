@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
+
 using File = System.IO.File;
 using Task = Microsoft.Build.Utilities.Task;
 
@@ -31,7 +32,7 @@ namespace Microsoft.Build.Cargo
         private static readonly string _rustUpHome = $"{_tempPath}\\rustuphome";
         private static readonly string _cargoHomeBin = $"{_tempPath}\\cargohome\\bin\\";
         private static readonly string _msRustUpBinary = $"{_tempPath}\\cargohome\\bin\\msrustup.exe";
-        private static readonly Dictionary<string, string> _envVars = new() { { "CARGO_HOME", _cargoHome }, { "RUSTUP_HOME", _rustUpHome } };
+        private static readonly Dictionary<string, string> _envVars = new () { { "CARGO_HOME", _cargoHome }, { "RUSTUP_HOME", _rustUpHome } };
         private static readonly string _rustUpDownloadLink = "https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe";
         private static readonly string _checkSumVerifyUrl = "https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe.sha256";
         private static readonly string _rustToolChainFileName = "rust-toolchain.toml";
@@ -84,7 +85,6 @@ namespace Microsoft.Build.Cargo
         /// Gets or sets the build configuration.
         /// </summary>
         public string Configuration { get; set; } = string.Empty;
-
 
         /// <inheritdoc/>
         public override bool Execute()
