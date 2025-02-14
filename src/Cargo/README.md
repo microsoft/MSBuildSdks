@@ -76,19 +76,10 @@ msbuild /t:clearcargocache
 
 
  ### Using MSRustup (Microsoft internal use only)
- To enable use of MSRustup, you will need to set the following MSBuild property in one of the following places:
+ To enable use of MSRustup, you will need to have a rust-toolchain.toml at the root of your repo. The toml file should include a channel specifier that has "ms-" as a prefix, followed by the channel version.
+ ```toml
+
+ [toolchain]    
+ channel - ms-<version>
+ ```
  
- ```shell
- msbuild /p:UseMsRustup=true
- ```
- or in your  Directory.Build.rsp
- ```
- -Property:UseMsRustup=True
- ```
- or 
- in your .cargosproj
-```xml 
-<PropertyGroup>
-  <UseMsRustup>true</UseMsRustup>
-</PropertyGroup> 
-```
