@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.Build.NoTargets">
+  <!--
+    To install the NoTargets MSBuild SDK, see https://github.com/microsoft/MSBuildSdks/tree/main?tab=readme-ov-file#how-can-i-use-these-sdks
+
+    For docs on customizing a NoTargets project, see https://github.com/microsoft/MSBuildSdks/blob/main/src/NoTargets/README.md
+  -->
+  <PropertyGroup>
+    <!--
+      Update as necessary; the project does not produce a binary, but the target framework may impact other project
+      dependencies or tools.
+    -->
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <!--
+    Replace with your custom targets and logic.
+
+    See https://learn.microsoft.com/en-us/visualstudio/msbuild/msbuild-targets for general information for writing custom
+    targets.
+  -->
+  <Target Name="HelloWorld" BeforeTargets="AfterBuild">
+    <Message Text="Hello, World!" Importance="High" />
+  </Target>
+</Project>

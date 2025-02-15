@@ -4,8 +4,12 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AssemblyShader" />
+    <PackageReference Include="MartinCostello.Logging.XUnit"
+                      Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net9.0'))" />
     <PackageReference Include="Microsoft.NET.Test.Sdk"
                       ShadeDependencies="NuGet.Frameworks" />
+    <PackageReference Include="Microsoft.TemplateEngine.Authoring.TemplateVerifier"
+                      Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net9.0'))" />
     <PackageReference Include="MSBuild.ProjectCreation" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="Shouldly" />
@@ -20,6 +24,9 @@
   <ItemGroup>
     <None Include="..\NoTargets\Sdk\**\*"
           Link="Sdk\%(RecursiveDir)%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\NoTargets\Templates\**"
+          Link="Templates\$(RelativeDir)%(RecursiveDir)%(Filename)%(Extension)"
           CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
