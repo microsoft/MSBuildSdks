@@ -168,7 +168,7 @@ namespace Microsoft.Build
             if (!string.IsNullOrEmpty(VSTestSetting))
             {
                 isRunSettingsEnabled = true;
-                commandLineBuilder.AppendSwitchIfNotNull("--settings", VSTestSetting);
+                commandLineBuilder.AppendSwitchIfNotNull("--settings:", VSTestSetting);
             }
 
             if (VSTestTestAdapterPath != null && VSTestTestAdapterPath.Length > 0)
@@ -215,7 +215,7 @@ namespace Microsoft.Build
 
             if (!string.IsNullOrEmpty(VSTestListTests))
             {
-                commandLineBuilder.AppendSwitchIfNotNull("--listTests", VSTestListTests);
+                commandLineBuilder.AppendSwitchIfNotNull("--listTests:", VSTestListTests);
             }
 
             if (!string.IsNullOrEmpty(VSTestDiag))
