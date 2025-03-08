@@ -24,14 +24,14 @@ namespace Microsoft.Build.Cargo
     public class CargoTask : Task
     {
         private static readonly string? _tempPath = Environment.GetEnvironmentVariable("TEMP");
-        private static readonly string _rustUpBinary = $"{_tempPath}\\cargohome\\bin\\rustup.exe";
-        private static readonly string _cargoPath = $"{_tempPath}\\cargohome\\bin\\cargo.exe";
-        private static readonly string _rustInstallPath = $"{_tempPath}\\rustinstall";
-        private static readonly string _rustUpInitBinary = $"{_rustInstallPath}\\rustup-init.exe";
-        private static readonly string _cargoHome = $"{_tempPath}\\cargohome";
-        private static readonly string _rustUpHome = $"{_tempPath}\\rustuphome";
-        private static readonly string _cargoHomeBin = $"{_tempPath}\\cargohome\\bin\\";
-        private static readonly string _msRustUpBinary = $"{_tempPath}\\cargohome\\bin\\msrustup.exe";
+        private static readonly string _rustUpBinary = Path.Combine(_tempPath, "cargohome", "bin", "rustup.exe");
+        private static readonly string _cargoPath = Path.Combine(_tempPath, "cargohome", "bin", "cargo.exe");
+        private static readonly string _rustInstallPath = Path.Combine(_tempPath, "rustinstall");
+        private static readonly string _rustUpInitBinary = Path.Combine(_rustInstallPath, "rustup-init.exe");
+        private static readonly string _cargoHome = Path.Combine(_tempPath, "cargohome");
+        private static readonly string _rustUpHome = Path.Combine(_tempPath, "rustuphome");
+        private static readonly string _cargoHomeBin = Path.Combine(_tempPath, "cargohome", "bin");
+        private static readonly string _msRustUpBinary = Path.Combine(_tempPath, "cargohome", "bin", "msrustup.exe");
         private static readonly Dictionary<string, string> _envVars = new () { { "CARGO_HOME", _cargoHome }, { "RUSTUP_HOME", _rustUpHome } };
         private static readonly string _rustUpDownloadLink = "https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe";
         private static readonly string _checkSumVerifyUrl = "https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe.sha256";
