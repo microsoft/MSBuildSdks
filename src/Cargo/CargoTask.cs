@@ -36,7 +36,7 @@ namespace Microsoft.Build.Cargo
         private static readonly string _rustUpDownloadLink = "https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe";
         private static readonly string _checkSumVerifyUrl = "https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe.sha256";
         private static readonly string _rustToolChainFileName = "rust-toolchain.toml";
-        private static readonly string _configPath = ".cargo\\config.toml";
+        private static readonly string _configPath = Path.Combine(".cargo", "config.toml");
         private static readonly string _cargoFileName = "cargo.toml";
         private static readonly string _nugetConfigFileName = "nuget.config";
         private static readonly string _clearCacheCommand = "clearcargocache";
@@ -128,7 +128,15 @@ namespace Microsoft.Build.Cargo
                     _envVars.Add("CARGO_REGISTRY_GLOBAL_CREDENTIAL_PROVIDERS", "cargo:token");
                     foreach (var registry in GetRegistries(Path.Combine(RepoRoot, _configPath)))
                     {
-                        var registryName = registry.Split('=')[0].Trim().ToUpper();
+                        var parts = registry.Split('=');
+
+                        if (parts.Length < 2)
+                        {
+                            Log.LogWarning($"Invalid format detected in registries configuration: {registry}");
+                            continue;
+                        }
+
+                        var registryName = parts[0].Trim().ToUpper();
                         _cargoRegistries.Add(registryName);
                         _envVars.Add($"CARGO_REGISTRIES_{registryName}_TOKEN", $"Bearer {val}");
                     }
@@ -275,7 +283,7 @@ namespace Microsoft.Build.Cargo
                     if (_isMsRustUp)
                     {
                         _envVars.Remove("CARGO_REGISTRY_GLOBAL_CREDENTIAL_PROVIDERS");
-                        foreach(var registry in _cargoRegistries)
+                        foreach (var registry in _cargoRegistries)
                         {
                             _envVars.Remove($"CARGO_REGISTRIES_{registry}_TOKEN");
                         }
@@ -604,6 +612,11 @@ namespace Microsoft.Build.Cargo
             List<string> registries = new ();
             foreach (Match match in matches)
             {
+                if (string.IsNullOrWhiteSpace(match.Value))
+                {
+                    continue;
+                }
+
                 var registryNames = match.Value.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
                                                .Select(line => line.Split('=')[0].Trim())
                                                .ToList();
