@@ -124,19 +124,14 @@ namespace Microsoft.Build.Cargo
                     }
 
                     var val = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(File.ReadAllText(_rustUpFile)));
+                    if (!_envVars.ContainsKey("CARGO_REGISTRY_GLOBAL_CREDENTIAL_PROVIDERS"))
+                    {
+                        _envVars.Add("CARGO_REGISTRY_GLOBAL_CREDENTIAL_PROVIDERS", "cargo:token");
+                    }
 
-                    _envVars.Add("CARGO_REGISTRY_GLOBAL_CREDENTIAL_PROVIDERS", "cargo:token");
                     foreach (var registry in GetRegistries(Path.Combine(RepoRoot, _configPath)))
                     {
-                        var parts = registry.Split('=');
-
-                        if (parts.Length < 2)
-                        {
-                            Log.LogWarning($"Invalid format detected in registries configuration: {registry}");
-                            continue;
-                        }
-
-                        var registryName = parts[0].Trim().ToUpper();
+                        var registryName = registry.Trim().ToUpper();
                         _cargoRegistries.Add(registryName);
                         _envVars.Add($"CARGO_REGISTRIES_{registryName}_TOKEN", $"Bearer {val}");
                     }
@@ -612,12 +607,12 @@ namespace Microsoft.Build.Cargo
             List<string> registries = new ();
             foreach (Match match in matches)
             {
-                if (string.IsNullOrWhiteSpace(match.Value))
+                if (string.IsNullOrWhiteSpace(match.Value) || !match.Value.Contains('='))
                 {
                     continue;
                 }
 
-                var registryNames = match.Value.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                var registryNames = match.Value.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
                                                .Select(line => line.Split('=')[0].Trim())
                                                .ToList();
                 registries.AddRange(registryNames);
