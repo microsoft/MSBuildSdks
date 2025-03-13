@@ -24,19 +24,19 @@ namespace Microsoft.Build.Cargo
     public class CargoTask : Task
     {
         private static readonly string? _tempPath = Environment.GetEnvironmentVariable("TEMP");
-        private static readonly string _rustUpBinary = $"{_tempPath}\\cargohome\\bin\\rustup.exe";
-        private static readonly string _cargoPath = $"{_tempPath}\\cargohome\\bin\\cargo.exe";
-        private static readonly string _rustInstallPath = $"{_tempPath}\\rustinstall";
-        private static readonly string _rustUpInitBinary = $"{_rustInstallPath}\\rustup-init.exe";
-        private static readonly string _cargoHome = $"{_tempPath}\\cargohome";
-        private static readonly string _rustUpHome = $"{_tempPath}\\rustuphome";
-        private static readonly string _cargoHomeBin = $"{_tempPath}\\cargohome\\bin\\";
-        private static readonly string _msRustUpBinary = $"{_tempPath}\\cargohome\\bin\\msrustup.exe";
+        private static readonly string _rustUpBinary = Path.Combine(_tempPath, "cargohome", "bin", "rustup.exe");
+        private static readonly string _cargoPath = Path.Combine(_tempPath, "cargohome", "bin", "cargo.exe");
+        private static readonly string _rustInstallPath = Path.Combine(_tempPath, "rustinstall");
+        private static readonly string _rustUpInitBinary = Path.Combine(_rustInstallPath, "rustup-init.exe");
+        private static readonly string _cargoHome = Path.Combine(_tempPath, "cargohome");
+        private static readonly string _rustUpHome = Path.Combine(_tempPath, "rustuphome");
+        private static readonly string _cargoHomeBin = Path.Combine(_tempPath, "cargohome", "bin");
+        private static readonly string _msRustUpBinary = Path.Combine(_tempPath, "cargohome", "bin", "msrustup.exe");
         private static readonly Dictionary<string, string> _envVars = new () { { "CARGO_HOME", _cargoHome }, { "RUSTUP_HOME", _rustUpHome } };
         private static readonly string _rustUpDownloadLink = "https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe";
         private static readonly string _checkSumVerifyUrl = "https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe.sha256";
         private static readonly string _rustToolChainFileName = "rust-toolchain.toml";
-        private static readonly string _configFileName = "config.toml";
+        private static readonly string _configPath = Path.Combine(".cargo", "config.toml");
         private static readonly string _cargoFileName = "cargo.toml";
         private static readonly string _nugetConfigFileName = "nuget.config";
         private static readonly string _clearCacheCommand = "clearcargocache";
@@ -47,6 +47,7 @@ namespace Microsoft.Build.Cargo
         private bool _shouldCleanRustPath;
         private bool _isMsRustUp = false;
         private string? _currentRustUpInitExeCheckSum;
+        private List<string> _cargoRegistries = new ();
 
         private enum ExitCode
         {
@@ -114,6 +115,28 @@ namespace Microsoft.Build.Cargo
             }
             else if (Command.Equals(_fetchCommand))
             {
+                if (_isMsRustUp)
+                {
+                    if (string.IsNullOrEmpty(_rustUpFile) || !File.Exists(_rustUpFile))
+                    {
+                        Log.LogError($"MSRUSTUP_FILE environment variable is not set or the file does not exist.");
+                        return false;
+                    }
+
+                    var val = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(File.ReadAllText(_rustUpFile)));
+                    if (!_envVars.ContainsKey("CARGO_REGISTRY_GLOBAL_CREDENTIAL_PROVIDERS"))
+                    {
+                        _envVars.Add("CARGO_REGISTRY_GLOBAL_CREDENTIAL_PROVIDERS", "cargo:token");
+                    }
+
+                    foreach (var registry in GetRegistries(Path.Combine(RepoRoot, _configPath)))
+                    {
+                        var registryName = registry.Trim().ToUpper();
+                        _cargoRegistries.Add(registryName);
+                        _envVars.Add($"CARGO_REGISTRIES_{registryName}_TOKEN", $"Bearer {val}");
+                    }
+                }
+
                 return await FetchCratesAsync(StartupProj);
             }
             else if (Command.Equals(_clearCacheCommand, StringComparison.InvariantCultureIgnoreCase))
@@ -160,7 +183,7 @@ namespace Microsoft.Build.Cargo
                         debugConfig = false;
                     }
 
-                    return await ExecuteProcessAsync(customCargoBin!, $"{command} {args}  --offline {(debugConfig ? string.Empty : "--" + Configuration.ToLowerInvariant())} --config {Path.Combine(RepoRoot, _configFileName)}", ".", _envVars);
+                    return await ExecuteProcessAsync(customCargoBin!, $"{command} {args}  --offline {(debugConfig ? string.Empty : "--" + Configuration.ToLowerInvariant())} --config {Path.Combine(RepoRoot, _configPath)}", ".", _envVars);
                 }
 
                 // if we don't have the toolchain, we need to install it.
@@ -237,30 +260,6 @@ namespace Microsoft.Build.Cargo
 
                 Log.LogMessage(MessageImportance.Normal, $"Cargo, Auth Enabled: {EnableAuth}");
 
-                if (_isMsRustUp)
-                {
-                    if (string.IsNullOrEmpty(_rustUpFile) || !File.Exists(_rustUpFile))
-                    {
-                        Log.LogError($"MSRUSTUP_FILE environment variable is not set or the file does not exist.");
-                        return false;
-                    }
-
-                    var val = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(File.ReadAllText(_rustUpFile)));
-
-                    if (_envVars.ContainsKey("CARGO_REGISTRY_GLOBAL_CREDENTIAL_PROVIDERS"))
-                    {
-                        _envVars.Remove("CARGO_REGISTRY_GLOBAL_CREDENTIAL_PROVIDERS");
-                    }
-
-                    if (_envVars.ContainsKey("CARGO_REGISTRIES_RUST_PUBLICPACKAGES_TOKEN"))
-                    {
-                        _envVars.Remove("CARGO_REGISTRIES_RUST_PUBLICPACKAGES_TOKEN");
-                    }
-
-                    _envVars.Add("CARGO_REGISTRY_GLOBAL_CREDENTIAL_PROVIDERS", "cargo:token");
-                    _envVars.Add("CARGO_REGISTRIES_RUST_PUBLICPACKAGES_TOKEN", $"Bearer {val}");
-                }
-
                 foreach (var projects in rustProjects)
                 {
                     string path = projects;
@@ -278,7 +277,11 @@ namespace Microsoft.Build.Cargo
                     Log.LogMessage(MessageImportance.Normal, $"Cargo fetching completed successfully in {stopwatch.Elapsed.Seconds} seconds");
                     if (_isMsRustUp)
                     {
-                        _envVars.Remove("CARGO_REGISTRIES_RUST_PUBLICPACKAGES_TOKEN");
+                        _envVars.Remove("CARGO_REGISTRY_GLOBAL_CREDENTIAL_PROVIDERS");
+                        foreach (var registry in _cargoRegistries)
+                        {
+                            _envVars.Remove($"CARGO_REGISTRIES_{registry}_TOKEN");
+                        }
                     }
                 }
                 else
@@ -324,7 +327,7 @@ namespace Microsoft.Build.Cargo
             if (authResult == ExitCode.Succeeded)
             {
                 string path = _cargoPath;
-                string args = $"fetch {(_isMsRustUp ? "--config " + Path.Combine(RepoRoot, _configFileName) : string.Empty)}";
+                string args = $"fetch {(_isMsRustUp ? "--config " + Path.Combine(RepoRoot, _configPath) : string.Empty)}";
                 ExitCode exitCode = ExitCode.Failed;
                 Log.LogMessage(MessageImportance.Normal, $"Fetching cargo crates for project in {workingDir}");
 
@@ -594,6 +597,28 @@ namespace Microsoft.Build.Cargo
             }
 
             return _currentRustUpInitExeCheckSum;
+        }
+
+        private List<string> GetRegistries(string configPath)
+        {
+            string config = File.ReadAllText(configPath);
+            Regex regex = new (@"(?<=\[registries\]).*?(?=\[)", RegexOptions.Singleline);
+            var matches = regex.Matches(config);
+            List<string> registries = new ();
+            foreach (Match match in matches)
+            {
+                if (string.IsNullOrWhiteSpace(match.Value) || !match.Value.Contains('='))
+                {
+                    continue;
+                }
+
+                var registryNames = match.Value.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
+                                               .Select(line => line.Split('=')[0].Trim())
+                                               .ToList();
+                registries.AddRange(registryNames);
+            }
+
+            return registries;
         }
     }
 }
