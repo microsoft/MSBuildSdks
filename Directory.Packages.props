@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
 
     <!-- Please use caution adding a dependency to MSBuild packages. Use latest for testing and
          use the minimum version for compilation for back compat. -->
@@ -41,7 +42,7 @@
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
   </ItemGroup>
   <ItemGroup>
-    <GlobalPackageReference Include="Microsoft.Build.Artifacts" Version="6.1.30" Condition="'$(EnableArtifacts)' != 'false'" />
+    <GlobalPackageReference Include="Microsoft.Build.Artifacts" Version="6.1.48" Condition="'$(EnableArtifacts)' != 'false'" />
     <GlobalPackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Core" Version="1.0.0" Condition="'$(EnableMicroBuild)' != 'false'" />
     <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="3.6.133" Condition="'$(EnableGitVersioning)' != 'false'" />
   </ItemGroup>
