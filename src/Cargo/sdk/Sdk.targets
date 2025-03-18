@@ -112,7 +112,7 @@
     <MSBuild
        Projects="$(MSBuildThisFileDirectory)CargoInstall.proj"
        Targets="CargoInstall"
-       Properties="EnableTelemetryLoggerCopy=$(EnableTelemetryLoggerCopy);TelemetryLoggerLocation=$(TelemetryLoggerLocation);TelemetryLoggerSourcePath=$(TelemetryLoggerSourcePath);TelemetryLoggerInstallId=$(TelemetryLoggerInstallId)"
+       Properties="EnableTelemetryLoggerCopy=$(EnableTelemetryLoggerCopy);TelemetryLoggerLocation=$(TelemetryLoggerLocation);TelemetryLoggerSourcePath=$(TelemetryLoggerSourcePath);TelemetryLoggerInstallId=$(TelemetryLoggerInstallId);RepoRoot=$(RepoRoot)"
        RemoveProperties="NuGetInteractive;MSBuildRestoreSessionId;TargetFramework;RuntimeIdentifier" />
   </Target>
   <Target Name="CargoFetch" AfterTargets="CargoInstall">
