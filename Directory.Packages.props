@@ -27,7 +27,7 @@
     <PackageVersion Include="System.Text.Json" Version="8.0.4" />
 
     <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="8.0.1" />
-    
+
     <!-- Pinning vulnerable packages -->
     <PackageVersion Include="System.Security.Cryptography.Xml" Version="8.0.1" />
     <PackageVersion Include="Microsoft.IO.Redist" Version="6.0.1" />
