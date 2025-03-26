@@ -12,6 +12,7 @@
     <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
     <DevelopmentDependency>true</DevelopmentDependency>
     <!-- This package contains MSBuild tasks only, so avoid dependencies. -->
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <OutputFileNamesWithoutVersion>false</OutputFileNamesWithoutVersion>
     <NoWarn>$(NoWarn);NU1504;NU5100;NU5110;NU5111</NoWarn>
   </PropertyGroup>
@@ -19,7 +20,6 @@
     <PackageReference Include="Microsoft.Build.Utilities.Core" VersionOverride="17.11.4" />
     <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" VersionOverride="17.11.4" />
     <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" VersionOverride="17.11.4" />
-    <PackageReference Include="NuGet.Versioning" />
     <PackageReference Include="System.Net.Http" NoWarn="RT0003" />
   </ItemGroup>
   <ItemGroup>
@@ -44,14 +44,4 @@
   <ItemGroup>
     <FilesToSign Include="$(TargetPath)" Authenticode="Microsoft400" StrongName="StrongName" />
   </ItemGroup>
-  <Target Name="IncludeReferenceCopyLocalPathsInBuildOutputInPackage"
-         BeforeTargets="_GetBuildOutputFilesWithTfm"
-         DependsOnTargets="ResolveReferences;ResolvePackageDependenciesForBuild">
-    <ItemGroup>
-      <BuildOutputInPackage Include="@(RuntimeCopyLocalItems-&gt;WithMetadataValue('AssetType', 'runtime'))"
-                            TargetPath="%(RuntimeCopyLocalItems.DestinationSubDirectory)%(Filename)%(Extension)" />
-      <BuildOutputInPackage Include="@(RuntimeCopyLocalItems-&gt;WithMetadataValue('CopyLocal', 'true'))"
-                            TargetPath="%(RuntimeCopyLocalItems.DestinationSubDirectory)%(Filename)%(Extension)" />
-    </ItemGroup>
-  </Target>
 </Project>

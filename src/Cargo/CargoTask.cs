@@ -8,7 +8,6 @@ using Microsoft.Build.Evaluation.Context;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Graph;
-using NuGet.Versioning;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Security.Cryptography;
@@ -100,14 +99,19 @@ namespace Microsoft.Build.Cargo
         /// <inheritdoc/>
         public override bool Execute()
         {
-            _rustUpBinary = Path.Combine(CargoInstallationRoot ?? throw new InvalidOperationException("CargoInstallationRoot is null"), "cargohome", "bin", "rustup.exe");
-            _cargoPath = Path.Combine(CargoInstallationRoot ?? throw new InvalidOperationException("CargoInstallationRoot is null"), "cargohome", "bin", "cargo.exe");
-            _rustInstallPath = Path.Combine(CargoInstallationRoot ?? throw new InvalidOperationException("CargoInstallationRoot is null"), "rustinstall");
+            if (string.IsNullOrEmpty(CargoInstallationRoot))
+            {
+                throw new InvalidOperationException("CargoInstallationRoot cannot be null or empty.");
+            }
+
+            _rustUpBinary = Path.Combine(CargoInstallationRoot, "cargohome", "bin", "rustup.exe");
+            _cargoPath = Path.Combine(CargoInstallationRoot, "cargohome", "bin", "cargo.exe");
+            _rustInstallPath = Path.Combine(CargoInstallationRoot, "rustinstall");
             _rustUpInitBinary = Path.Combine(_rustInstallPath, "rustup-init.exe");
-            _cargoHome = Path.Combine(CargoInstallationRoot ?? throw new InvalidOperationException("CargoInstallationRoot is null"), "cargohome");
-            _rustUpHome = Path.Combine(CargoInstallationRoot ?? throw new InvalidOperationException("CargoInstallationRoot is null"), "rustuphome");
-            _cargoHomeBin = Path.Combine(CargoInstallationRoot ?? throw new InvalidOperationException("CargoInstallationRoot is null"), "cargohome", "bin");
-            _msRustUpBinary = Path.Combine(CargoInstallationRoot ?? throw new InvalidOperationException("CargoInstallationRoot is null"), "cargohome", "bin", "msrustup.exe");
+            _cargoHome = Path.Combine(CargoInstallationRoot, "cargohome");
+            _rustUpHome = Path.Combine(CargoInstallationRoot, "rustuphome");
+            _cargoHomeBin = Path.Combine(CargoInstallationRoot, "cargohome", "bin");
+            _msRustUpBinary = Path.Combine(CargoInstallationRoot, "cargohome", "bin", "msrustup.exe");
             _envVars = new () { { "CARGO_HOME", _cargoHome }, { "RUSTUP_HOME", _rustUpHome } };
             return ExecuteAsync().GetAwaiter().GetResult();
         }
@@ -173,14 +177,13 @@ namespace Microsoft.Build.Cargo
             }
             else if (Command.Equals(_clearCacheCommand, StringComparison.InvariantCultureIgnoreCase))
             {
-                Log.LogMessage(MessageImportance.Normal, $"Clearing cargo installation cache");
-                var success = DeleteCargoDirectories();
-                if (!success)
+                if (Directory.Exists(_cargoHome))
                 {
-                    Log.LogError($"Failed to delete existing installation paths. Please check permissions, change installation root directory, or manually delete the following directories: {_rustInstallPath}, {_rustUpHome}, {_cargoHome}");
+                    Log.LogMessage(MessageImportance.Normal, $"Clearing cargo cache at {_cargoHome}");
+                    Directory.Delete(_cargoHome, true);
                 }
 
-                return success;
+                return true;
             }
             else
             {
@@ -227,40 +230,6 @@ namespace Microsoft.Build.Cargo
 
         private async Task<bool> DownloadAndInstallRust()
         {
-            string versionFile = Path.Combine(CargoInstallationRoot, "CargoSDKVersion");
-            string curVersion = GetCurrentNugetVersion();
-            string lastInstalledVersion = string.Empty;
-            if (File.Exists(versionFile))
-            {
-                lastInstalledVersion = File.ReadAllText(versionFile);
-                NuGetVersion installedNugetVersion = new (lastInstalledVersion ?? string.Empty);
-                NuGetVersion curPackageNugetVersion = new (curVersion ?? string.Empty);
-                if (curPackageNugetVersion > installedNugetVersion)
-                {
-                    bool deleteSuccess = false;
-                    int retryCount = 0;
-                    int waitTime = 1000;
-                    int maxRetryAmount = 5;
-
-                    while (!deleteSuccess && retryCount < maxRetryAmount)
-                    {
-                        deleteSuccess = DeleteCargoDirectories();
-                        if (!deleteSuccess)
-                        {
-                            await System.Threading.Tasks.Task.Delay(waitTime);
-                            waitTime *= 2;
-                            retryCount++;
-                        }
-                    }
-
-                    if (!deleteSuccess)
-                    {
-                        Log.LogError($"Failed to delete existing installation paths while upgrading from version {lastInstalledVersion} -> {curVersion}. Please check permissions, change installation root directory, or manually delete the following directories: {_rustInstallPath}, {_rustUpHome}, {_cargoHome}");
-                        return deleteSuccess;
-                    }
-                }
-            }
-
             bool downloadSuccess = await DownloadRustUpAsync();
             bool installSuccess = false;
             if (downloadSuccess)
@@ -270,54 +239,6 @@ namespace Microsoft.Build.Cargo
                 {
                     _shouldCleanRustPath = true;
                 }
-            }
-
-            var success = downloadSuccess && installSuccess;
-            if (success)
-            {
-                File.WriteAllText(versionFile, curVersion);
-            }
-
-            return success;
-        }
-
-        private string GetCurrentNugetVersion()
-        {
-            var cargoPackage = new DirectoryInfo(BuildEngine.ProjectFileOfTaskNode).Parent?.Parent?.FullName;
-            var version = cargoPackage!.Split('\\').Last();
-            return version;
-        }
-
-        private bool DeleteCargoDirectories()
-        {
-            try
-            {
-                if (Directory.Exists(_rustInstallPath))
-                {
-                    Directory.Delete(_rustInstallPath, true);
-                }
-
-                if (Directory.Exists(_rustUpHome))
-                {
-                    Directory.Delete(_rustUpHome, true);
-                }
-
-                if (Directory.Exists(_cargoHome))
-                {
-                    Directory.Delete(_cargoHome, true);
-                }
-            }
-            catch (IOException)
-            {
-                return false;
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return false;
-            }
-            catch (Exception)
-            {
-                return false;
             }
 
             return downloadSuccess && installSuccess;
