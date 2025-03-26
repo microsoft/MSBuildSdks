@@ -255,7 +255,7 @@ namespace Microsoft.Build.Cargo
 
                     if (!deleteSuccess)
                     {
-                        Log.LogError($"Failed to delete existing installation paths while upgrading from version {lastInstalledVersion} -> {curVersion}. Please check permissions, change installation root directory, or manually delete the following directories: {_rustInstallPath}, {_rustUpHome}, {_cargoHome}");
+                        Log.LogError($"Failed to delete existing installation paths while upgrading from version {lastInstalledVersion} -> {curVersion}. Please check permissions, change installation root directory via the 'CargoInstallationRoot' property, or manually delete the following directories: {_rustInstallPath}, {_rustUpHome}, {_cargoHome}");
                         return deleteSuccess;
                     }
                 }
@@ -320,7 +320,7 @@ namespace Microsoft.Build.Cargo
                 return false;
             }
 
-            return downloadSuccess && installSuccess;
+            return true;
         }
 
         private async Task<bool> FetchCratesAsync(string project)
