@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-
+    
     <!-- Please use caution adding a dependency to MSBuild packages. Use latest for testing and
          use the minimum version for compilation for back compat. -->
     <MicrosoftBuildPackageVersion>17.11.4</MicrosoftBuildPackageVersion>
@@ -15,17 +15,18 @@
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildPackageVersion)" />
     <PackageVersion Include="Microsoft.Win32.Registry" Version="5.0.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageVersion Include="NuGet.Versioning" Version="6.13.2" />
     <PackageVersion Include="System.CodeDom" Version="8.0.0" />
     <PackageVersion Include="System.Collections.Immutable" Version="8.0.0" />
     <PackageVersion Include="System.Net.Http" Version="4.3.4" />
-
+    
     <!-- Suppress high vuln Component Governance alert. >8.0.4 breaks downlevel VS installations. VS team working to fix. -->
     <!-- https://github.com/microsoft/MSBuildSdks/issues/591 -->
     <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-8g4q-xg66-9fp4" />
     <PackageVersion Include="System.Text.Json" Version="8.0.4" />
 
-    <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="8.0.1" /> 
-
+    <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="8.0.1" />
+    
     <!-- Pinning vulnerable packages -->
     <PackageVersion Include="System.Security.Cryptography.Xml" Version="8.0.1" />
     <PackageVersion Include="Microsoft.IO.Redist" Version="6.0.1" />

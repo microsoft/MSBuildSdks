@@ -84,6 +84,8 @@
     <DocCommandArgs Condition="'$(DocCommandArgs)' == ''"></DocCommandArgs>
     <StartupProj Condition="'$(StartupProj)' == ''">$(MSBuildProjectFullPath)</StartupProj>
     <RepoRoot Condition="'$(RepoRoot)' == ''">$(EnlistmentRoot)</RepoRoot>
+    <CargoInstallationRoot Condition="'$(CargoInstallationRoot)' == ''"></CargoInstallationRoot>
+    <MsRustupAuthType Condition="'$(MsRustupAuthType)' == ''">AzureAuth</MsRustupAuthType>
   </PropertyGroup>
   <ItemGroup>
     <None Include="**\*.rs" />
