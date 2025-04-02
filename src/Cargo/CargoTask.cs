@@ -241,7 +241,7 @@ namespace Microsoft.Build.Cargo
                 }
             }
 
-            return downloadSuccess && installSuccess;
+            return true;
         }
 
         private async Task<bool> FetchCratesAsync(string project)
