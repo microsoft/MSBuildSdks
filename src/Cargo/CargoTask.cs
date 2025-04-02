@@ -94,7 +94,7 @@ namespace Microsoft.Build.Cargo
         /// <summary>
         /// Gets or sets the MSRustup Authentication type.
         /// </summary>
-        public string MsRustupAuthType { get; set; } = "AzureAuth";
+        public string MsRustupAuthType { get; set; } = string.Empty;
 
         /// <inheritdoc/>
         public override bool Execute()
