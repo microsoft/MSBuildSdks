@@ -9,8 +9,11 @@
 # Requires MSRUSTUP_ACCESS_TOKEN or MSRUSTUP_PAT environment variables to be set with a token.
 # See https://aka.ms/rust for more information.
 
+param (
+    [string]$destinationDirectory
+)
+
 $ErrorActionPreference = "Stop"
-$destinationDirectory = $env:Temp + "\cargohome\bin"
 
  # Create directory if it doesn't exist
     Write-Host $destinationDirectory

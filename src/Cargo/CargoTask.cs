@@ -23,18 +23,6 @@ namespace Microsoft.Build.Cargo
     /// </summary>
     public class CargoTask : Task
     {
-        private static readonly string? _tempPath = Environment.GetEnvironmentVariable("TEMP") ?? throw new Exception("%TEMP% directory not defined");
-        private static readonly string _rustUpBinary = Path.Combine(_tempPath, "cargohome", "bin", "rustup.exe");
-        private static readonly string _cargoPath = Path.Combine(_tempPath, "cargohome", "bin", "cargo.exe");
-        private static readonly string _rustInstallPath = Path.Combine(_tempPath, "rustinstall");
-        private static readonly string _rustUpInitBinary = Path.Combine(_rustInstallPath, "rustup-init.exe");
-        private static readonly string _cargoHome = Path.Combine(_tempPath, "cargohome");
-        private static readonly string _rustUpHome = Path.Combine(_tempPath, "rustuphome");
-        private static readonly string _cargoHomeBin = Path.Combine(_tempPath, "cargohome", "bin");
-        private static readonly string _msRustUpBinary = Path.Combine(_tempPath, "cargohome", "bin", "msrustup.exe");
-        private static readonly Dictionary<string, string> _envVars = new () { { "CARGO_HOME", _cargoHome }, { "RUSTUP_HOME", _rustUpHome } };
-        private static readonly string _rustUpDownloadLink = "https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe";
-        private static readonly string _checkSumVerifyUrl = "https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe.sha256";
         private static readonly string _rustToolChainFileName = "rust-toolchain.toml";
         private static readonly string _cargoConfigFilePath = Path.Combine(".cargo", "config.toml");
         private static readonly string _cargoFileName = "cargo.toml";
@@ -43,17 +31,33 @@ namespace Microsoft.Build.Cargo
         private static readonly string _installCommand = "install";
         private static readonly string _fetchCommand = "fetch";
         private static readonly string _loginCommand = "login";
+        private static readonly string _rustUpDownloadLink = "https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe";
+        private static readonly string _checkSumVerifyUrl = "https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe.sha256";
         private string? _rustUpFile = Environment.GetEnvironmentVariable("MSRUSTUP_FILE");
         private bool _shouldCleanRustPath = false;
         private bool _isMsRustUp = false;
         private string? _currentRustUpInitExeCheckSum;
         private List<string> _cargoRegistries = new ();
+        private string _rustUpBinary = string.Empty;
+        private string _cargoPath = string.Empty;
+        private string _rustInstallPath = string.Empty;
+        private string _rustUpInitBinary = string.Empty;
+        private string _cargoHome = string.Empty;
+        private string _rustUpHome = string.Empty;
+        private string _cargoHomeBin = string.Empty;
+        private string _msRustUpBinary = string.Empty;
+        private Dictionary<string, string> _envVars = new ();
 
         private enum ExitCode
         {
             Succeeded,
             Failed,
         }
+
+        /// <summary>
+        /// Gets or sets installation root path for rust.
+        /// <inheritdoc/>
+        public string CargoInstallationRoot { get; set; } = Environment.GetEnvironmentVariable("TEMP") ?? Path.GetTempPath();
 
         /// <summary>
         /// Gets or sets a cargo command to execute.
@@ -87,17 +91,36 @@ namespace Microsoft.Build.Cargo
         /// </summary>
         public string Configuration { get; set; } = string.Empty;
 
+        /// <summary>
+        /// Gets or sets the MSRustup Authentication type.
+        /// </summary>
+        public string MsRustupAuthType { get; set; } = string.Empty;
+
         /// <inheritdoc/>
         public override bool Execute()
         {
+            if (string.IsNullOrEmpty(CargoInstallationRoot))
+            {
+                throw new InvalidOperationException("CargoInstallationRoot cannot be null or empty.");
+            }
+
+            _rustUpBinary = Path.Combine(CargoInstallationRoot, "cargohome", "bin", "rustup.exe");
+            _cargoPath = Path.Combine(CargoInstallationRoot, "cargohome", "bin", "cargo.exe");
+            _rustInstallPath = Path.Combine(CargoInstallationRoot, "rustinstall");
+            _rustUpInitBinary = Path.Combine(_rustInstallPath, "rustup-init.exe");
+            _cargoHome = Path.Combine(CargoInstallationRoot, "cargohome");
+            _rustUpHome = Path.Combine(CargoInstallationRoot, "rustuphome");
+            _cargoHomeBin = Path.Combine(CargoInstallationRoot, "cargohome", "bin");
+            _msRustUpBinary = Path.Combine(CargoInstallationRoot, "cargohome", "bin", "msrustup.exe");
+            _envVars = new () { { "CARGO_HOME", _cargoHome }, { "RUSTUP_HOME", _rustUpHome } };
             return ExecuteAsync().GetAwaiter().GetResult();
         }
 
-        private static void CleanupRustPath()
+        private void CleanupRustPath()
         {
-            if (Directory.Exists(_rustUpInitBinary))
+            if (File.Exists(_rustUpInitBinary))
             {
-                Directory.Delete(_rustUpInitBinary, true);
+                File.Delete(_rustUpInitBinary);
             }
         }
 
@@ -108,7 +131,6 @@ namespace Microsoft.Build.Cargo
                 _isMsRustUp = File.Exists(Path.Combine(RepoRoot, _rustToolChainFileName)) && IsMSToolChain(Path.Combine(RepoRoot, _rustToolChainFileName));
             }
 
-            // download & install rust if necessary
             if (Command.Equals(_installCommand, StringComparison.InvariantCultureIgnoreCase))
             {
                 return await DownloadAndInstallRust();
@@ -120,6 +142,7 @@ namespace Microsoft.Build.Cargo
                     if (string.IsNullOrEmpty(_rustUpFile) || !File.Exists(_rustUpFile))
                     {
                         Log.LogMessage($"MSRUSTUP_FILE environment variable is not set or the file does not exist. Assuming local build.");
+                        _envVars.Add("ADO_CREDENTIAL_PROVIDER", MsRustupAuthType);
                     }
                     else
                     {
@@ -199,7 +222,6 @@ namespace Microsoft.Build.Cargo
                     return await ExecuteProcessAsync(customCargoBin!, $"{command} {args}  --offline {(isDebugConfiguration ? string.Empty : "--" + Configuration.ToLowerInvariant())} --config {Path.Combine(RepoRoot, _cargoConfigFilePath)}", ".", _envVars);
                 }
 
-                // if we don't have the toolchain, we need to install it.
                 return ExitCode.Failed;
             }
 
@@ -219,7 +241,7 @@ namespace Microsoft.Build.Cargo
                 }
             }
 
-            return downloadSuccess && installSuccess;
+            return true;
         }
 
         private async Task<bool> FetchCratesAsync(string project)
@@ -463,6 +485,7 @@ namespace Microsoft.Build.Cargo
             bool msRustupToolChainExists = useMsRustUp && !string.IsNullOrEmpty(GetCustomToolChainCargoPath());
             bool cargoPathAndRustPathsExists = Directory.Exists(_cargoHome) && Directory.Exists(_rustUpHome);
             bool cargoBinaryExists = File.Exists(_cargoPath);
+
             if ((msRustupToolChainExists && cargoPathAndRustPathsExists && useMsRustUp) || cargoPathAndRustPathsExists && cargoBinaryExists && !useMsRustUp)
             {
                 return true;
@@ -517,6 +540,7 @@ namespace Microsoft.Build.Cargo
                 if (string.IsNullOrEmpty(_rustUpFile) || !File.Exists(_rustUpFile))
                 {
                     Log.LogMessage($"MSRUSTUP_FILE environment variable is not set or the file does not exist. Assuming local build.");
+                    _envVars.Add("ADO_CREDENTIAL_PROVIDER", MsRustupAuthType);
                 }
                 else
                 {
