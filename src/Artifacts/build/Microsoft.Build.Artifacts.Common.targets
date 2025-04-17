@@ -34,7 +34,10 @@
       ShowErrorOnRetry="$([MSBuild]::ValueOrDefault($(ArtifactsShowErrorOnRetry), 'true'))"
       DisableCopyOnWrite="$([MSBuild]::ValueOrDefault($(DisableCopyOnWrite), 'false'))"
       Sources="@(Artifact)"
-      Condition="@(Artifact->Count()) > 0" />
+      ListCopiedFiles="$('$(Artifacts_ListCopiedFiles)' == 'true')"
+      Condition="@(Artifact->Count()) > 0">
+        <Output TaskParameter="CopiedFiles" ItemName="CopyArtifacts_CopiedFiles" />
+      </Robocopy>
   </Target>
 
   <Target Name="RobocopyFiles"
@@ -48,6 +51,9 @@
       ShowErrorOnRetry="$([MSBuild]::ValueOrDefault($(RobocopyShowErrorOnRetry), 'true'))"
       DisableCopyOnWrite="$([MSBuild]::ValueOrDefault($(DisableCopyOnWrite), 'false'))"
       Sources="@(Robocopy)"
-      Condition="@(Robocopy->Count()) > 0"/>
+      ListCopiedFiles="$('$(Robocopy_ListCopiedFiles)' == 'true')"
+      Condition="@(Robocopy->Count()) > 0">
+        <Output TaskParameter="CopiedFiles" ItemName="RobocopyFiles_CopiedFiles" />
+      </Robocopy>
   </Target>
 </Project>
