@@ -7,6 +7,10 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
+    <_ArtifactsListCopiedFiles Condition="'$(ArtifactsCopiedFiles)' != ''">true</_ArtifactsListCopiedFiles>
+    <_RobocopyListCopiedFiles Condition="'$(RobocopyCopiedFiles)' != ''">true</_RobocopyListCopiedFiles>
+    <ArtifactsCopiedFiles Condition="'$(ArtifactsCopiedFiles)' == ''">_</ArtifactsCopiedFiles>
+    <RobocopyCopiedFiles Condition="'$(RobocopyCopiedFiles)' == ''">_</RobocopyCopiedFiles>
   </PropertyGroup>
 
   <UsingTask TaskName="Robocopy"
@@ -34,9 +38,9 @@
       ShowErrorOnRetry="$([MSBuild]::ValueOrDefault($(ArtifactsShowErrorOnRetry), 'true'))"
       DisableCopyOnWrite="$([MSBuild]::ValueOrDefault($(DisableCopyOnWrite), 'false'))"
       Sources="@(Artifact)"
-      ListCopiedFiles="$('$(Artifacts_ListCopiedFiles)' == 'true')"
+      ListCopiedFiles="$(_ArtifactsListCopiedFiles)"
       Condition="@(Artifact->Count()) > 0">
-        <Output TaskParameter="CopiedFiles" ItemName="CopyArtifacts_CopiedFiles" />
+        <Output TaskParameter="CopiedFiles" ItemName="$(ArtifactsCopiedFiles)" Condition="'$(_ArtifactsListCopiedFiles)' != 'true'" />
       </Robocopy>
   </Target>
 
@@ -51,9 +55,9 @@
       ShowErrorOnRetry="$([MSBuild]::ValueOrDefault($(RobocopyShowErrorOnRetry), 'true'))"
       DisableCopyOnWrite="$([MSBuild]::ValueOrDefault($(DisableCopyOnWrite), 'false'))"
       Sources="@(Robocopy)"
-      ListCopiedFiles="$('$(Robocopy_ListCopiedFiles)' == 'true')"
+      ListCopiedFiles="$(_RobocopyListCopiedFiles)"
       Condition="@(Robocopy->Count()) > 0">
-        <Output TaskParameter="CopiedFiles" ItemName="RobocopyFiles_CopiedFiles" />
+        <Output TaskParameter="CopiedFiles" ItemName="$(RobocopyCopiedFiles)" Condition="'$(_RobocopyListCopiedFiles)' != 'true'" />
       </Robocopy>
   </Target>
 </Project>

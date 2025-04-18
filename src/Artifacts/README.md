@@ -150,6 +150,7 @@ The following properties control artifacts staging:
 | `ArtifactsShowDiagnostics` | Enables additional logging that can be used to troubleshoot why artifacts are not being staged | `false` |
 | `ArtifactsShowErrorOnRetry` | Logs an error if a retry was attempted.  Disable this to suppress issues while copying files | `true` |
 | `DisableCopyOnWrite` | Disables use of copy-on-write links (file cloning) even if the filesystem allows it. | `false` |
+| `ArtifactsCopiedFiles` | Specifies the name of the item list set with the files copied during CopyArtifacts target run. | |
 | `CustomBeforeArtifactsProps ` | A list of custom MSBuild projects to import **before** artifacts properties are declared. |
 | `CustomAfterArtifactsProps` | A list of custom MSBuild projects to import **after** Artifacts properties are declared.|
 | `CustomBeforeArtifactsTargets` | A list of custom MSBuild projects to import **before** Artifacts targets are declared.|
@@ -162,6 +163,19 @@ To change the default file match for artifacts, set the `DefaultArtifactsFileMat
 <PropertyGroup>
   <DefaultArtifactsFileMatch>*exe *dll *exe.config *.ini *.xml</DefaultArtifactsFileMatch>
 </PropertyGroup>
+```
+
+<br />
+
+To get the list of copied files, set the `ArtifactsCopiedFiles` property:
+```xml
+<PropertyGroup>
+  <ArtifactsCopiedFiles>MyCopiedArtifact</ArtifactsCopiedFiles>
+</PropertyGroup>
+
+<Target Name="DoSomethingWithArtifacts" AfterTargets="CopyArtifacts">
+  <Message Text="Copied %(MyCopiedArtifact.Identity)" />
+</Target>
 ```
 
 <br />
