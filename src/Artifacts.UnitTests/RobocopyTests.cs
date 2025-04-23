@@ -826,7 +826,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
         }
 
         [Fact]
-        public void CheckCopiedFilesIsEmptyByDefault()
+        public void ListCopiedFilesIsOffByDefault()
         {
             DirectoryInfo source = CreateFiles("source", "bar.txt");
 
@@ -854,7 +854,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
         }
 
         [Fact]
-        public void CheckCopiedFilesIsSetWhenListCopiedFilesIsTrue()
+        public void ListCopiedFilesCanBeEnabled()
         {
             DirectoryInfo source = CreateFiles(
                 "source",

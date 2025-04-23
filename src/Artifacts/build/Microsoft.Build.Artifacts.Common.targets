@@ -7,10 +7,6 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <MSBuildAllProjects Condition="'$(MSBuildToolsVersion)' != 'Current'">$(MSBuildAllProjects);$(MsBuildThisFileFullPath)</MSBuildAllProjects>
-    <_ArtifactsListCopiedFiles Condition="'$(ArtifactsCopiedFiles)' != ''">true</_ArtifactsListCopiedFiles>
-    <_RobocopyListCopiedFiles Condition="'$(RobocopyCopiedFiles)' != ''">true</_RobocopyListCopiedFiles>
-    <ArtifactsCopiedFiles Condition="'$(ArtifactsCopiedFiles)' == ''">_</ArtifactsCopiedFiles>
-    <RobocopyCopiedFiles Condition="'$(RobocopyCopiedFiles)' == ''">_</RobocopyCopiedFiles>
   </PropertyGroup>
 
   <UsingTask TaskName="Robocopy"
@@ -31,6 +27,9 @@
           Condition="'$(EnableArtifacts)' != 'false'"
           AfterTargets="$([MSBuild]::ValueOrDefault($(CopyArtifactsAfterTargets), 'AfterBuild'))"
           DependsOnTargets="$(CopyArtifactsDependsOn)">
+    <PropertyGroup>
+      <_ArtifactsListCopiedFiles Condition="'$(ArtifactsCopiedFilesItemName)' != ''">true</_ArtifactsListCopiedFiles>
+    </PropertyGroup>
     <Robocopy
       RetryCount="$([MSBuild]::ValueOrDefault($(ArtifactsCopyRetryCount), $(CopyRetryCount)))"
       RetryWait="$([MSBuild]::ValueOrDefault($(ArtifactsCopyRetryDelayMilliseconds), $(CopyRetryDelayMilliseconds)))"
@@ -40,7 +39,7 @@
       Sources="@(Artifact)"
       ListCopiedFiles="$(_ArtifactsListCopiedFiles)"
       Condition="@(Artifact->Count()) > 0">
-        <Output TaskParameter="CopiedFiles" ItemName="$(ArtifactsCopiedFiles)" Condition="'$(_ArtifactsListCopiedFiles)' != 'true'" />
+        <Output TaskParameter="CopiedFiles" ItemName="$(ArtifactsCopiedFilesItemName)" Condition="'$(ArtifactsCopiedFilesItemName)' != ''" />
       </Robocopy>
   </Target>
 
@@ -55,9 +54,9 @@
       ShowErrorOnRetry="$([MSBuild]::ValueOrDefault($(RobocopyShowErrorOnRetry), 'true'))"
       DisableCopyOnWrite="$([MSBuild]::ValueOrDefault($(DisableCopyOnWrite), 'false'))"
       Sources="@(Robocopy)"
-      ListCopiedFiles="$(_RobocopyListCopiedFiles)"
+      ListCopiedFiles="$(_ArtifactsListCopiedFiles)"
       Condition="@(Robocopy->Count()) > 0">
-        <Output TaskParameter="CopiedFiles" ItemName="$(RobocopyCopiedFiles)" Condition="'$(_RobocopyListCopiedFiles)' != 'true'" />
+      <Output TaskParameter="CopiedFiles" ItemName="$(ArtifactsCopiedFilesItemName)" Condition="'$(ArtifactsCopiedFilesItemName)' != ''" />
       </Robocopy>
   </Target>
 </Project>
