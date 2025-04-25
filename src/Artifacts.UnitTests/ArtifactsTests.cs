@@ -306,6 +306,40 @@ namespace Microsoft.Build.Artifacts.UnitTests
 
         [Theory]
         [InlineData(null)]
+        [InlineData("")]
+        [InlineData("SomethingCustom", true)]
+        public void ListCopiedFiles(string itemName, bool expectListCopiedFiles = false)
+        {
+            CreateFiles(
+                Path.Combine("bin", "Debug"),
+                "foo.dll",
+                "foo.pdb");
+
+            DirectoryInfo artifactsPath = new DirectoryInfo(Path.Combine(TestRootPath, "artifacts"));
+
+            string outputPath = $"{Path.Combine("bin", "Debug")}{Path.DirectorySeparatorChar}";
+
+            ProjectCreator.Templates.ProjectWithArtifacts(
+                path: Path.Combine(TestRootPath, "ProjectA.csproj"),
+                outputPath: outputPath,
+                artifactsPath: artifactsPath.FullName,
+                copiedArtifactsItemName: itemName)
+                    .Target("LogCopiedFiles", afterTargets: "CopyArtifacts")
+                        .TaskMessage($"{itemName} contains %({itemName}.Identity)")
+                    .Save()
+                    .TryBuild(out bool result, out BuildOutput buildOutput)
+                    .TryGetPropertyValue("ListCopiedFilesCount", out string listCopiedFilesCount);
+
+            result.ShouldBeTrue(buildOutput.GetConsoleLog());
+
+            if (expectListCopiedFiles)
+            {
+                buildOutput.Messages.ShouldContain(i => i.StartsWith($"{itemName} contains"));
+            }
+        }
+
+        [Theory]
+        [InlineData(null)]
         [InlineData(true)]
         [InlineData(false)]
         public void MultiTargetingProject(bool? generatePackageOnBuild)

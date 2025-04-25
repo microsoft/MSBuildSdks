@@ -44,6 +44,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
                     string artifactsPath = null,
                     string targetFramework = "net472",
                     bool? appendTargetFrameworkToOutputPath = true,
+                    string copiedArtifactsItemName = null,
                     Action<ProjectCreator> customAction = null,
                     string path = null,
                     string defaultTargets = null,
@@ -70,6 +71,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
                 .Property("AppendTargetFrameworkToOutputPath", appendTargetFrameworkToOutputPath.HasValue ? appendTargetFrameworkToOutputPath.ToString() : null)
                 .Property("OutputPath", $"$(OutputPath)$(TargetFramework.ToLowerInvariant()){Path.DirectorySeparatorChar}", condition: "'$(AppendTargetFrameworkToOutputPath)' == 'true'")
                 .Property("ArtifactsPath", artifactsPath)
+                .Property("ArtifactsCopiedFilesItemName", copiedArtifactsItemName)
                 .CustomAction(customAction)
                 .Target("Build")
                 .Target("AfterBuild", afterTargets: "Build")
