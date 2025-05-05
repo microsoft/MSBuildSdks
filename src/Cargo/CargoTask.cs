@@ -26,7 +26,6 @@ namespace Microsoft.Build.Cargo
         private static readonly string _rustToolChainFileName = "rust-toolchain.toml";
         private static readonly string _cargoConfigFilePath = Path.Combine(".cargo", "config.toml");
         private static readonly string _cargoFileName = "cargo.toml";
-        private static readonly string _nugetConfigFileName = "nuget.config";
         private static readonly string _clearCacheCommand = "clearcargocache";
         private static readonly string _installCommand = "install";
         private static readonly string _fetchCommand = "fetch";
@@ -136,12 +135,10 @@ namespace Microsoft.Build.Cargo
 
             if (Command.Equals(_installCommand, StringComparison.InvariantCultureIgnoreCase))
             {
-                Debugger.Launch();
                 return await DownloadAndInstallRust();
             }
             else if (Command.Equals(_fetchCommand))
             {
-                Debugger.Launch();
                 if (_isMsRustUp)
                 {
                     if (string.IsNullOrEmpty(_rustUpFile) || !File.Exists(_rustUpFile))
@@ -215,7 +212,6 @@ namespace Microsoft.Build.Cargo
             Log.LogMessage(MessageImportance.Normal, $"Executing cargo command: {command} {args}");
             if (_isMsRustUp)
             {
-                Debugger.Launch();
                 var customCargo = GetCustomToolChainCargoPath();
                 _envVars.Add("PATH", customCargo + ";" + Environment.GetEnvironmentVariable("PATH") !);
 
