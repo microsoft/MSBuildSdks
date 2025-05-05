@@ -825,6 +825,70 @@ namespace Microsoft.Build.Artifacts.UnitTests
                     customMessage: buildEngine.GetConsoleLog());
         }
 
+        [Fact]
+        public void ListCopiedFilesIsOffByDefault()
+        {
+            DirectoryInfo source = CreateFiles("source", "bar.txt");
+
+            DirectoryInfo destination = new DirectoryInfo(Path.Combine(TestRootPath, "destination"));
+            BuildEngine buildEngine = BuildEngine.Create();
+
+            Robocopy copyArtifacts = new ()
+            {
+                BuildEngine = buildEngine,
+                Sources =
+                [
+                    new MockTaskItem(source.FullName)
+                    {
+                        ["DestinationFolder"] = destination.FullName,
+                        [nameof(RobocopyMetadata.IsRecursive)] = "false",
+                    },
+                ],
+                Sleep = _ => { },
+            };
+
+            copyArtifacts.Execute().ShouldBeTrue(buildEngine.GetConsoleLog());
+            copyArtifacts.NumFilesCopied.ShouldBe(1);
+
+            copyArtifacts.CopiedFiles.Length.ShouldBe(0);
+        }
+
+        [Fact]
+        public void ListCopiedFilesCanBeEnabled()
+        {
+            DirectoryInfo source = CreateFiles(
+                "source",
+                "bar.txt",
+                "foo.txt");
+
+            DirectoryInfo destination = new DirectoryInfo(Path.Combine(TestRootPath, "destination"));
+            BuildEngine buildEngine = BuildEngine.Create();
+
+            Robocopy copyArtifacts = new ()
+            {
+                BuildEngine = buildEngine,
+                Sources =
+                [
+                    new MockTaskItem(source.FullName)
+                    {
+                        ["DestinationFolder"] = destination.FullName,
+                        [nameof(RobocopyMetadata.IsRecursive)] = "false",
+                    },
+                ],
+                ListCopiedFiles = true,
+                Sleep = _ => { },
+            };
+
+            copyArtifacts.Execute().ShouldBeTrue(buildEngine.GetConsoleLog());
+            copyArtifacts.NumFilesCopied.ShouldBe(2);
+
+            copyArtifacts.CopiedFiles.Length.ShouldBe(2);
+            copyArtifacts.CopiedFiles.All(
+                f => new[] { "foo.txt", "bar.txt" }.Any(
+                    fileName => f.ItemSpec == Path.Combine(destination.FullName, fileName)
+                                && f.GetMetadata("SourceFile") == Path.Combine(source.FullName, fileName))).ShouldBeTrue();
+        }
+
         private sealed class MockFileSystem : IFileSystem
         {
             private int _numCloneFileCalls;

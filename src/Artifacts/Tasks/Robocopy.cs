@@ -36,6 +36,7 @@ namespace Microsoft.Build.Artifacts.Tasks
         private readonly ConcurrentDictionary<string, Dictionary<string, FileInfo>> _destinationDirectoryFilesCopying = new (concurrencyLevel: 1, capacity: 31, Artifacts.FileSystem.PathComparer);  // Map for destination directories to track files being copied there in parallel portion of copy. Concurrent dictionaries to get TryAdd(), GetOrAdd().
         private readonly ActionBlock<CopyJob> _copyFileBlock;
         private readonly HashSet<string> _sourceFilesEncountered = new (Artifacts.FileSystem.PathComparer);  // Reusable scratch space
+        private readonly ConcurrentBag<ITaskItem> _copiedFiles = new ();
 
         private TimeSpan _retryWaitInMilliseconds = TimeSpan.Zero;
         private int _numFilesCopied;
@@ -77,6 +78,18 @@ namespace Microsoft.Build.Artifacts.Tasks
         /// </summary>
         [Required]
         public ITaskItem[] Sources { get; set; } = Array.Empty<ITaskItem>();
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to collect the list of copied files.
+        /// When false, the CopiedFiles output parameter will be empty.
+        /// </summary>
+        public bool ListCopiedFiles { get; set; }
+
+        /// <summary>
+        /// Gets the list of files that were successfully copied.
+        /// </summary>
+        [Output]
+        public ITaskItem[] CopiedFiles => _copiedFiles.ToArray();
 
         /// <summary>
         /// Gets or sets a value indicating whether to disable copy-on-write linking if the links are available.
@@ -266,6 +279,14 @@ namespace Microsoft.Build.Artifacts.Tasks
                         destFile.Attributes = FileAttributes.Normal;
                         destFile.LastWriteTimeUtc = sourceFile.LastWriteTimeUtc;
                         Log.LogMessage("{0} {1}{2} to {3}", cowLinked ? "Created copy-on-write link" : "Copied", originalSourcePath, replacementSourceFile is null ? string.Empty : $" (actually {replacementSourceFile.FullName})", destPath);
+
+                        if (ListCopiedFiles)
+                        {
+                            TaskItem copiedFile = new (destPath);
+                            copiedFile.SetMetadata("SourceFile", originalSourcePath);
+                            _copiedFiles.Add(copiedFile);
+                        }
+
                         Interlocked.Increment(ref _numFilesCopied);
                     }
                     else
