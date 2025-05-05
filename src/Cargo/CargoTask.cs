@@ -610,23 +610,6 @@ namespace Microsoft.Build.Cargo
             return exitCode == 0 && exitCodeLatest == 0;
         }
 
-        private string? GetNugetFeedUrl()
-        {
-            var rootNugetConfig = Path.Combine(RepoRoot, _nugetConfigFileName);
-            if (File.Exists(rootNugetConfig))
-            {
-                var doc = new System.Xml.Linq.XDocument();
-                doc = System.Xml.Linq.XDocument.Load(rootNugetConfig);
-                var nugetSource = doc.Descendants("packageSources")
-                    .FirstOrDefault()?.Descendants("add")
-                    .Where(e => e.Attribute("value")?.Value.StartsWith("https") ?? false)
-                    .Select(e => e.Attribute("value")?.Value).FirstOrDefault();
-                return nugetSource ?? string.Empty;
-            }
-
-            return null;
-        }
-
         private async Task<bool> VerifyInitHashAsync()
         {
             using var sha256 = SHA256.Create();
