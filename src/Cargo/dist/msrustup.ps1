@@ -66,7 +66,7 @@ $token = if (Test-Path env:MSRUSTUP_ACCESS_TOKEN) {
     "Basic $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes(":$($fromBase64)")))"
 }
 elseif ((Get-Command "azureauth" -ErrorAction SilentlyContinue) -ne $null) {
-   azureauth ado token --output headervalue
+    azureauth ado token --output headervalue
 } else {
     $version = '0.9.1'
     $script = "${env:TEMP}\install.ps1"
