@@ -26,7 +26,6 @@ namespace Microsoft.Build.Cargo
         private static readonly string _rustToolChainFileName = "rust-toolchain.toml";
         private static readonly string _cargoConfigFilePath = Path.Combine(".cargo", "config.toml");
         private static readonly string _cargoFileName = "cargo.toml";
-        private static readonly string _nugetConfigFileName = "nuget.config";
         private static readonly string _clearCacheCommand = "clearcargocache";
         private static readonly string _installCommand = "install";
         private static readonly string _fetchCommand = "fetch";
@@ -35,6 +34,7 @@ namespace Microsoft.Build.Cargo
         private static readonly string _checkSumVerifyUrl = "https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe.sha256";
         private string? _rustUpFile = Environment.GetEnvironmentVariable("MSRUSTUP_FILE");
         private bool _shouldCleanRustPath = false;
+        private bool _installationFailure = false;
         private bool _isMsRustUp = false;
         private string? _currentRustUpInitExeCheckSum;
         private List<string> _cargoRegistries = new ();
@@ -44,9 +44,10 @@ namespace Microsoft.Build.Cargo
         private string _rustUpInitBinary = string.Empty;
         private string _cargoHome = string.Empty;
         private string _rustUpHome = string.Empty;
-        private string _msRustUpHome = string.Empty;
         private string _cargoHomeBin = string.Empty;
+        private string _msRustUpHome = string.Empty;
         private string _msRustUpBinary = string.Empty;
+        private string _cargoSdkInstallationRoot = string.Empty;
         private Dictionary<string, string> _envVars = new ();
 
         private enum ExitCode
@@ -97,6 +98,11 @@ namespace Microsoft.Build.Cargo
         /// </summary>
         public string MsRustupAuthType { get; set; } = string.Empty;
 
+        /// <summary>
+        /// Gets or sets the Cargo output directory.
+        /// </summary>
+        public string CargoOutputDir { get; set; } = string.Empty;
+
         /// <inheritdoc/>
         public override bool Execute()
         {
@@ -105,17 +111,17 @@ namespace Microsoft.Build.Cargo
                 throw new InvalidOperationException("CargoInstallationRoot cannot be null or empty.");
             }
 
-            CargoInstallationRoot = Path.Combine(CargoInstallationRoot, "cargosdk");
-            _rustUpBinary = Path.Combine(CargoInstallationRoot, "cargohome", "bin", "rustup.exe");
-            _cargoPath = Path.Combine(CargoInstallationRoot, "cargohome", "bin", "cargo.exe");
-            _rustInstallPath = Path.Combine(CargoInstallationRoot, "rustinstall");
+            _cargoSdkInstallationRoot = Path.Combine(CargoInstallationRoot, "cargosdk");
+            _rustUpBinary = Path.Combine(_cargoSdkInstallationRoot, "cargohome", "bin", "rustup.exe");
+            _cargoPath = Path.Combine(_cargoSdkInstallationRoot, "cargohome", "bin", "cargo.exe");
+            _rustInstallPath = Path.Combine(_cargoSdkInstallationRoot, "rustinstall");
             _rustUpInitBinary = Path.Combine(_rustInstallPath, "rustup-init.exe");
-            _cargoHome = Path.Combine(CargoInstallationRoot, "cargohome");
-            _rustUpHome = Path.Combine(CargoInstallationRoot, "rustuphome");
-            _cargoHomeBin = Path.Combine(CargoInstallationRoot, "cargohome", "bin");
-            _msRustUpHome = Path.Combine(CargoInstallationRoot, "msrustuphome");
+            _cargoHome = Path.Combine(_cargoSdkInstallationRoot, "cargohome");
+            _cargoHomeBin = Path.Combine(_cargoHome, "bin");
+            _rustUpHome = Path.Combine(_cargoSdkInstallationRoot, "rustuphome");
+            _msRustUpHome = Path.Combine(_cargoSdkInstallationRoot, "msrustuphome");
             _msRustUpBinary = Path.Combine(_msRustUpHome, "msrustup.exe");
-            _envVars = new () { { "CARGO_HOME", _cargoHome }, { "RUSTUP_HOME", _rustUpHome }, { "RUSTUP_INIT_SKIP_PATH_CHECK", "yes" }, { "MSRUSTUP_HOME", _msRustUpHome } };
+            _envVars = new () { { "CARGO_HOME", _cargoHome }, { "RUSTUP_HOME", _rustUpHome }, { "MSRUSTUP_HOME", _msRustUpHome }, { "RUSTUP_INIT_SKIP_PATH_CHECK", "yes" } };
             return ExecuteAsync().GetAwaiter().GetResult();
         }
 
@@ -124,6 +130,22 @@ namespace Microsoft.Build.Cargo
             if (File.Exists(_rustUpInitBinary))
             {
                 File.Delete(_rustUpInitBinary);
+            }
+        }
+
+        private void CleanupFailedInstallation()
+        {
+            try
+            {
+                if (_cargoSdkInstallationRoot.Equals(Path.Combine(CargoInstallationRoot, "cargosdk"), StringComparison.InvariantCultureIgnoreCase) && Directory.Exists(_cargoSdkInstallationRoot))
+                {
+                    Log.LogMessage(MessageImportance.Normal, $"Cleaning up cargosdk directory at {_cargoSdkInstallationRoot}");
+                    Directory.Delete(_cargoSdkInstallationRoot, true);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.LogError($"Failed to clean up failed installation: {ex.Message}. Please manually delete directory: {_cargoSdkInstallationRoot}.");
             }
         }
 
@@ -136,39 +158,30 @@ namespace Microsoft.Build.Cargo
 
             if (Command.Equals(_installCommand, StringComparison.InvariantCultureIgnoreCase))
             {
-                Debugger.Launch();
                 return await DownloadAndInstallRust();
             }
             else if (Command.Equals(_fetchCommand))
             {
-                Debugger.Launch();
                 if (_isMsRustUp)
                 {
                     if (string.IsNullOrEmpty(_rustUpFile) || !File.Exists(_rustUpFile))
                     {
                         Log.LogMessage($"MSRUSTUP_FILE environment variable is not set or the file does not exist. Assuming local build.");
-                        _envVars.Add("ADO_CREDENTIAL_PROVIDER", MsRustupAuthType);
+                        AddOrUpdateEnvVar("ADO_CREDENTIAL_PROVIDER", MsRustupAuthType);
                     }
                     else
                     {
                         try
                         {
                             var val = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(File.ReadAllText(_rustUpFile)));
-
-                            if (!_envVars.ContainsKey("CARGO_REGISTRY_GLOBAL_CREDENTIAL_PROVIDERS"))
-                            {
-                                _envVars.Add("CARGO_REGISTRY_GLOBAL_CREDENTIAL_PROVIDERS", "cargo:token");
-                            }
+                            AddOrUpdateEnvVar("CARGO_REGISTRY_GLOBAL_CREDENTIAL_PROVIDERS", "cargo:token");
 
                             foreach (var registry in GetRegistries(Path.Combine(RepoRoot, _cargoConfigFilePath)))
                             {
-                                var registryName = registry.Trim().ToUpper();
+                                var registryName = registry.Key.Trim().ToUpper();
                                 _cargoRegistries.Add(registryName);
                                 var tokenName = $"CARGO_REGISTRIES_{registryName}_TOKEN";
-                                if (!_envVars.ContainsKey(tokenName))
-                                {
-                                    _envVars.Add(tokenName, $"Bearer {val}");
-                                }
+                                AddOrUpdateEnvVar(tokenName, $"Bearer {val}");
                             }
                         }
                         catch (FormatException ex)
@@ -212,12 +225,25 @@ namespace Microsoft.Build.Cargo
 
         private async Task<ExitCode> CargoRunCommandAsync(string command, string args)
         {
+            if (!string.IsNullOrEmpty(CargoOutputDir))
+            {
+                if (_envVars.ContainsKey("CARGO_TARGET_DIR"))
+                {
+                    Log.LogWarning("'CARGO_TARGET_DIR' already exists in environment variables and will be overwritten.");
+                }
+
+                AddOrUpdateEnvVar("CARGO_TARGET_DIR", CargoOutputDir);
+            }
+            else
+            {
+                Log.LogMessage("'CargoOutputDir' is null or empty. Output directory will be the default Cargo output directory.");
+            }
+
             Log.LogMessage(MessageImportance.Normal, $"Executing cargo command: {command} {args}");
             if (_isMsRustUp)
             {
-                Debugger.Launch();
                 var customCargo = GetCustomToolChainCargoPath();
-                _envVars.Add("PATH", customCargo + ";" + Environment.GetEnvironmentVariable("PATH") !);
+                AddOrUpdateEnvVar("PATH", customCargo + ";" + Environment.GetEnvironmentVariable("PATH") !);
 
                 if (!string.IsNullOrEmpty(customCargo))
                 {
@@ -238,18 +264,47 @@ namespace Microsoft.Build.Cargo
 
         private async Task<bool> DownloadAndInstallRust()
         {
-            bool downloadSuccess = await DownloadRustUpAsync();
-            bool installSuccess = false;
-            if (downloadSuccess)
+            try
             {
-                installSuccess = await InstallRust();
-                if (installSuccess)
+                bool downloadSuccess = await DownloadRustUpAsync();
+                bool installSuccess = false;
+                if (downloadSuccess)
                 {
-                    _shouldCleanRustPath = true;
+                    installSuccess = await InstallRust();
+                    if (installSuccess)
+                    {
+                        _shouldCleanRustPath = true;
+                    }
+                }
+
+                if (!downloadSuccess || !installSuccess)
+                {
+                    _installationFailure = true;
+                    Log.LogError("Rust installation failed. Check the build log for details.");
+                    return false;
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.LogErrorFromException(ex, showStackTrace: true);
+                _installationFailure = true;
+                return false;
+            }
+            finally
+            {
+                if (_installationFailure)
+                {
+                    Log.LogError("Cleaning up failed installation.");
+                    CleanupFailedInstallation();
+                }
+
+                if (_shouldCleanRustPath)
+                {
+                    CleanupRustPath();
                 }
             }
-
-            return true;
         }
 
         private async Task<bool> FetchCratesAsync(string project)
@@ -257,7 +312,7 @@ namespace Microsoft.Build.Cargo
             if (_isMsRustUp)
             {
                 var customCargo = GetCustomToolChainCargoPath();
-                _envVars.Add("PATH", customCargo + ";" + Environment.GetEnvironmentVariable("PATH") !);
+                AddOrUpdateEnvVar("PATH", customCargo + ";" + Environment.GetEnvironmentVariable("PATH") !);
             }
 
             var stopwatch = new Stopwatch();
@@ -353,13 +408,6 @@ namespace Microsoft.Build.Cargo
                     {
                         Log.LogErrorFromException(ex, showStackTrace: true);
                     }
-                }
-            }
-            finally
-            {
-                if (_shouldCleanRustPath)
-                {
-                    CleanupRustPath();
                 }
             }
         }
@@ -518,20 +566,23 @@ namespace Microsoft.Build.Cargo
                 {
                     var feedUrls = GetRegistries(Path.Combine(RepoRoot, _cargoConfigFilePath));
 
-                    var feedUrl = feedUrls.FirstOrDefault();
-                    if (feedUrl != null)
+                    KeyValuePair<string, string>? feedUrl = feedUrls.FirstOrDefault();
+                    if (feedUrl.HasValue)
                     {
-                        string transformedFeedUrl = feedUrl ?? string.Empty;
-                        if (!string.IsNullOrEmpty(feedUrl))
+                        string transformedFeedUrl = string.Empty;
+                        if (string.IsNullOrEmpty(feedUrl.Value.Value))
                         {
-                            var match = Regex.Match(feedUrl, @"^(?:sparse\+)?(.*?)/Cargo/index/?$", RegexOptions.IgnoreCase);
-                            if (match.Success)
-                            {
-                                transformedFeedUrl = $"{match.Groups[1].Value}/nuget/v3/index.json";
-                            }
+                            Log.LogWarning("No valid nuget feed URL found in the cargo config file.");
+                            return false;
                         }
 
-                        _envVars.Add("MSRUSTUP_FEED_URL", transformedFeedUrl);
+                        var match = Regex.Match(feedUrl.Value.Value, @"^(?:sparse\+)?(.*?)/Cargo/index/?$", RegexOptions.IgnoreCase);
+                        if (match.Success)
+                        {
+                            transformedFeedUrl = $"{match.Groups[1].Value}/nuget/v3/index.json";
+                        }
+
+                        AddOrUpdateEnvVar("MSRUSTUP_FEED_URL", transformedFeedUrl);
                     }
                     else
                     {
@@ -548,6 +599,11 @@ namespace Microsoft.Build.Cargo
                 if (exitCode == ExitCode.Succeeded)
                 {
                     Log.LogMessage(MessageImportance.Normal, "Installed Rust successfully");
+                }
+                else
+                {
+                    Log.LogError("Rust failed to install successfully");
+                    return false;
                 }
 
                 if (useMsRustUp)
@@ -579,20 +635,12 @@ namespace Microsoft.Build.Cargo
                 if (string.IsNullOrEmpty(_rustUpFile) || !File.Exists(_rustUpFile))
                 {
                     Log.LogMessage($"MSRUSTUP_FILE environment variable is not set or the file does not exist. Assuming local build.");
-                    _envVars.Add("ADO_CREDENTIAL_PROVIDER", MsRustupAuthType);
+                    AddOrUpdateEnvVar("ADO_CREDENTIAL_PROVIDER", MsRustupAuthType);
                 }
                 else
                 {
                     var val = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(File.ReadAllText(_rustUpFile)));
-                    if (!_envVars.ContainsKey("MSRUSTUP_PAT"))
-                    {
-                        _envVars.Add("MSRUSTUP_PAT", val);
-                    }
-                }
-
-                if (!_envVars.ContainsKey("MSRUSTUP_HOME"))
-                {
-                    _envVars.Add("MSRUSTUP_HOME", _cargoHome);
+                    AddOrUpdateEnvVar("MSRUSTUP_PAT", val);
                 }
 
                 exitCodeLatest = await ExecuteProcessAsync(rustUpBinary, $"toolchain install {GetToolChainVersion()}", StartupProj, _envVars);
@@ -600,6 +648,11 @@ namespace Microsoft.Build.Cargo
                 if (exitCodeLatest == ExitCode.Succeeded)
                 {
                     Log.LogMessage(MessageImportance.Normal, "Installed custom toolchain successfully");
+                }
+                else
+                {
+                    Log.LogError("Custom toolchain failed to install successfully");
+                    return false;
                 }
             }
             else
@@ -688,12 +741,13 @@ namespace Microsoft.Build.Cargo
             return _currentRustUpInitExeCheckSum;
         }
 
-        private List<string> GetRegistries(string configPath)
+        private Dictionary<string, string> GetRegistries(string configPath)
         {
             string config = File.ReadAllText(configPath);
-            Regex regex = new (@"(?<=\[registries\]).*?(?=\[|#)", RegexOptions.Singleline);
+            Regex regex = new (@"(?<=\[registries\])(.*?)(?=^\[|\Z)", RegexOptions.Singleline | RegexOptions.Multiline);
+            Regex regexBetweenQuotes = new (@"""([^""]*)""");
             var matches = regex.Matches(config);
-            List<string> registries = new ();
+            Dictionary<string, string> registries = new ();
             foreach (Match match in matches)
             {
                 if (string.IsNullOrWhiteSpace(match.Value) || !match.Value.Contains('='))
@@ -702,12 +756,40 @@ namespace Microsoft.Build.Cargo
                 }
 
                 var registryNames = match.Value.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
-                                               .Select(line => line.Split('=')[0].Trim())
-                                               .ToList();
-                registries.AddRange(registryNames);
+                                               .Where(line => !line.Trim().StartsWith("#")) // Ignore lines starting with #
+                                               .Select(line => line.Split('='))
+                                               .Where(parts => parts.Length > 2) // Ensure we have enough parts
+                                               .Select(line => new KeyValuePair<string, string?>(line[0].Trim(), regexBetweenQuotes.Match(line[2].Trim())?.Groups[1].Value ?? null))
+                                               .Where(kv => kv.Value != null);
+                foreach (var registry in registryNames)
+                {
+                    if (!registries.ContainsKey(registry.Key))
+                    {
+                        registries.Add(registry.Key, registry.Value!);
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrEmpty(registry.Value))
+                        {
+                            registries[registry.Key] = registry.Value!;
+                        }
+                    }
+                }
             }
 
             return registries;
+        }
+
+        private void AddOrUpdateEnvVar(string key, string value)
+        {
+            if (_envVars.ContainsKey(key))
+            {
+                _envVars[key] = value;
+            }
+            else
+            {
+                _envVars.Add(key, value);
+            }
         }
     }
 }
