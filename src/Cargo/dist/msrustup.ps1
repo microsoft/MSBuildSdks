@@ -66,10 +66,16 @@ $token = if (Test-Path env:MSRUSTUP_ACCESS_TOKEN) {
     "Basic $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes(":$($fromBase64)")))"
 }
 elseif ((Get-Command "azureauth" -ErrorAction SilentlyContinue) -ne $null) {
-    azureauth ado token --output headervalue
+   azureauth ado token --output headervalue
 } else {
-    Write-Error "MSRUSTUP_ACCESS_TOKEN, MSRUSTUP_FILE or MSRUSTUP_PAT must be set or azureauth must be present."
-    exit 1
+    $version = '0.9.1'
+    $script = "${env:TEMP}\install.ps1"
+    $url = "https://raw.githubusercontent.com/AzureAD/microsoft-authentication-cli/$version/install/install.ps1"
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    Invoke-WebRequest $url -OutFile $script; if ($?) { &$script | Out-Null }; if ($?) { rm $script }
+    
+    $path = "$env:LOCALAPPDATA\Programs\AzureAuth\$version\azureauth.exe"
+    & $path ado token --output headervalue | Out-String
 }
 
 $h = @{'Authorization' = "$token"}

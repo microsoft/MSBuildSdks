@@ -44,6 +44,7 @@ namespace Microsoft.Build.Cargo
         private string _rustUpInitBinary = string.Empty;
         private string _cargoHome = string.Empty;
         private string _rustUpHome = string.Empty;
+        private string _msRustUpHome = string.Empty;
         private string _cargoHomeBin = string.Empty;
         private string _msRustUpBinary = string.Empty;
         private Dictionary<string, string> _envVars = new ();
@@ -104,6 +105,7 @@ namespace Microsoft.Build.Cargo
                 throw new InvalidOperationException("CargoInstallationRoot cannot be null or empty.");
             }
 
+            CargoInstallationRoot = Path.Combine(CargoInstallationRoot, "cargosdk");
             _rustUpBinary = Path.Combine(CargoInstallationRoot, "cargohome", "bin", "rustup.exe");
             _cargoPath = Path.Combine(CargoInstallationRoot, "cargohome", "bin", "cargo.exe");
             _rustInstallPath = Path.Combine(CargoInstallationRoot, "rustinstall");
@@ -111,8 +113,9 @@ namespace Microsoft.Build.Cargo
             _cargoHome = Path.Combine(CargoInstallationRoot, "cargohome");
             _rustUpHome = Path.Combine(CargoInstallationRoot, "rustuphome");
             _cargoHomeBin = Path.Combine(CargoInstallationRoot, "cargohome", "bin");
-            _msRustUpBinary = Path.Combine(CargoInstallationRoot, "cargohome", "bin", "msrustup.exe");
-            _envVars = new () { { "CARGO_HOME", _cargoHome }, { "RUSTUP_HOME", _rustUpHome } };
+            _msRustUpHome = Path.Combine(CargoInstallationRoot, "msrustuphome");
+            _msRustUpBinary = Path.Combine(_msRustUpHome, "msrustup.exe");
+            _envVars = new () { { "CARGO_HOME", _cargoHome }, { "RUSTUP_HOME", _rustUpHome }, { "RUSTUP_INIT_SKIP_PATH_CHECK", "yes" }, { "MSRUSTUP_HOME", _msRustUpHome } };
             return ExecuteAsync().GetAwaiter().GetResult();
         }
 
@@ -133,10 +136,12 @@ namespace Microsoft.Build.Cargo
 
             if (Command.Equals(_installCommand, StringComparison.InvariantCultureIgnoreCase))
             {
+                Debugger.Launch();
                 return await DownloadAndInstallRust();
             }
             else if (Command.Equals(_fetchCommand))
             {
+                Debugger.Launch();
                 if (_isMsRustUp)
                 {
                     if (string.IsNullOrEmpty(_rustUpFile) || !File.Exists(_rustUpFile))
@@ -210,8 +215,11 @@ namespace Microsoft.Build.Cargo
             Log.LogMessage(MessageImportance.Normal, $"Executing cargo command: {command} {args}");
             if (_isMsRustUp)
             {
-                var customCargoBin = GetCustomToolChainCargoPath();
-                if (!string.IsNullOrEmpty(customCargoBin))
+                Debugger.Launch();
+                var customCargo = GetCustomToolChainCargoPath();
+                _envVars.Add("PATH", customCargo + ";" + Environment.GetEnvironmentVariable("PATH") !);
+
+                if (!string.IsNullOrEmpty(customCargo))
                 {
                     bool isDebugConfiguration = true;
                     if (!Configuration.Equals("debug", StringComparison.InvariantCultureIgnoreCase))
@@ -219,7 +227,7 @@ namespace Microsoft.Build.Cargo
                         isDebugConfiguration = false;
                     }
 
-                    return await ExecuteProcessAsync(customCargoBin!, $"{command} {args}  --offline {(isDebugConfiguration ? string.Empty : "--" + Configuration.ToLowerInvariant())} --config {Path.Combine(RepoRoot, _cargoConfigFilePath)}", ".", _envVars);
+                    return await ExecuteProcessAsync(GetCustomToolChainCargoBin() !, $"{command} {args}  --offline {(isDebugConfiguration ? string.Empty : "--" + Configuration.ToLowerInvariant())} --config {Path.Combine(RepoRoot, _cargoConfigFilePath)}", ".", _envVars);
                 }
 
                 return ExitCode.Failed;
@@ -246,6 +254,12 @@ namespace Microsoft.Build.Cargo
 
         private async Task<bool> FetchCratesAsync(string project)
         {
+            if (_isMsRustUp)
+            {
+                var customCargo = GetCustomToolChainCargoPath();
+                _envVars.Add("PATH", customCargo + ";" + Environment.GetEnvironmentVariable("PATH") !);
+            }
+
             var stopwatch = new Stopwatch();
             try
             {
@@ -363,7 +377,7 @@ namespace Microsoft.Build.Cargo
 
                 if (File.Exists(Path.Combine(RepoRoot, _rustToolChainFileName)))
                 {
-                    var customCargoBin = GetCustomToolChainCargoPath();
+                    var customCargoBin = GetCustomToolChainCargoBin();
                     if (!string.IsNullOrEmpty(customCargoBin))
                     {
                         exitCode = await ExecuteProcessAsync(customCargoBin!, args, workingDir, _envVars);
@@ -408,6 +422,10 @@ namespace Microsoft.Build.Cargo
                             if (!info.EnvironmentVariables.ContainsKey(envVar.Key))
                             {
                                 info.EnvironmentVariables.Add(envVar.Key, envVar.Value);
+                            }
+                            else
+                            {
+                                info.EnvironmentVariables[envVar.Key] = envVar.Value;
                             }
                         }
                     }
@@ -482,7 +500,7 @@ namespace Microsoft.Build.Cargo
             var rootToolchainPath = Path.Combine(StartupProj, _rustToolChainFileName);
             var useMsRustUp = File.Exists(rootToolchainPath) && IsMSToolChain(rootToolchainPath);
             var rustUpBinary = useMsRustUp ? _msRustUpBinary : _rustUpBinary;
-            bool msRustupToolChainExists = useMsRustUp && !string.IsNullOrEmpty(GetCustomToolChainCargoPath());
+            bool msRustupToolChainExists = useMsRustUp && !string.IsNullOrEmpty(GetCustomToolChainCargoBin());
             bool cargoPathAndRustPathsExists = Directory.Exists(_cargoHome) && Directory.Exists(_rustUpHome);
             bool cargoBinaryExists = File.Exists(_cargoPath);
 
@@ -498,7 +516,28 @@ namespace Microsoft.Build.Cargo
             {
                 if (!_envVars.ContainsKey("MSRUSTUP_FEED_URL"))
                 {
-                    _envVars.Add("MSRUSTUP_FEED_URL", GetNugetFeedUrl() ?? string.Empty);
+                    var feedUrls = GetRegistries(Path.Combine(RepoRoot, _cargoConfigFilePath));
+
+                    var feedUrl = feedUrls.FirstOrDefault();
+                    if (feedUrl != null)
+                    {
+                        string transformedFeedUrl = feedUrl ?? string.Empty;
+                        if (!string.IsNullOrEmpty(feedUrl))
+                        {
+                            var match = Regex.Match(feedUrl, @"^(?:sparse\+)?(.*?)/Cargo/index/?$", RegexOptions.IgnoreCase);
+                            if (match.Success)
+                            {
+                                transformedFeedUrl = $"{match.Groups[1].Value}/nuget/v3/index.json";
+                            }
+                        }
+
+                        _envVars.Add("MSRUSTUP_FEED_URL", transformedFeedUrl);
+                    }
+                    else
+                    {
+                        Log.LogWarning("No valid nuget feed URL found in the cargo config file.");
+                        return false;
+                    }
                 }
             }
 
@@ -506,7 +545,7 @@ namespace Microsoft.Build.Cargo
             {
                 Log.LogMessage(MessageImportance.Normal, "Installing Rust");
                 exitCode = await ExecuteProcessAsync(_rustUpInitBinary, "-y", ".", _envVars);
-                if (exitCode != ExitCode.Succeeded)
+                if (exitCode == ExitCode.Succeeded)
                 {
                     Log.LogMessage(MessageImportance.Normal, "Installed Rust successfully");
                 }
@@ -519,7 +558,7 @@ namespace Microsoft.Build.Cargo
                     {
                         Log.LogMessage(MessageImportance.Normal, "Installing MSRustup");
                         string distRootPath = Path.Combine(workingDirPart!, "content\\dist");
-                        var installationExitCode = await ExecuteProcessAsync("powershell.exe", $".\\msrustup.ps1 '{_cargoHomeBin}'", distRootPath, _envVars);
+                        var installationExitCode = await ExecuteProcessAsync("powershell.exe", $".\\msrustup.ps1 '{_msRustUpHome}'", distRootPath, _envVars);
                         if (installationExitCode == ExitCode.Succeeded)
                         {
                             Log.LogMessage(MessageImportance.Normal, "Installed MSRustup successfully");
@@ -624,16 +663,28 @@ namespace Microsoft.Build.Cargo
             if (!string.IsNullOrEmpty(toolchainVersion))
             {
                 Log.LogMessage(MessageImportance.Normal, $"Using toolchain version: {toolchainVersion}");
-                var toolchainPath = Path.Combine(_cargoHome, "toolchains", toolchainVersion);
+                var toolchainPath = Path.Combine(_msRustUpHome, "toolchains", toolchainVersion);
                 if (!Directory.Exists(toolchainPath))
                 {
                     return null;
                 }
 
-                return Path.Combine(toolchainPath, "bin\\cargo.exe");
+                return Path.Combine(toolchainPath, "bin");
             }
 
             return null;
+        }
+
+        private string? GetCustomToolChainCargoBin()
+        {
+            var path = GetCustomToolChainCargoPath();
+
+            if (path == null)
+            {
+                return null;
+            }
+
+            return Path.Combine(path, "cargo.exe");
         }
 
         private async Task<string> GetHashAsync()
