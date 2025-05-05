@@ -79,12 +79,16 @@ elseif ((Get-Command "azureauth" -ErrorAction SilentlyContinue) -ne $null) {
 }
 
 $h = @{'Authorization' = "$token"}
-
-# Download latest NuGet package
-$response = Invoke-RestMethod -Headers $h $feed
-$base = ($response.resources | Where-Object { $_.'@type' -eq 'PackageBaseAddress/3.0.0' }).'@id'
-$version = (Invoke-RestMethod -Headers $h "$base/$package/index.json").versions[0]
-Invoke-WebRequest -Headers $h "${base}${package}/$version/$package.$version.nupkg" -OutFile 'msrustup.zip'
+try {
+    # Download latest NuGet package
+    $response = Invoke-RestMethod -Headers $h $feed
+    $base = ($response.resources | Where-Object { $_.'@type' -eq 'PackageBaseAddress/3.0.0' }).'@id'
+    $version = (Invoke-RestMethod -Headers $h "$base/$package/index.json").versions[0]
+    Invoke-WebRequest -Headers $h "${base}${package}/$version/$package.$version.nupkg" -OutFile 'msrustup.zip'
+} catch {
+    Write-Error "Failed to download msrustup package. Please check your access token and feed URL."
+    exit 1
+}
 
 try {
     # Extract archive

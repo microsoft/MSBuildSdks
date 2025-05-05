@@ -159,7 +159,7 @@ namespace Microsoft.Build.Cargo
 
                             foreach (var registry in GetRegistries(Path.Combine(RepoRoot, _cargoConfigFilePath)))
                             {
-                                var registryName = registry.Trim().ToUpper();
+                                var registryName = registry.Key.Trim().ToUpper();
                                 _cargoRegistries.Add(registryName);
                                 var tokenName = $"CARGO_REGISTRIES_{registryName}_TOKEN";
                                 if (!_envVars.ContainsKey(tokenName))
@@ -512,19 +512,23 @@ namespace Microsoft.Build.Cargo
             {
                 if (!_envVars.ContainsKey("MSRUSTUP_FEED_URL"))
                 {
+                    Debugger.Launch();
                     var feedUrls = GetRegistries(Path.Combine(RepoRoot, _cargoConfigFilePath));
 
-                    var feedUrl = feedUrls.FirstOrDefault();
-                    if (feedUrl != null)
+                    KeyValuePair<string, string>? feedUrl = feedUrls.FirstOrDefault();
+                    if (feedUrl.HasValue)
                     {
-                        string transformedFeedUrl = feedUrl ?? string.Empty;
-                        if (!string.IsNullOrEmpty(feedUrl))
+                        string transformedFeedUrl = string.Empty;
+                        if (string.IsNullOrEmpty(feedUrl.Value.Value))
                         {
-                            var match = Regex.Match(feedUrl, @"^(?:sparse\+)?(.*?)/Cargo/index/?$", RegexOptions.IgnoreCase);
-                            if (match.Success)
-                            {
-                                transformedFeedUrl = $"{match.Groups[1].Value}/nuget/v3/index.json";
-                            }
+                            Log.LogWarning("No valid nuget feed URL found in the cargo config file.");
+                            return false;
+                        }
+
+                        var match = Regex.Match(feedUrl.Value.Value, @"^(?:sparse\+)?(.*?)/Cargo/index/?$", RegexOptions.IgnoreCase);
+                        if (match.Success)
+                        {
+                            transformedFeedUrl = $"{match.Groups[1].Value}/nuget/v3/index.json";
                         }
 
                         _envVars.Add("MSRUSTUP_FEED_URL", transformedFeedUrl);
@@ -684,12 +688,13 @@ namespace Microsoft.Build.Cargo
             return _currentRustUpInitExeCheckSum;
         }
 
-        private List<string> GetRegistries(string configPath)
+        private Dictionary<string, string> GetRegistries(string configPath)
         {
             string config = File.ReadAllText(configPath);
-            Regex regex = new (@"(?<=\[registries\]).*?(?=\[|#)", RegexOptions.Singleline);
+            Regex regex = new (@"(?<=\[registries\])(.*?)(?=^\[|\Z)", RegexOptions.Singleline | RegexOptions.Multiline);
+            Regex regexBetweenQuotes = new (@"""([^""]*)""");
             var matches = regex.Matches(config);
-            List<string> registries = new ();
+            Dictionary<string, string> registries = new ();
             foreach (Match match in matches)
             {
                 if (string.IsNullOrWhiteSpace(match.Value) || !match.Value.Contains('='))
@@ -698,9 +703,15 @@ namespace Microsoft.Build.Cargo
                 }
 
                 var registryNames = match.Value.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
-                                               .Select(line => line.Split('=')[0].Trim())
-                                               .ToList();
-                registries.AddRange(registryNames);
+                                               .Where(line => !line.Trim().StartsWith("#")) // Ignore lines starting with #
+                                               .Select(line => line.Split('='))
+                                               .Where(parts => parts.Length > 2) // Ensure we have enough parts
+                                               .Select(line => new KeyValuePair<string, string?>(line[0].Trim(), regexBetweenQuotes.Match(line[2].Trim())?.Groups[1].Value ?? null))
+                                               .Where(kv => kv.Value != null);
+                foreach (var registry in registryNames)
+                {
+                    registries.Add(registry.Key, registry.Value!);
+                }
             }
 
             return registries;
