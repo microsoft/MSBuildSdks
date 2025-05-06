@@ -512,7 +512,6 @@ namespace Microsoft.Build.Cargo
             {
                 if (!_envVars.ContainsKey("MSRUSTUP_FEED_URL"))
                 {
-                    Debugger.Launch();
                     var feedUrls = GetRegistries(Path.Combine(RepoRoot, _cargoConfigFilePath));
 
                     KeyValuePair<string, string>? feedUrl = feedUrls.FirstOrDefault();
