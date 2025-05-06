@@ -820,11 +820,12 @@ public sealed class DownloadUniversalPackages : Task
 
         commandLineBuilder.AppendSwitchIfNotNull("--package-list-json ", packageListJsonPath);
 
+        // ArtifactTool writes debugging information to stderr.
         int exitCode = ProcessHelper.Execute(
             artifactToolPath,
             commandLineBuilder.ToString(),
             processStdOut: message => Log.LogMessage(MessageImportance.Low, message),
-            processStdErr: message => Log.LogError(message));
+            processStdErr: message => Log.LogMessage(MessageImportance.Low, message));
         if (exitCode != 0)
         {
             Log.LogError($"ArtifactTool failed with exit code: {exitCode}.");
