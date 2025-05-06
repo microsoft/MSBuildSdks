@@ -49,12 +49,6 @@ public sealed class DownloadUniversalPackages : Task
     public string AccountName { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the path to the artifacts credential provider.
-    /// </summary>
-    [Required]
-    public string ArtifactsCredentialProviderPath { get; set; } = string.Empty;
-
-    /// <summary>
     /// Gets or sets the base path.
     /// </summary>
     [Required]
@@ -71,6 +65,11 @@ public sealed class DownloadUniversalPackages : Task
     /// </summary>
     [Required]
     public string PackageListJsonPath { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the path to the artifacts credential provider.
+    /// </summary>
+    public string? ArtifactsCredentialProviderPath { get; set; }
 
     /// <summary>
     /// Gets or sets the an override to the ArtifactTool executable path.
@@ -308,7 +307,7 @@ public sealed class DownloadUniversalPackages : Task
 
             if (Directory.Exists(ArtifactToolPath))
             {
-                return GetArtifactToolExePath(ArtifactsCredentialProviderPath);
+                return GetArtifactToolExePath(ArtifactToolPath!);
             }
 
             Log.LogError($"ArtifactTool path '{ArtifactToolPath}' does not exist.");
@@ -579,7 +578,7 @@ public sealed class DownloadUniversalPackages : Task
 
             if (Directory.Exists(ArtifactsCredentialProviderPath))
             {
-                return GetArtifactsCredentialProviderExePath(ArtifactsCredentialProviderPath);
+                return GetArtifactsCredentialProviderExePath(ArtifactsCredentialProviderPath!);
             }
 
             Log.LogError($"Credential provider path '{ArtifactsCredentialProviderPath}' does not exist.");
