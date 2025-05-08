@@ -86,6 +86,7 @@
     <RepoRoot Condition="'$(RepoRoot)' == ''">$(EnlistmentRoot)</RepoRoot>
     <CargoInstallationRoot Condition="'$(CargoInstallationRoot)' == ''"></CargoInstallationRoot>
     <MsRustupAuthType Condition="'$(MsRustupAuthType)' == ''">AzureAuth</MsRustupAuthType>
+    <CargoOutputDir Condition="'$(CargoOutputDir)' == ''">$(MSBuildProjectDirectory)\bin</CargoOutputDir>
   </PropertyGroup>
   <ItemGroup>
     <None Include="**\*.rs" />

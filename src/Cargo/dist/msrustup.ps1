@@ -68,17 +68,27 @@ $token = if (Test-Path env:MSRUSTUP_ACCESS_TOKEN) {
 elseif ((Get-Command "azureauth" -ErrorAction SilentlyContinue) -ne $null) {
     azureauth ado token --output headervalue
 } else {
-    Write-Error "MSRUSTUP_ACCESS_TOKEN, MSRUSTUP_FILE or MSRUSTUP_PAT must be set or azureauth must be present."
-    exit 1
+    $version = '0.9.1'
+    $script = "${env:TEMP}\install.ps1"
+    $url = "https://raw.githubusercontent.com/AzureAD/microsoft-authentication-cli/$version/install/install.ps1"
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    Invoke-WebRequest $url -OutFile $script; if ($?) { &$script | Out-Null }; if ($?) { rm $script }
+    
+    $path = "$env:LOCALAPPDATA\Programs\AzureAuth\$version\azureauth.exe"
+    & $path ado token --output headervalue | Out-String
 }
 
 $h = @{'Authorization' = "$token"}
-
-# Download latest NuGet package
-$response = Invoke-RestMethod -Headers $h $feed
-$base = ($response.resources | Where-Object { $_.'@type' -eq 'PackageBaseAddress/3.0.0' }).'@id'
-$version = (Invoke-RestMethod -Headers $h "$base/$package/index.json").versions[0]
-Invoke-WebRequest -Headers $h "${base}${package}/$version/$package.$version.nupkg" -OutFile 'msrustup.zip'
+try {
+    # Download latest NuGet package
+    $response = Invoke-RestMethod -Headers $h $feed
+    $base = ($response.resources | Where-Object { $_.'@type' -eq 'PackageBaseAddress/3.0.0' }).'@id'
+    $version = (Invoke-RestMethod -Headers $h "$base/$package/index.json").versions[0]
+    Invoke-WebRequest -Headers $h "${base}${package}/$version/$package.$version.nupkg" -OutFile 'msrustup.zip'
+} catch {
+    Write-Error "Failed to download msrustup package. Please check your access token and feed URL."
+    exit 1
+}
 
 try {
     # Extract archive
