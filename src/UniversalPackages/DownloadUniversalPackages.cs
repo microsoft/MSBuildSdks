@@ -629,7 +629,7 @@ public sealed class DownloadUniversalPackages : Task
         string json = webClient.DownloadString(ReleaseInfoUrl);
 #else
         using HttpClient httpClient = new HttpClient();
-        httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Microsoft.Build.UniversalPackages"));
+        httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "Microsoft.Build.UniversalPackages");
         string json = httpClient.GetStringAsync(ReleaseInfoUrl).GetAwaiter().GetResult();
 #endif
 
