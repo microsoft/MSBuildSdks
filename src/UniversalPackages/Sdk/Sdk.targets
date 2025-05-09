@@ -30,7 +30,7 @@
     <ArtifactsCredentialProviderPath Condition="'$(ArtifactsCredentialProviderPath)' == '' and !$([System.OperatingSystem]::IsWindows()) and Exists('$(HOME)/.nuget/plugins/netcore/CredentialProvider.Microsoft/CredentialProvider.Microsoft')">$(HOME)/.nuget/plugins/netcore/CredentialProvider.Microsoft/CredentialProvider.Microsoft</ArtifactsCredentialProviderPath>
 
     <!-- Define a default root path for packages -->
-    <UniversalPackagesRootPath Condition="'$(UniversalPackagesPathBase)' == ''">packages</UniversalPackagesRootPath>
+    <UniversalPackagesRootPath Condition="'$(UniversalPackagesRootPath)' == ''">packages</UniversalPackagesRootPath>
 
     <!-- Path to generate the json file to use for the batch download command -->
     <UniversalPackageListJsonPath Condition="'$(UniversalPackageListJsonPath)' == ''">$(BaseIntermediateOutputPath)\universal-packages.json</UniversalPackageListJsonPath>
