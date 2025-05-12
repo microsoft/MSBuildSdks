@@ -759,6 +759,8 @@ public sealed class DownloadUniversalPackages : Task
             else
             {
                 // There is no built-in support for extracting tar.gz files, so fall back to the tar command.
+                // Note: the tar command requires that the destination directory already exist.
+                Directory.CreateDirectory(archiveExtractPath);
                 int exitCode = ProcessHelper.Execute(
                     "/bin/bash",
                     $"-c \"tar -xzf \\\"{archiveDownloadPath}\\\" -C \\\"{archiveExtractPath}\\\"\"",
