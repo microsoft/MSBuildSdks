@@ -32,8 +32,6 @@ public sealed class DownloadUniversalPackages : Task
 {
     private const string PackageItemName = "UniversalPackage";
 
-    private const string CredentialProviderRelativePath = @"plugins\netcore\CredentialProvider.Microsoft\CredentialProvider.Microsoft.exe";
-
     private const string PatVarNameBase = "ArtifactToolPat_";
 
     /// <summary>
@@ -567,10 +565,12 @@ public sealed class DownloadUniversalPackages : Task
 
     private string? GetArtifactsCredentialProviderPath()
     {
-        string credentialProviderDir;
+        string exeName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            ? "CredentialProvider.Microsoft.exe"
+            : "CredentialProvider.Microsoft";
         if (!string.IsNullOrWhiteSpace(ArtifactsCredentialProviderPath))
         {
-            // Allow the user to specify either the exe or the root dir
+            // Allow the user to specify either the exe, a dir with the exe, or the root dir
             if (File.Exists(ArtifactsCredentialProviderPath))
             {
                 return ArtifactsCredentialProviderPath;
@@ -578,7 +578,20 @@ public sealed class DownloadUniversalPackages : Task
 
             if (Directory.Exists(ArtifactsCredentialProviderPath))
             {
-                return GetArtifactsCredentialProviderExePath(ArtifactsCredentialProviderPath!);
+                string possibleExePath = Path.Combine(ArtifactsCredentialProviderPath, exeName);
+                if (File.Exists(possibleExePath))
+                {
+                    return possibleExePath;
+                }
+
+                possibleExePath = GetArtifactsCredentialProviderExePath(ArtifactsCredentialProviderPath!);
+                if (File.Exists(possibleExePath))
+                {
+                    return possibleExePath;
+                }
+
+                Log.LogError($"Credential provider was not found under '{ArtifactsCredentialProviderPath}'.");
+                return null;
             }
 
             Log.LogError($"Credential provider path '{ArtifactsCredentialProviderPath}' does not exist.");
@@ -592,7 +605,7 @@ public sealed class DownloadUniversalPackages : Task
                 return null;
             }
 
-            credentialProviderDir = Path.Combine(ArtifactToolBasePath, "credential-provider", releaseInfo.Value.Version, "plugins", "netcore", "CredentialProvider.Microsoft");
+            string credentialProviderDir = Path.Combine(ArtifactToolBasePath, "credential-provider", releaseInfo.Value.Version);
 
             // Download only if needed
             if (!Directory.Exists(credentialProviderDir))
@@ -604,20 +617,17 @@ public sealed class DownloadUniversalPackages : Task
                 }
             }
 
-            return GetArtifactsCredentialProviderExePath(credentialProviderDir);
-        }
-
-        string? GetArtifactsCredentialProviderExePath(string dir)
-        {
-            string credentialProviderExePath = Path.Combine(dir, CredentialProviderRelativePath);
-            if (File.Exists(credentialProviderExePath))
+            string exePath = GetArtifactsCredentialProviderExePath(credentialProviderDir);
+            if (File.Exists(exePath))
             {
-                return credentialProviderExePath;
+                return exePath;
             }
 
-            Log.LogError($"Credential provider path '{CredentialProviderRelativePath}' was not found under '{dir}'.");
+            Log.LogError($"Credential provider path '{exePath}' was not found.");
             return null;
         }
+
+        string GetArtifactsCredentialProviderExePath(string dir) => Path.Combine(dir, "plugins", "netcore", "CredentialProvider.Microsoft", exeName);
     }
 
     private (string Version, string DownloadUri)? GetArtifactsCredentialProviderReleaseInfo()
