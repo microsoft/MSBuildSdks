@@ -659,7 +659,7 @@ public sealed class DownloadUniversalPackages : Task
                 : "linux-x64";
             fileExtension = ".tar.gz";
         }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
             rid = RuntimeInformation.ProcessArchitecture == Architecture.Arm64
                 ? "osx-arm64"
@@ -751,7 +751,7 @@ public sealed class DownloadUniversalPackages : Task
                 // There is no built-in support for extracting tar.gz files, so fall back to the tar command.
                 int exitCode = ProcessHelper.Execute(
                     "/bin/bash",
-                    $"tar -xzf \"{archiveDownloadPath}\" -C \"{archiveExtractPath}\"",
+                    $"-c \"tar -xzf \\\"{archiveDownloadPath}\\\" -C \\\"{archiveExtractPath}\\\"\"",
                     processStdOut: message => Log.LogMessage(MessageImportance.Low, message),
                     processStdErr: message => Log.LogError(message));
                 if (exitCode != 0)
