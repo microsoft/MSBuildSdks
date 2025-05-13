@@ -355,11 +355,22 @@ public sealed class DownloadUniversalPackages : Task
             }
             else
             {
-                // This isn' quite right. Really we want to use "uname -m" since that's what the artifact tool uses.
-                artifactToolArch = Environment.GetEnvironmentVariable("HOSTTYPE")?.ToLowerInvariant();
+                // Use "uname -m" which is equivalent to what the Azure DevOps CLI uses to determine the artifact tool arch.
+                artifactToolArch = null;
+                int unameExitCode = ProcessHelper.Execute(
+                    "/bin/bash",
+                    "-c \"uname -m\"",
+                    processStdOut: message => artifactToolArch = message,
+                    processStdErr: message => Log.LogError(message));
+                if (unameExitCode != 0)
+                {
+                    Log.LogError($"Detecting architecture (\"uname -m\") failed with exit code: {unameExitCode}.");
+                    return null;
+                }
+
                 if (string.IsNullOrEmpty(artifactToolArch))
                 {
-                    Log.LogError("Environment variable 'HOSTTYPE' was unexpectedly null");
+                    Log.LogError("Unable to detect architecture. \"uname -m\" did not emit any output.");
                     return null;
                 }
             }
