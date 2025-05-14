@@ -410,7 +410,12 @@ public sealed class DownloadUniversalPackages : Task
         // Download only if needed
         if (!Directory.Exists(artifactToolPath))
         {
-            bool downloadResult = DownloadAndExtractArchive("ArtifactTool", releaseInfo.Value.DownloadUri, artifactToolPath, isZip: true);
+            bool downloadResult = DownloadAndExtractArchive(
+                "ArtifactTool",
+                releaseInfo.Value.DownloadUri,
+                artifactToolPath,
+                GetArtifactToolExeName(),
+                isZip: true);
             if (!downloadResult)
             {
                 return null;
@@ -421,8 +426,7 @@ public sealed class DownloadUniversalPackages : Task
 
         string? GetArtifactToolExePath(string dir)
         {
-            string exeName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "artifacttool.exe" : "artifacttool";
-            string exePath = Path.Combine(dir, exeName);
+            string exePath = Path.Combine(dir, GetArtifactToolExeName());
             if (File.Exists(exePath))
             {
                 return exePath;
@@ -431,6 +435,9 @@ public sealed class DownloadUniversalPackages : Task
             Log.LogError($"ArtifactTool '{exePath}' was not found.");
             return null;
         }
+
+        static string GetArtifactToolExeName()
+            => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "artifacttool.exe" : "artifacttool";
     }
 
     private (string Version, string DownloadUri)? GetArtifactToolReleaseInfo(string osName, string arch, string patVar)
@@ -621,7 +628,12 @@ public sealed class DownloadUniversalPackages : Task
             // Download only if needed
             if (!Directory.Exists(credentialProviderDir))
             {
-                bool downloadResult = DownloadAndExtractArchive("Artifacts Credential Provider", releaseInfo.Value.DownloadUri, credentialProviderDir, isZip: RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
+                bool downloadResult = DownloadAndExtractArchive(
+                    "Artifacts Credential Provider",
+                    releaseInfo.Value.DownloadUri,
+                    credentialProviderDir,
+                    GetArtifactsCredentialProviderRelativePath(),
+                    isZip: RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
                 if (!downloadResult)
                 {
                     return null;
@@ -638,7 +650,9 @@ public sealed class DownloadUniversalPackages : Task
             return null;
         }
 
-        string GetArtifactsCredentialProviderExePath(string dir) => Path.Combine(dir, "plugins", "netcore", "CredentialProvider.Microsoft", exeName);
+        string GetArtifactsCredentialProviderExePath(string dir) => Path.Combine(dir, GetArtifactsCredentialProviderRelativePath());
+
+        string GetArtifactsCredentialProviderRelativePath() => Path.Combine("plugins", "netcore", "CredentialProvider.Microsoft", exeName);
     }
 
     private (string Version, string DownloadUri)? GetArtifactsCredentialProviderReleaseInfo()
@@ -737,7 +751,7 @@ public sealed class DownloadUniversalPackages : Task
         return (version, downloadUri);
     }
 
-    private bool DownloadAndExtractArchive(string displayName, string downloadUri, string path, bool isZip)
+    private bool DownloadAndExtractArchive(string displayName, string downloadUri, string path, string exeRelativePath, bool isZip)
     {
         string? archiveDownloadPath = null;
         string? archiveExtractPath = null;
@@ -766,6 +780,28 @@ public sealed class DownloadUniversalPackages : Task
             if (isZip)
             {
                 ZipFile.ExtractToDirectory(archiveDownloadPath, archiveExtractPath);
+
+                // Zip archives do not preserve Unix file permissions, so we need to set the executable bit manually.
+                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    string exePath = Path.Combine(archiveExtractPath, exeRelativePath);
+                    if (!File.Exists(exePath))
+                    {
+                        Log.LogError($"Failed to set executable bit on {exePath}. File not found.");
+                        return false;
+                    }
+
+                    int exitCode = ProcessHelper.Execute(
+                        "/bin/chmod",
+                        $"+x \"{exePath}\"",
+                        processStdOut: message => Log.LogMessage(MessageImportance.Low, message),
+                        processStdErr: message => Log.LogError(message));
+                    if (exitCode != 0)
+                    {
+                        Log.LogError($"Failed to set executable bit on {exePath}. chmod failed with exit code: {exitCode}");
+                        return false;
+                    }
+                }
             }
             else
             {
@@ -792,6 +828,7 @@ public sealed class DownloadUniversalPackages : Task
                 destination.Delete(true);
             }
 
+            Log.LogMessage(MessageImportance.Low, $"Moving {archiveExtractPath} to {destination.FullName}");
             destination.Parent?.Create();
             Directory.Move(archiveExtractPath, destination.FullName);
 
