@@ -1,6 +1,10 @@
 <Project>
   <PropertyGroup>
-    <RestoreUseStaticGraphEvaluation>true</RestoreUseStaticGraphEvaluation>
+    <!--
+      Disabling static graph restore due to a bug related to NuGetAuditSuppress.
+      See: https://github.com/NuGet/Home/issues/14300
+    -->
+    <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
     <RestoreSerializeGlobalProperties>true</RestoreSerializeGlobalProperties>
   </PropertyGroup>
 </Project>
