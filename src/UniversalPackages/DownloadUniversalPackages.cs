@@ -699,7 +699,7 @@ public sealed class DownloadUniversalPackages : Task
             rid = RuntimeInformation.ProcessArchitecture == Architecture.Arm64
                 ? "osx-arm64"
                 : "osx-x64";
-            fileExtension = ".tar.gz";
+            fileExtension = ".zip";
         }
         else
         {
