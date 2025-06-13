@@ -80,7 +80,7 @@
     <BuildCommandArgs Condition="'$(BuildCommandArgs)' == ''"></BuildCommandArgs>
     <TestCommandArgs Condition="'$(TestCommandArgs)' == ''"></TestCommandArgs>
     <CleanCommandArgs Condition="'$(CleanCommandArgs)' == ''"></CleanCommandArgs>
-		<CargoCommandArgs Condition="'$(CargoCommandArgs)' == ''"></CargoCommandArgs>
+    <CargoCommandArgs Condition="'$(CargoCommandArgs)' == ''"></CargoCommandArgs>
     <RunCommandArgs Condition="'$(RunCommandArgs)' == ''"></RunCommandArgs>
     <CargoInstallCommandArgs Condition="'$(CargoInstallCommandArgs)' == ''"></CargoInstallCommandArgs>
     <DocCommandArgs Condition="'$(DocCommandArgs)' == ''"></DocCommandArgs>
