@@ -41,12 +41,12 @@ namespace Microsoft.Build.Cargo.UnitTests
         {
             ProjectCreator cargoProject = ProjectCreator.Templates.CargoProject(
                     path: Path.Combine(TestRootPath, "Cargo", "rust.cargoproj"))
-                .Target("InstallCargo")
-                .Target("CargoFetch")
-                .Target("CargoBuild")
-                .Target(targetName)
-                .TaskMessage("503CF1EBA6DC415F95F4DB630E7C1817", MessageImportance.High)
-                .Save();
+                    .Target("InstallCargo")
+                    .Target("CargoFetch")
+                    .Target("CargoBuild")
+                    .Target(targetName)
+                    .TaskMessage("503CF1EBA6DC415F95F4DB630E7C1817", MessageImportance.High)
+                    .Save();
 
             cargoProject.TryBuild(restore: true, out bool result, out BuildOutput buildOutput);
 
@@ -60,13 +60,13 @@ namespace Microsoft.Build.Cargo.UnitTests
         {
             ProjectCreator cargoProject = ProjectCreator.Templates.CargoProject(
                     path: Path.Combine(TestRootPath, "Cargo", "rust.cargoproj"))
-                .Property("CoreCompileDependsOn", "$(CoreCompileDependsOn);TestThatCoreCompileIsExtensible")
-                .Target("InstallCargo")
-                .Target("CargoFetch")
-                .Target("CargoBuild")
-                .Target("TestThatCoreCompileIsExtensible")
-                .TaskMessage("35F1C217730445E0AC0F30E70F5C7826", MessageImportance.High)
-                .Save();
+                    .Property("CoreCompileDependsOn", "$(CoreCompileDependsOn);TestThatCoreCompileIsExtensible")
+                    .Target("InstallCargo")
+                    .Target("CargoFetch")
+                    .Target("CargoBuild")
+                    .Target("TestThatCoreCompileIsExtensible")
+                    .TaskMessage("35F1C217730445E0AC0F30E70F5C7826", MessageImportance.High)
+                    .Save();
 
             cargoProject.TryBuild(restore: true, out bool result, out BuildOutput buildOutput);
 
@@ -80,14 +80,14 @@ namespace Microsoft.Build.Cargo.UnitTests
         {
             ProjectCreator cargoProject = ProjectCreator.Templates.CargoProject(
                     path: Path.Combine(TestRootPath, "Cargo", "rust.cargoproj"))
-                .Property("TargetsTriggeredByCompilation", "TestThatCoreCompileIsExtensible")
-                .Property("TargetsTriggeredByCompilation", "TestThatCoreCompileIsExtensible")
-                .Target("InstallCargo")
-                .Target("CargoFetch")
-                .Target("CargoBuild")
-                .Target("TestThatCoreCompileIsExtensible")
+                    .Property("TargetsTriggeredByCompilation", "TestThatCoreCompileIsExtensible")
+                    .Property("TargetsTriggeredByCompilation", "TestThatCoreCompileIsExtensible")
+                    .Target("InstallCargo")
+                    .Target("CargoFetch")
+                    .Target("CargoBuild")
+                    .Target("TestThatCoreCompileIsExtensible")
                     .TaskMessage("D031211C98F1454CA47A424ADC86A8F7", MessageImportance.High)
-                .Save();
+                    .Save();
 
             cargoProject.TryBuild(restore: true, out bool result, out BuildOutput buildOutput);
 
@@ -110,11 +110,11 @@ namespace Microsoft.Build.Cargo.UnitTests
 
             ProjectCreator cargoProject = ProjectCreator.Templates.CargoProject(
                     path: Path.Combine(TestRootPath, "Cargo", "rust.cargoproj"))
-                .Target("InstallCargo")
-                .Target("CargoFetch")
-                .Target("CargoBuild")
-                .ItemProjectReference(projectA)
-                .Save();
+                    .Target("InstallCargo")
+                    .Target("CargoFetch")
+                    .Target("CargoBuild")
+                    .ItemProjectReference(projectA)
+                    .Save();
 
             cargoProject.TryRestore(out bool result, out BuildOutput buildOutput);
 
@@ -220,7 +220,6 @@ namespace Microsoft.Build.Cargo.UnitTests
             ProjectCreator.Templates.CargoProject(
                 path: GetTempFileWithExtension(".cargoproj"))
                 .Property(propertyName, value)
-
                 .Target("CargoFetch")
                 .Target("CargoBuild")
                 .Save()
@@ -243,7 +242,6 @@ namespace Microsoft.Build.Cargo.UnitTests
                             .Target("TakeAction", afterTargets: "Build")
                                 .TaskMessage("2EA26E6FC5C842B682AA26096A769E07", MessageImportance.High);
                     })
-
                 .Target("InstallCargo")
                 .Target("CargoFetch")
                 .Target("CargoBuild")
@@ -277,7 +275,6 @@ namespace Microsoft.Build.Cargo.UnitTests
                         .TaskMessage("86F00AF59170450E9D687652D74A6394", MessageImportance.High);
                 })
                 .Property("GenerateDependencyFile", "false")
-
                 .Target("CargoFetch")
                 .Target("CargoBuild")
                 .Save()
@@ -315,7 +312,6 @@ namespace Microsoft.Build.Cargo.UnitTests
                         path: GetTempFileWithExtension(extension),
                         projectCollection: projectCollection)
                     .Property("GenerateDependencyFile", "false")
-
                     .Target("CargoFetch")
                     .Target("CargoBuild")
                     .Save()
