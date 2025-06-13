@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (c) Microsoft Corporation. All rights reserved.
+  
+  Licensed under the MIT license.
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <UniversalPackagesTaskAssembly Condition="'$(UniversalPackagesTaskAssembly)' == '' and '$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)../tools/net8.0/Microsoft.Build.UniversalPackages.dll</UniversalPackagesTaskAssembly>
+    <UniversalPackagesTaskAssembly Condition="'$(UniversalPackagesTaskAssembly)' == '' and '$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)../tools/net472/Microsoft.Build.UniversalPackages.dll</UniversalPackagesTaskAssembly>
+
+    <!-- Base directory where version(s) of the ArtifactTool are downloaded -->
+    <ArtifactToolBasePath Condition="'$(ArtifactToolBasePath)' == '' and $([System.OperatingSystem]::IsWindows())">$(LocalAppData)/ArtifactTool</ArtifactToolBasePath>
+    <ArtifactToolBasePath Condition="'$(ArtifactToolBasePath)' == '' and !$([System.OperatingSystem]::IsWindows())">~/.artifacttool</ArtifactToolBasePath>
+
+    <!--
+      Cache directory for packages.
+      WARNING! Content should not be consumed from this location directly. This property is strictly to configure to internal cache used by ArtifactTool.
+    -->
+    <UniversalPackagesCacheDirectory Condition="'$(UniversalPackagesCacheDirectory)' == ''">$(ArtifactToolBasePath)/.cache</UniversalPackagesCacheDirectory>
+
+    <!-- Enable interactive auth by default, but not when running in a known build environment. -->
+    <UniversalPackagesInteractiveAuth Condition="'$(UniversalPackagesInteractiveAuth)' == '' and '$(TF_BUILD)' != ''">false</UniversalPackagesInteractiveAuth>
+    <UniversalPackagesInteractiveAuth Condition="'$(UniversalPackagesInteractiveAuth)' == ''">true</UniversalPackagesInteractiveAuth>
+
+    <!-- Attempt to use an already-installed cred provider -->
+    <ArtifactsCredentialProviderPath Condition="'$(ArtifactsCredentialProviderPath)' == '' and $([System.OperatingSystem]::IsWindows()) and Exists('$(UserProfile)/.nuget/plugins/netcore/CredentialProvider.Microsoft/CredentialProvider.Microsoft.exe')">$(UserProfile)/.nuget/plugins/netcore/CredentialProvider.Microsoft/CredentialProvider.Microsoft.exe</ArtifactsCredentialProviderPath>
+    <ArtifactsCredentialProviderPath Condition="'$(ArtifactsCredentialProviderPath)' == '' and $([System.OperatingSystem]::IsWindows()) and Exists('$(UserProfile)/.nuget/plugins/netfx/CredentialProvider.Microsoft/CredentialProvider.Microsoft.exe')">$(UserProfile)/.nuget/plugins/netfx/CredentialProvider.Microsoft/CredentialProvider.Microsoft.exe</ArtifactsCredentialProviderPath>
+    <ArtifactsCredentialProviderPath Condition="'$(ArtifactsCredentialProviderPath)' == '' and !$([System.OperatingSystem]::IsWindows()) and Exists('$(HOME)/.nuget/plugins/netcore/CredentialProvider.Microsoft/CredentialProvider.Microsoft')">$(HOME)/.nuget/plugins/netcore/CredentialProvider.Microsoft/CredentialProvider.Microsoft</ArtifactsCredentialProviderPath>
+
+    <!-- Define a default root path for packages -->
+    <UniversalPackagesRootPath Condition="'$(UniversalPackagesRootPath)' == ''">packages</UniversalPackagesRootPath>
+
+    <!-- Path to generate the json file to use for the batch download command -->
+    <UniversalPackageListJsonPath Condition="'$(UniversalPackageListJsonPath)' == ''">$(BaseIntermediateOutputPath)\universal-packages.json</UniversalPackageListJsonPath>
+  </PropertyGroup>
+
+  <UsingTask TaskName="Microsoft.Build.UniversalPackages.DownloadUniversalPackages" AssemblyFile="$(UniversalPackagesTaskAssembly)" />
+
+  <Target Name="DownloadUniversalPackages" AfterTargets="Restore">
+    <DownloadUniversalPackages
+      ProjectFile="$(MSBuildProjectFullPath)"
+      AccountName="$(UniversalPackagesAccountName)"
+      ArtifactsCredentialProviderPath="$(ArtifactsCredentialProviderPath)"
+      ArtifactToolBasePath="$(ArtifactToolBasePath)"
+      UniversalPackagesRootPath="$(UniversalPackagesRootPath)"
+      PackageListJsonPath="$(UniversalPackageListJsonPath)"
+      ArtifactToolPath="$(ArtifactToolPath)"
+      ArtifactToolOsName="$(ArtifactToolOsName)"
+      ArtifactToolArch="$(ArtifactToolArch)"
+      ArtifactToolDistroName="$(ArtifactToolDistroName)"
+      ArtifactToolDistroVersion="$(ArtifactToolDistroVersion)"
+      PatVar="$(UniversalPackagesPatVar)"
+      Interactive="$(UniversalPackagesInteractiveAuth)"
+      CacheDirectory="$(UniversalPackagesCacheDirectory)"
+      IgnoreNothing="$(UniversalPackagesIgnoreNothing)"
+      Verbosity="$(UniversalPackagesVerbosity)"
+      UseLocalTime="$(UniversalPackagesUseLocalTime)"
+      />
+  </Target>
+
+</Project>

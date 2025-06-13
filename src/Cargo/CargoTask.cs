@@ -151,7 +151,6 @@ namespace Microsoft.Build.Cargo
 
         private async Task<bool> ExecuteAsync()
         {
-            Debugger.Launch();
             if (!string.IsNullOrEmpty(RepoRoot))
             {
                 _isMsRustUp = File.Exists(Path.Combine(RepoRoot, _rustToolChainFileName)) && IsMSToolChain(Path.Combine(RepoRoot, _rustToolChainFileName));
