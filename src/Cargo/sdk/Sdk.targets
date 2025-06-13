@@ -124,25 +124,25 @@
   <Target Name="CargoTest" DependsOnTargets="CargoFetch">
     <CargoTask StartupProj="$(StartupProj)" Command="test" CommandArgs="$(TestCommandArgs)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
   </Target>
-  <Target Name="CargoClean">
-    <CargoTask StartupProj="$(StartupProj)" Command="clean" CommandArgs="$(CleanCommandArgs)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
-  </Target>
   <Target Name="CargoRun" DependsOnTargets="CargoFetch">
     <CargoTask StartupProj="$(StartupProj)" Command="run" CommandArgs="$(RunCommandArgs)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
   </Target>
   <Target Name="CargoDoc" DependsOnTargets="CargoFetch">
     <CargoTask StartupProj="$(StartupProj)" Command="doc" CommandArgs="$(DocCommandArgs)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
   </Target>
-	<Target Name="CargoUpdate" DependsOnTargets="CargoFetch">
-		<CargoTask StartupProj="$(StartupProj)" Command="update" CommandArgs="$(UpdateCommandArgs)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
-	</Target>
-	<Target Name="CargoInstall" DependsOnTargets="CargoFetch">
-		<CargoTask StartupProj="$(StartupProj)" Command="install" CommandArgs="$(CargoInstallCommandArgs)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
-	</Target>
-	<Target Name="CargoCommand" DependsOnTargets="CargoFetch">
-		<CargoTask StartupProj="$(StartupProj)" Command="$(CargoCommand)" CommandArgs="$(CargoCommandArgs)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
-	</Target>
+  <Target Name="CargoUpdate" DependsOnTargets="CargoFetch">
+    <CargoTask StartupProj="$(StartupProj)" Command="update" CommandArgs="$(UpdateCommandArgs)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
+  </Target>
+  <Target Name="CargoInstall" DependsOnTargets="CargoFetch">
+    <CargoTask StartupProj="$(StartupProj)" Command="install" CommandArgs="$(CargoInstallCommandArgs)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
+  </Target>
+  <Target Name="CargoCommand" DependsOnTargets="CargoFetch">
+    <CargoTask StartupProj="$(StartupProj)" Command="$(CargoCommand)" CommandArgs="$(CargoCommandArgs)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
+  </Target>
+  <Target Name="CargoClean">
+    <CargoTask StartupProj="$(StartupProj)" Command="clean" CommandArgs="$(CleanCommandArgs)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
+  </Target>
   <Target Name="ClearCargoCache">
-    <CargoTask StartupProj="$(StartupProj)" Command="clearcargocache" CommandArgs="$(DocCommandArgs)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
+    <CargoTask StartupProj="$(StartupProj)" Command="clearcargocache" CommandArgs="$(ClearCargoCacheCommandArgs)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
   </Target>
 </Project>
