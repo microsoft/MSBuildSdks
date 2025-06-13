@@ -41,7 +41,7 @@ namespace Microsoft.Build.Cargo.UnitTests
         {
             ProjectCreator cargoProject = ProjectCreator.Templates.CargoProject(
                     path: Path.Combine(TestRootPath, "Cargo", "rust.cargoproj"))
-                .Target("CargoInstall")
+                .Target("InstallCargo")
                 .Target("CargoFetch")
                 .Target("CargoBuild")
                 .Target(targetName)
@@ -61,7 +61,7 @@ namespace Microsoft.Build.Cargo.UnitTests
             ProjectCreator cargoProject = ProjectCreator.Templates.CargoProject(
                     path: Path.Combine(TestRootPath, "Cargo", "rust.cargoproj"))
                 .Property("CoreCompileDependsOn", "$(CoreCompileDependsOn);TestThatCoreCompileIsExtensible")
-                .Target("CargoInstall")
+                .Target("InstallCargo")
                 .Target("CargoFetch")
                 .Target("CargoBuild")
                 .Target("TestThatCoreCompileIsExtensible")
@@ -82,7 +82,7 @@ namespace Microsoft.Build.Cargo.UnitTests
                     path: Path.Combine(TestRootPath, "Cargo", "rust.cargoproj"))
                 .Property("TargetsTriggeredByCompilation", "TestThatCoreCompileIsExtensible")
                 .Property("TargetsTriggeredByCompilation", "TestThatCoreCompileIsExtensible")
-                .Target("CargoInstall")
+                .Target("InstallCargo")
                 .Target("CargoFetch")
                 .Target("CargoBuild")
                 .Target("TestThatCoreCompileIsExtensible")
@@ -110,7 +110,7 @@ namespace Microsoft.Build.Cargo.UnitTests
 
             ProjectCreator cargoProject = ProjectCreator.Templates.CargoProject(
                     path: Path.Combine(TestRootPath, "Cargo", "rust.cargoproj"))
-                .Target("CargoInstall")
+                .Target("InstallCargo")
                 .Target("CargoFetch")
                 .Target("CargoBuild")
                 .ItemProjectReference(projectA)
@@ -244,7 +244,7 @@ namespace Microsoft.Build.Cargo.UnitTests
                                 .TaskMessage("2EA26E6FC5C842B682AA26096A769E07", MessageImportance.High);
                     })
 
-                .Target("CargoInstall")
+                .Target("InstallCargo")
                 .Target("CargoFetch")
                 .Target("CargoBuild")
                 .Save()
