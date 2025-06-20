@@ -153,7 +153,11 @@ namespace Microsoft.Build
         /// <inheritdoc/>
         protected override void LogEventsFromTextOutput(string singleLine, MessageImportance messageImportance)
         {
-            base.LogEventsFromTextOutput(singleLine, messageImportance);
+            // Emit all log messages as regular log messages. The base class calls Log.LogMessageFromText which will
+            // parses the message see if there are strings which "look like" errors or warnings and log them as such.
+            // Since tests can log messages that look like errors or warnings, we want to avoid that and instead
+            // completely rely on the exit code of vstest to determine if the task succeeded or not.
+            Log.LogMessage(messageImportance, singleLine);
         }
 
         /// <inheritdoc/>
