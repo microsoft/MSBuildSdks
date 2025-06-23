@@ -38,17 +38,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+	<ItemGroup>
+		<None Include="sdk\InstallCargo.proj">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
   <ItemGroup>
     <FilesToSign Include="$(TargetPath)" Authenticode="Microsoft400" StrongName="StrongName" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="sdk\InstallCargo.proj">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="sdk\InstallCargo.proj">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 </Project>
