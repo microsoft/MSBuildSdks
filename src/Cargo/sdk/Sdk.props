@@ -80,7 +80,10 @@
     <BuildCommandArgs Condition="'$(BuildCommandArgs)' == ''"></BuildCommandArgs>
     <TestCommandArgs Condition="'$(TestCommandArgs)' == ''"></TestCommandArgs>
     <CleanCommandArgs Condition="'$(CleanCommandArgs)' == ''"></CleanCommandArgs>
+    <ClearCargoCacheCommandArgs Condition="'$(ClearCargoCacheCommandArgs)' == ''"></ClearCargoCacheCommandArgs>
+    <CargoCommandArgs Condition="'$(CargoCommandArgs)' == ''"></CargoCommandArgs>
     <RunCommandArgs Condition="'$(RunCommandArgs)' == ''"></RunCommandArgs>
+    <CargoInstallCommandArgs Condition="'$(CargoInstallCommandArgs)' == ''"></CargoInstallCommandArgs>
     <DocCommandArgs Condition="'$(DocCommandArgs)' == ''"></DocCommandArgs>
     <StartupProj Condition="'$(StartupProj)' == ''">$(MSBuildProjectFullPath)</StartupProj>
     <RepoRoot Condition="'$(RepoRoot)' == ''">$(EnlistmentRoot)</RepoRoot>

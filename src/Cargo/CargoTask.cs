@@ -27,7 +27,7 @@ namespace Microsoft.Build.Cargo
         private static readonly string _cargoConfigFilePath = Path.Combine(".cargo", "config.toml");
         private static readonly string _cargoFileName = "cargo.toml";
         private static readonly string _clearCacheCommand = "clearcargocache";
-        private static readonly string _installCommand = "install";
+        private static readonly string _installCommand = "installcargo";
         private static readonly string _fetchCommand = "fetch";
         private static readonly string _loginCommand = "login";
         private static readonly string _rustUpDownloadLink = "https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe";

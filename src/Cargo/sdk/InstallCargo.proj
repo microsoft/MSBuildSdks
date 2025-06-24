@@ -2,7 +2,7 @@
   <Import Project="$(MSBuildThisFileDirectory)Sdk.props"/>
   <UsingTask TaskName="Microsoft.Build.Cargo.CargoTask" AssemblyFile="$(MSBuildThisFileDirectory)..\build\net8.0\Microsoft.Build.Cargo.dll" Condition="'$(MSBuildRuntimeType)' == 'Core'" />
   <UsingTask TaskName="Microsoft.Build.Cargo.CargoTask" AssemblyFile="$(MSBuildThisFileDirectory)..\build\net472\Microsoft.Build.Cargo.dll" Condition="'$(MSBuildRuntimeType)' != 'Core'" />
-  <Target Name="CargoInstall">
-    <CargoTask EnableAuth="$(AuthMode)" StartupProj="$(MSBuildStartupDirectory)" Command="install" RepoRoot="$(RepoRoot)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
+  <Target Name="InstallCargo">
+    <CargoTask EnableAuth="$(AuthMode)" StartupProj="$(MSBuildStartupDirectory)" Command="installcargo" RepoRoot="$(RepoRoot)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
   </Target>
 </Project>
