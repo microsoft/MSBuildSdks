@@ -37,6 +37,8 @@
     </ProjectReference>
   </ItemDefinitionGroup>
 
+  <Target Name="CreateManifestResourceNames" />
+
   <!-- For CPS/VS support. Importing in .props allows any subsequent targets to redefine this if needed -->
   <Target Name="CompileDesignTime" />
 </Project>
