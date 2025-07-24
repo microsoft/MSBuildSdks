@@ -22,6 +22,9 @@
 
     <!-- Targeting packs shouldn't be referenced as traversal projects don't compile. -->
     <DisableImplicitFrameworkReferences Condition="'$(DisableImplicitFrameworkReferences)' == ''">true</DisableImplicitFrameworkReferences>
+
+    <!-- Disable Visual Studio's Fast Up-to-date Check and rely on MSBuild to determine -->
+    <DisableFastUpToDateCheck Condition="'$(DisableFastUpToDateCheck)' == ''">true</DisableFastUpToDateCheck>
   </PropertyGroup>
 
   <ItemDefinitionGroup Condition=" '$(TraversalDoNotReferenceOutputAssemblies)' != 'false' ">
