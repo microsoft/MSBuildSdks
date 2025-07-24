@@ -105,6 +105,8 @@ namespace Microsoft.Build.Cargo.UnitTests
                     targetFramework: "net8.0")
 #elif NET9_0
                     targetFramework: "net9.0")
+#elif NET10_0
+                    targetFramework: "net10.0")
 #endif
                 .Save();
 
