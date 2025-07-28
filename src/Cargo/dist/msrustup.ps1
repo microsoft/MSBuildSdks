@@ -69,11 +69,12 @@ elseif ((Get-Command "azureauth" -ErrorAction SilentlyContinue) -ne $null) {
     azureauth ado token --output headervalue
 } else {
     $version = '0.9.1'
+    $env:AZUREAUTH_VERSION = $version
     $script = "${env:TEMP}\install.ps1"
     $url = "https://raw.githubusercontent.com/AzureAD/microsoft-authentication-cli/$version/install/install.ps1"
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     Invoke-WebRequest $url -OutFile $script; if ($?) { &$script | Out-Null }; if ($?) { rm $script }
-    
+
     $path = "$env:LOCALAPPDATA\Programs\AzureAuth\$version\azureauth.exe"
     & $path ado token --output headervalue | Out-String
 }
