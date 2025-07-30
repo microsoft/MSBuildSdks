@@ -77,14 +77,15 @@
   <!-- Rust specific props -->
   <PropertyGroup>
     <AuthMode Condition="'$(AuthMode)' == ''">false</AuthMode>
-    <BuildCommandArgs Condition="'$(BuildCommandArgs)' == ''"></BuildCommandArgs>
-    <TestCommandArgs Condition="'$(TestCommandArgs)' == ''"></TestCommandArgs>
-    <CleanCommandArgs Condition="'$(CleanCommandArgs)' == ''"></CleanCommandArgs>
+    <CargoBuildCommandArgs Condition="'$(CargoBuildCommandArgs)' == ''"></CargoBuildCommandArgs>
+    <CargoTestCommandArgs Condition="'$(CargoTestCommandArgs)' == ''"></CargoTestCommandArgs>
+    <CargoCleanCommandArgs Condition="'$(CargoCleanCommandArgs)' == ''"></CargoCleanCommandArgs>
     <ClearCargoCacheCommandArgs Condition="'$(ClearCargoCacheCommandArgs)' == ''"></ClearCargoCacheCommandArgs>
     <CargoCommandArgs Condition="'$(CargoCommandArgs)' == ''"></CargoCommandArgs>
-    <RunCommandArgs Condition="'$(RunCommandArgs)' == ''"></RunCommandArgs>
+    <CargoRunCommandArgs Condition="'$(CargoRunCommandArgs)' == ''"></CargoRunCommandArgs>
     <CargoInstallCommandArgs Condition="'$(CargoInstallCommandArgs)' == ''"></CargoInstallCommandArgs>
-    <DocCommandArgs Condition="'$(DocCommandArgs)' == ''"></DocCommandArgs>
+    <CargoUpdateCommandArgs Condition="'$(CargoUpdateCommandArgs)' == ''"></CargoUpdateCommandArgs>
+    <CargoDocCommandArgs Condition="'$(CargoDocCommandArgs)' == ''"></CargoDocCommandArgs>
     <StartupProj Condition="'$(StartupProj)' == ''">$(MSBuildProjectFullPath)</StartupProj>
     <RepoRoot Condition="'$(RepoRoot)' == ''">$(EnlistmentRoot)</RepoRoot>
     <CargoInstallationRoot Condition="'$(CargoInstallationRoot)' == ''"></CargoInstallationRoot>

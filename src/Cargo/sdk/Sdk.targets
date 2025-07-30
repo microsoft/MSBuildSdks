@@ -119,19 +119,19 @@
     <CargoTask EnableAuth="$(AuthMode)" StartupProj="$(StartupProj)" Command="fetch"  RepoRoot="$(RepoRoot)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
   </Target>
   <Target Name="CargoBuild" AfterTargets="CoreCompile">
-    <CargoTask EnableAuth="$(AuthMode)" StartupProj="$(StartupProj)" Command="build" CommandArgs="$(BuildCommandArgs)" Configuration="$(Configuration)" RepoRoot="$(RepoRoot)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
+    <CargoTask EnableAuth="$(AuthMode)" StartupProj="$(StartupProj)" Command="build" CommandArgs="$(CargoBuildCommandArgs)" Configuration="$(Configuration)" RepoRoot="$(RepoRoot)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
   </Target>
   <Target Name="CargoTest" DependsOnTargets="CargoFetch">
-    <CargoTask StartupProj="$(StartupProj)" Command="test" CommandArgs="$(TestCommandArgs)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
+    <CargoTask StartupProj="$(StartupProj)" Command="test" CommandArgs="$(CargoTestCommandArgs)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
   </Target>
   <Target Name="CargoRun" DependsOnTargets="CargoFetch">
-    <CargoTask StartupProj="$(StartupProj)" Command="run" CommandArgs="$(RunCommandArgs)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
+    <CargoTask StartupProj="$(StartupProj)" Command="run" CommandArgs="$(CargoRunCommandArgs)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
   </Target>
   <Target Name="CargoDoc" DependsOnTargets="CargoFetch">
-    <CargoTask StartupProj="$(StartupProj)" Command="doc" CommandArgs="$(DocCommandArgs)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
+    <CargoTask StartupProj="$(StartupProj)" Command="doc" CommandArgs="$(CargoDocCommandArgs)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
   </Target>
   <Target Name="CargoUpdate" DependsOnTargets="CargoFetch">
-    <CargoTask StartupProj="$(StartupProj)" Command="update" CommandArgs="$(UpdateCommandArgs)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
+    <CargoTask StartupProj="$(StartupProj)" Command="update" CommandArgs="$(CargoUpdateCommandArgs)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
   </Target>
   <Target Name="CargoInstall" DependsOnTargets="CargoFetch">
     <CargoTask StartupProj="$(StartupProj)" Command="install" CommandArgs="$(CargoInstallCommandArgs)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
@@ -140,7 +140,7 @@
     <CargoTask StartupProj="$(StartupProj)" Command="$(CargoCommand)" CommandArgs="$(CargoCommandArgs)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
   </Target>
   <Target Name="CargoClean">
-    <CargoTask StartupProj="$(StartupProj)" Command="clean" CommandArgs="$(CleanCommandArgs)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
+    <CargoTask StartupProj="$(StartupProj)" Command="clean" CommandArgs="$(CargoCleanCommandArgs)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
   </Target>
   <Target Name="ClearCargoCache">
     <CargoTask StartupProj="$(StartupProj)" Command="clearcargocache" CommandArgs="$(ClearCargoCacheCommandArgs)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
