@@ -141,9 +141,25 @@ public sealed class DownloadUniversalPackages : Task
             return true;
         }
 
+        // To ensure package integrity, eg to deal with cancellation, we will download the packages to a temp dir and then move (directory moves are atomic) them to the final location.
+        var remappedPackages = new List<UniversalPackage>(packages.Count);
+        var packagePathMappings = new List<(string TempPath, string FinalPath)>(packages.Count);
+        foreach (UniversalPackage package in packages)
+        {
+            string remappedPath = package.Path.TrimEnd(Path.DirectorySeparatorChar) + ".tmp_download";
+            if (Directory.Exists(remappedPath))
+            {
+                Directory.Delete(remappedPath, recursive: true);
+            }
+
+            var remappedPackage = new UniversalPackage(package.Project, package.Feed, package.PackageName, package.PackageVersion, remappedPath, package.Filter);
+            remappedPackages.Add(remappedPackage);
+            packagePathMappings.Add((remappedPath, package.Path));
+        }
+
         // Batch downloads are more efficient, so generate the required json file.
         string packageListJsonPath = Path.GetFullPath(PackageListJsonPath);
-        CreatePackageListJson(packages, packageListJsonPath);
+        CreatePackageListJson(remappedPackages, packageListJsonPath);
 
         string? patVar = GetPatVar();
         if (string.IsNullOrWhiteSpace(patVar))
@@ -161,6 +177,12 @@ public sealed class DownloadUniversalPackages : Task
         if (!downloadResult)
         {
             return false;
+        }
+
+        // Move the downloaded packages to their final locations.
+        foreach ((string tempPath, string finalPath) in packagePathMappings)
+        {
+            Directory.Move(tempPath, finalPath);
         }
 
         return !Log.HasLoggedErrors;
@@ -253,10 +275,11 @@ public sealed class DownloadUniversalPackages : Task
             }
         }
 
-        // Validate Paths are either unique so downloads don't stomp on each other. ArtifactTool doesn't do this for us, but probably should, especially since it downloads them in parallel.
+        var packagesToDownload = new List<UniversalPackage>(packages.Count);
         var downloadPaths = new Dictionary<string, UniversalPackage>(PathHelper.PathComparer);
         foreach (UniversalPackage package in packages)
         {
+            // Validate Paths are either unique so downloads don't stomp on each other. ArtifactTool doesn't do this for us, but probably should, especially since it downloads them in parallel.
             if (downloadPaths.TryGetValue(package.Path, out UniversalPackage? existingPackage))
             {
                 Log.LogError($"Found multiple universal package download requests to the same path: {package.Path}. Packages '{existingPackage.PackageName} {existingPackage.PackageVersion}' and '{package.PackageName}.{package.PackageVersion}'");
@@ -265,12 +288,23 @@ public sealed class DownloadUniversalPackages : Task
             {
                 downloadPaths.Add(package.Path, package);
             }
+
+            // Filter out packages which are already downloaded. This is an optimization for incremental restores.
+            if (Directory.Exists(package.Path))
+            {
+                Log.LogMessage($"Skipping '{package.PackageName}.{package.PackageVersion}' as '{package.Path}' already exists.");
+            }
+            else
+            {
+                Log.LogMessage($"Need to download '{package.PackageName}.{package.PackageVersion}' to '{package.Path}'.");
+                packagesToDownload.Add(package);
+            }
         }
 
-        return packages;
+        return packagesToDownload;
     }
 
-    private void CreatePackageListJson(IReadOnlyCollection<UniversalPackage> packages, string packageListJsonPath)
+    private void CreatePackageListJson(List<UniversalPackage> packages, string packageListJsonPath)
     {
         var batchRequest = new UniversalPackageBatchDownloadRequest(packages);
         var options = new JsonSerializerOptions()
