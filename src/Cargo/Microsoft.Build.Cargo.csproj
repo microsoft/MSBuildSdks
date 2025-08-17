@@ -17,9 +17,9 @@
     <NoWarn>$(NoWarn);NU1504;NU5100;NU5110;NU5111</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Utilities.Core" VersionOverride="17.11.4" />
-    <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" VersionOverride="17.11.4" />
-    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" VersionOverride="17.11.4" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" VersionOverride="17.14.8" />
+    <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" VersionOverride="17.11.31" />
+    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" VersionOverride="17.14.8" />
     <PackageReference Include="System.Net.Http" NoWarn="RT0003" />
   </ItemGroup>
   <ItemGroup>
