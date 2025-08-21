@@ -47,6 +47,7 @@ extends:
             signing:
               enabled: true
               signType: 'real'
+              signWithProd: true
               zipSources: false
           outputs:
           - output: pipelineArtifact
