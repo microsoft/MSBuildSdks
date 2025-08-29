@@ -56,6 +56,9 @@
     
     <!-- Disable Visual Studio's Fast Up-to-date Check and rely on MSBuild to determine -->
     <DisableFastUpToDateCheck Condition="'$(DisableFastUpToDateCheck)' == ''">true</DisableFastUpToDateCheck>
+
+    <!-- Exclude from SlnGen consideration since NoTargets projects do not need to be seen nor built in VS.  -->
+    <IncludeInSolutionFile>false</IncludeInSolutionFile>
   </PropertyGroup>
 
   <ItemDefinitionGroup Condition=" '$(NoTargetsDoNotReferenceOutputAssemblies)' != 'false' ">
