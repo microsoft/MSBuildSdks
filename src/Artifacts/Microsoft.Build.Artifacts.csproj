@@ -22,42 +22,35 @@
     <PackageReference Include="System.Threading.Tasks.Dataflow" VersionOverride="4.9.0" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="build\*"
-          Pack="true"
-          PackagePath="build\" />
-    <None Include="buildMultiTargeting\*"
-          Pack="true"
-          PackagePath="buildMultiTargeting\" />
+    <None Include="build\*" Pack="true" PackagePath="build\" />
+    <None Include="buildMultiTargeting\*" Pack="true" PackagePath="buildMultiTargeting\" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.Build.Artifacts.UnitTests" />
   </ItemGroup>
   <ItemGroup>
-    <FilesToSign Include="$(TargetPath)"
-                 Authenticode="Microsoft400"
-                 StrongName="StrongName" />
+    <FilesToSign Include="$(TargetPath)" Authenticode="Microsoft400" StrongName="StrongName" />
   </ItemGroup>
   <Target Name="SignNuGetPackage" />
-  <Target Name="CopyArtifacts"
-          AfterTargets="Pack"
-          DependsOnTargets="SignNuGetPackage"
-          Condition="'$(IsInnerBuild)' != 'true'">
+  <Target Name="CopyArtifacts" AfterTargets="Pack" DependsOnTargets="SignNuGetPackage" Condition="'$(IsInnerBuild)' != 'true'">
     <ItemGroup>
       <Artifact Include="$(OutputPath)\**" />
     </ItemGroup>
-    <Copy SourceFiles="@(Artifact)"
-          DestinationFiles="@(Artifact->'$(ArtifactsPath)%(RecursiveDir)%(Filename)%(Extension)')"
-          SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
-          OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)" />
+    <Copy SourceFiles="@(Artifact)" DestinationFiles="@(Artifact->'$(ArtifactsPath)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="$(SkipCopyUnchangedFiles)" OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)" />
   </Target>
-  <Target Name="IncludeReferenceCopyLocalPathsInBuildOutputInPackage"
-          BeforeTargets="_GetBuildOutputFilesWithTfm"
-          DependsOnTargets="ResolveReferences;ResolvePackageDependenciesForBuild">
+  <Target Name="IncludeReferenceCopyLocalPathsInBuildOutputInPackage" BeforeTargets="_GetBuildOutputFilesWithTfm" DependsOnTargets="ResolveReferences;ResolvePackageDependenciesForBuild">
     <ItemGroup>
-      <BuildOutputInPackage Include="@(RuntimeCopyLocalItems-&gt;WithMetadataValue('AssetType', 'runtime'))"
-                            TargetPath="%(RuntimeCopyLocalItems.DestinationSubDirectory)%(Filename)%(Extension)" />
-      <BuildOutputInPackage Include="@(RuntimeCopyLocalItems-&gt;WithMetadataValue('CopyLocal', 'true'))"
-                            TargetPath="%(RuntimeCopyLocalItems.DestinationSubDirectory)%(Filename)%(Extension)" />
+      <BuildOutputInPackage Include="@(RuntimeCopyLocalItems-&gt;WithMetadataValue('AssetType', 'runtime'))" TargetPath="%(RuntimeCopyLocalItems.DestinationSubDirectory)%(Filename)%(Extension)" />
+      <BuildOutputInPackage Include="@(RuntimeCopyLocalItems-&gt;WithMetadataValue('CopyLocal', 'true'))" TargetPath="%(RuntimeCopyLocalItems.DestinationSubDirectory)%(Filename)%(Extension)" />
     </ItemGroup>
   </Target>
+  <ItemGroup>
+    <PackageVersion Update="Nerdbank.GitVersioning" Version="3.7.115" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Update="Nerdbank.GitVersioning">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
 </Project>
