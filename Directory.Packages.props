@@ -5,7 +5,7 @@
 
     <!-- Please use caution adding a dependency to MSBuild packages. Use latest for testing and
          use the minimum version for compilation for back compat. -->
-    <MicrosoftBuildPackageVersion>17.11.4</MicrosoftBuildPackageVersion>
+    <MicrosoftBuildPackageVersion>17.11.48</MicrosoftBuildPackageVersion>
     <MicrosoftBuildMinimumPackageVersion>16.11.0</MicrosoftBuildMinimumPackageVersion>
   </PropertyGroup>
   <ItemGroup>
