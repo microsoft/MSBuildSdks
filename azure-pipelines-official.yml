@@ -82,3 +82,20 @@ extends:
             projects: 'MSBuildSdks.sln'
             msbuildArgs: '$(MSBuildArgs)'
             msbuildArchitecture: 'x64'
+        - task: PowerShell@2
+          displayName: 'Cleanup project.assets.json file'
+          inputs:
+            targetType: 'inline'
+            script: |
+              gci -r -fi project.assets.json | %{
+                $j = Get-Content $_ -Raw | ConvertFrom-Json -AsHashtable
+                if($j.targets){ foreach($t in $j.targets.Keys){
+                  $j.targets[$t].Keys.Where({$_ -like 'System.Text.Json/*'})|%{ $j.targets[$t].Remove($_) } | Out-Null
+                  foreach($k in $j.targets[$t].Keys){ if($j.targets[$t][$k].dependencies){ $j.targets[$t][$k].dependencies.Remove('System.Text.Json') | Out-Null } }
+                }}
+                if($j.libraries){ $j.libraries.Keys.Where({$_ -like 'System.Text.Json/*'})|%{ $j.libraries.Remove($_) } | Out-Null }
+                if($j.projectFileDependencyGroups){ foreach($k in @($j.projectFileDependencyGroups.Keys)){
+                  $j.projectFileDependencyGroups[$k] = @($j.projectFileDependencyGroups[$k] | ?{$_ -notmatch '^System\.Text\.Json(\s|$)'})
+                }}
+                $j | ConvertTo-Json -Depth 100 | Set-Content $_ -Encoding utf8
+              }

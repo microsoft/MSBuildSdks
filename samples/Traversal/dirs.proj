@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.Build.Traversal/3.1.6">
+<Project Sdk="Microsoft.Build.Traversal/4.1.82">
   <ItemGroup>
     <ProjectReference Include="ProjectA\ProjectA.csproj" />
     <ProjectReference Include="ProjectB\ProjectB.csproj" />

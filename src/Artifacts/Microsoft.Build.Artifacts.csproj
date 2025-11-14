@@ -18,8 +18,8 @@
     <PackageReference Include="CopyOnWrite" GeneratePathProperty="True" PrivateAssets="All" />
 
     <!-- Note these are API dependencies to support a minimum version of MSBuild. -->
-    <PackageReference Include="Microsoft.Build.Tasks.Core" VersionOverride="$(MicrosoftBuildMinimumPackageVersion)" ExcludeAssets="Runtime" PrivateAssets="All" />
-    <PackageReference Include="System.Threading.Tasks.Dataflow" VersionOverride="4.9.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" ExcludeAssets="Runtime" PrivateAssets="All" />
+    <PackageReference Include="System.Threading.Tasks.Dataflow" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup>
     <None Include="build\*"

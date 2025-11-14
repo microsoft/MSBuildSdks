@@ -33,7 +33,6 @@
                       PrivateAssets="All" />
     <!-- Note this is an API dependencies to support a minimum version of MSBuild. -->
     <PackageReference Include="Microsoft.Build.Tasks.Core"
-                      VersionOverride="$(MicrosoftBuildMinimumPackageVersion)"
                       PrivateAssets="all"
                       ExcludeAssets="Runtime"
                       IncludeAssets="compile; build; native; contentfiles; analyzers; buildtransitive" />

@@ -3,23 +3,28 @@
     <TargetFrameworks>net472;net8.0;net9.0</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="AssemblyShader" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk"
-                      ShadeDependencies="NuGet.Frameworks" />
+    <PackageReference Include="AssemblyShader">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" ShadeDependencies="NuGet.Frameworks" />
     <PackageReference Include="MSBuild.ProjectCreation" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="Shouldly" />
     <PackageReference Include="xunit" />
-    <PackageReference Include="xunit.analyzers" />
-    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="xunit.analyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NoTargets\Microsoft.Build.NoTargets.csproj"
-                      ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\NoTargets\Microsoft.Build.NoTargets.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\NoTargets\Sdk\**\*"
-          Link="Sdk\%(RecursiveDir)%(Filename)%(Extension)"
-          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\NoTargets\Sdk\**\*" Link="Sdk\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
