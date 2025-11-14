@@ -5,8 +5,6 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>Build logic for staging artifacts from build outputs.</Description>
     <DevelopmentDependency>true</DevelopmentDependency>
-    <EnableArtifacts>false</EnableArtifacts>
-    <ArtifactsPath>$(BaseArtifactsPath)$(MSBuildProjectName)\</ArtifactsPath>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>

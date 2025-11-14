@@ -5,7 +5,6 @@
     <TargetFrameworks>net8.0;net472</TargetFrameworks>
     <Description>Provides targets for downloading universal packages on restore.</Description>
     <PackageTags>MSBuild MSBuildSdk universalpackages</PackageTags>
-    <ArtifactsPath>$(BaseArtifactsPath)$(MSBuildProjectName)\</ArtifactsPath>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageType>MSBuildSdk</PackageType>
     <NoDefaultExcludes>true</NoDefaultExcludes>
