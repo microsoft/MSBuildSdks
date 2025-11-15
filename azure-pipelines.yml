@@ -91,6 +91,12 @@ jobs:
       testRunTitle: 'Windows .NET 10.0'
     condition: succeededOrFailed()
 
+  - powershell: |
+      $bin = "$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\bin"
+      if (Test-Path $bin) { Remove-Item -LiteralPath $bin -Recurse -Force }
+    displayName: 'Remove artifacts/bin (Windows)'
+    condition: always()
+
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifacts'
     inputs:
@@ -151,6 +157,12 @@ jobs:
       testRunTitle: 'Linux .NET 10.0'
     condition: succeededOrFailed()
 
+  - bash: |
+      BIN_DIR="$(Build.SourcesDirectory)/$(ArtifactsDirectoryName)/bin"
+      [ -d "$BIN_DIR" ] && rm -rf "$BIN_DIR"
+    displayName: 'Remove artifacts/bin (Linux)'
+    condition: always()
+
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifacts'
     inputs:
@@ -210,6 +222,12 @@ jobs:
       arguments: '--no-restore --no-build --framework net10.0 /noautorsp'
       testRunTitle: 'MacOS .NET 10.0'
     condition: succeededOrFailed()
+
+  - bash: |
+      BIN_DIR="$(Build.SourcesDirectory)/$(ArtifactsDirectoryName)/bin"
+      [ -d "$BIN_DIR" ] && rm -rf "$BIN_DIR"
+    displayName: 'Remove artifacts/bin (macOS)'
+    condition: always()
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifacts'
