@@ -10,7 +10,7 @@
     <PackageReference Include="CopyOnWrite" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" ShadeDependencies="NuGet.Frameworks" />
     <PackageReference Include="MSBuild.ProjectCreation" />
-    <PackageReference Include="Newtonsoft.Json" />    
+    <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="Shouldly" />
     <PackageReference Include="System.Threading.Tasks.Dataflow" />
     <PackageReference Include="xunit" />
