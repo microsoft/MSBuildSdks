@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net472;net8.0;net9.0</TargetFrameworks>
+    <TargetFrameworks>net472;net8.0;net9.0;net10.0</TargetFrameworks>
     <Nullable>Enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
@@ -13,10 +13,16 @@
     <PackageReference Include="Shouldly" />
     <PackageReference Include="System.CodeDom" />
     <PackageReference Include="System.Collections.Immutable" />
-    <PackageReference Include="System.Text.Json" Condition="'$(TargetFramework)' != 'net8.0' " />
+    <PackageReference Include="System.Text.Json" />
     <PackageReference Include="xunit" />
-    <PackageReference Include="xunit.analyzers" />
-    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="xunit.analyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CopyOnWrite\Microsoft.Build.CopyOnWrite.csproj" />

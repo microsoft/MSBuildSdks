@@ -7,7 +7,6 @@
     <DevelopmentDependency>true</DevelopmentDependency>
     <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-    <ArtifactsPath>$(BaseArtifactsPath)$(MSBuildProjectName)\</ArtifactsPath>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>    
@@ -33,7 +32,6 @@
                       PrivateAssets="All" />
     <!-- Note this is an API dependencies to support a minimum version of MSBuild. -->
     <PackageReference Include="Microsoft.Build.Tasks.Core"
-                      VersionOverride="$(MicrosoftBuildMinimumPackageVersion)"
                       PrivateAssets="all"
                       ExcludeAssets="Runtime"
                       IncludeAssets="compile; build; native; contentfiles; analyzers; buildtransitive" />

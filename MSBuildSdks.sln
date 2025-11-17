@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.2.32516.85
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11205.157 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.Traversal", "src\Traversal\Microsoft.Build.Traversal.csproj", "{B93918D4-75EA-467E-8F50-393A1324FF91}"
 EndProject
@@ -48,16 +48,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.Artifacts",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Build.Artifacts.UnitTests", "src\Artifacts.UnitTests\Microsoft.Build.Artifacts.UnitTests.csproj", "{359B2C2B-B9B8-496F-B4B1-9E4359729F89}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CentralPackageVersions", "CentralPackageVersions", "{FCF015C3-82E5-488D-8438-1410F6572F0B}"
-	ProjectSection(SolutionItems) = preProject
-		samples\CentralPackageVersions\Directory.Build.props = samples\CentralPackageVersions\Directory.Build.props
-		samples\CentralPackageVersions\Directory.Build.targets = samples\CentralPackageVersions\Directory.Build.targets
-		samples\CentralPackageVersions\Packages.props = samples\CentralPackageVersions\Packages.props
-		samples\CentralPackageVersions\README.md = samples\CentralPackageVersions\README.md
-	EndProjectSection
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClassLibrary", "samples\CentralPackageVersions\src\ClassLibrary\ClassLibrary.csproj", "{A266FDFA-BE7C-4E3E-9BEA-EF18EF66540C}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Traversal", "Traversal", "{5AEA9E7B-4AF2-4E03-A566-7CC30318C311}"
 	ProjectSection(SolutionItems) = preProject
 		samples\Traversal\Directory.Build.props = samples\Traversal\Directory.Build.props
@@ -73,10 +63,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProjectA", "samples\Traversal\ProjectA\ProjectA.csproj", "{18C7CBF8-98D3-4C47-A11B-2905AF23A20B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProjectB", "samples\Traversal\ProjectB\ProjectB.csproj", "{2035141B-4345-4E79-83DB-979A43BA5C29}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{145D39C4-285A-4ACF-B86C-7E611969DE35}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ClassLibrary", "ClassLibrary", "{35CEF293-5111-4017-A3BA-63FF5710C953}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SampleNoTargets", "SampleNoTargets", "{469437EE-241A-4B8A-B7E0-E0F913F5529D}"
 EndProject
@@ -134,10 +120,6 @@ Global
 		{359B2C2B-B9B8-496F-B4B1-9E4359729F89}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{359B2C2B-B9B8-496F-B4B1-9E4359729F89}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{359B2C2B-B9B8-496F-B4B1-9E4359729F89}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A266FDFA-BE7C-4E3E-9BEA-EF18EF66540C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A266FDFA-BE7C-4E3E-9BEA-EF18EF66540C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A266FDFA-BE7C-4E3E-9BEA-EF18EF66540C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A266FDFA-BE7C-4E3E-9BEA-EF18EF66540C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{18C7CBF8-98D3-4C47-A11B-2905AF23A20B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{18C7CBF8-98D3-4C47-A11B-2905AF23A20B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{18C7CBF8-98D3-4C47-A11B-2905AF23A20B}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -177,15 +159,11 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{516F0D1D-C4FE-4832-9E49-903A2C57D3F3} = {867D30F7-2AEC-48E7-B167-4919EE1B0985}
 		{48F56A6B-A285-4B40-9E96-044F7AA2C532} = {469437EE-241A-4B8A-B7E0-E0F913F5529D}
-		{FCF015C3-82E5-488D-8438-1410F6572F0B} = {867D30F7-2AEC-48E7-B167-4919EE1B0985}
-		{A266FDFA-BE7C-4E3E-9BEA-EF18EF66540C} = {35CEF293-5111-4017-A3BA-63FF5710C953}
 		{5AEA9E7B-4AF2-4E03-A566-7CC30318C311} = {867D30F7-2AEC-48E7-B167-4919EE1B0985}
 		{615210F2-B751-431E-B2F1-C5D3C205F899} = {5AEA9E7B-4AF2-4E03-A566-7CC30318C311}
 		{A9CC411B-67F8-4644-873C-1ACBFC12AAA5} = {5AEA9E7B-4AF2-4E03-A566-7CC30318C311}
 		{18C7CBF8-98D3-4C47-A11B-2905AF23A20B} = {615210F2-B751-431E-B2F1-C5D3C205F899}
 		{2035141B-4345-4E79-83DB-979A43BA5C29} = {A9CC411B-67F8-4644-873C-1ACBFC12AAA5}
-		{145D39C4-285A-4ACF-B86C-7E611969DE35} = {FCF015C3-82E5-488D-8438-1410F6572F0B}
-		{35CEF293-5111-4017-A3BA-63FF5710C953} = {145D39C4-285A-4ACF-B86C-7E611969DE35}
 		{469437EE-241A-4B8A-B7E0-E0F913F5529D} = {516F0D1D-C4FE-4832-9E49-903A2C57D3F3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

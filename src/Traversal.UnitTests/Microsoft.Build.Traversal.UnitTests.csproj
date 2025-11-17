@@ -1,25 +1,30 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net472;net8.0;net9.0</TargetFrameworks>
+    <TargetFrameworks>net472;net8.0;net9.0;net10.0</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="AssemblyShader" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk"
-                      ShadeDependencies="NuGet.Frameworks"  />
+    <PackageReference Include="AssemblyShader">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" ShadeDependencies="NuGet.Frameworks" />
     <PackageReference Include="MSBuild.ProjectCreation" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="Shouldly" />
     <PackageReference Include="xunit" />
-    <PackageReference Include="xunit.analyzers" />
-    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="xunit.analyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Traversal\Microsoft.Build.Traversal.csproj"
-                      ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Traversal\Microsoft.Build.Traversal.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Traversal\Sdk\**"
-          Link="Sdk\$(RelativeDir)%(Filename)%(Extension)"
-          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\Traversal\Sdk\**" Link="Sdk\$(RelativeDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

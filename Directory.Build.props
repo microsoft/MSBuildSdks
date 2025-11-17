@@ -3,7 +3,6 @@
     <DefaultItemExcludes>*log</DefaultItemExcludes>
     <MSBuildTreatWarningsAsErrors>true</MSBuildTreatWarningsAsErrors>
     <LangVersion>Latest</LangVersion>
-    <BaseArtifactsPath>$(MSBuildThisFileDirectory)artifacts\</BaseArtifactsPath>
     <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
     <NoWarn>$(NoWarn);NU5128;SA0001</NoWarn>
     <!--
@@ -12,7 +11,7 @@
     -->
     <RestoreUseStaticGraphEvaluation>false</RestoreUseStaticGraphEvaluation>
     <RestoreSerializeGlobalProperties>true</RestoreSerializeGlobalProperties>
-    <UseArtifactsOutput>false</UseArtifactsOutput>
+    <UseArtifactsOutput>true</UseArtifactsOutput>
     <IsTestProject Condition="$(MSBuildProjectName.EndsWith('UnitTests'))">true</IsTestProject>
     <IsPackable Condition="'$(IsTestProject)' != 'true'">true</IsPackable>
 

@@ -1,32 +1,34 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net472;net8.0;net9.0</TargetFrameworks>
+    <TargetFrameworks>net472;net8.0;net9.0;net10.0</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="AssemblyShader" />
+    <PackageReference Include="AssemblyShader">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="CopyOnWrite" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk"
-                      ShadeDependencies="NuGet.Frameworks"  />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" ShadeDependencies="NuGet.Frameworks" />
     <PackageReference Include="MSBuild.ProjectCreation" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="Shouldly" />
     <PackageReference Include="System.Threading.Tasks.Dataflow" />
     <PackageReference Include="xunit" />
-    <PackageReference Include="xunit.analyzers" />
-    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="xunit.analyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Artifacts\Microsoft.Build.Artifacts.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Artifacts\build\**"
-          Link="build\%(Filename)%(Extension)"
-          CopyToOutputDirectory="PreserveNewest" />
-    <None Include="..\Artifacts\buildMultiTargeting\**"
-          Link="buildMultiTargeting\%(Filename)%(Extension)"
-          CopyToOutputDirectory="PreserveNewest" />
-    <None Include="..\Artifacts\Sdk\**"
-          Link="Sdk\%(Filename)%(Extension)"
-          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\Artifacts\build\**" Link="build\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\Artifacts\buildMultiTargeting\**" Link="buildMultiTargeting\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\Artifacts\Sdk\**" Link="Sdk\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
