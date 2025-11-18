@@ -5,7 +5,6 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CopyOnWrite" />
-    <PackageReference Include="Microsoft.Build" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="Microsoft.Win32.Registry" />
     <PackageReference Include="MSBuild.ProjectCreation" />
