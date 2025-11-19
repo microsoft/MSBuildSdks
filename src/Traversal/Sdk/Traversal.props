@@ -21,7 +21,8 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
 
     <!-- Targeting packs shouldn't be referenced as traversal projects don't compile. -->
-    <DisableImplicitFrameworkReferences Condition="'$(DisableImplicitFrameworkReferences)' == ''">true</DisableImplicitFrameworkReferences>
+    <!-- Note that for Microsoft.Testing.Platform specifically, traversal projects *do* compile. -->
+    <DisableImplicitFrameworkReferences Condition="'$(DisableImplicitFrameworkReferences)' == '' AND '$(IsTestingPlatformApplication)'!='true'">true</DisableImplicitFrameworkReferences>
 
     <!-- Disable Visual Studio's Fast Up-to-date Check and rely on MSBuild to determine -->
     <DisableFastUpToDateCheck Condition="'$(DisableFastUpToDateCheck)' == ''">true</DisableFastUpToDateCheck>

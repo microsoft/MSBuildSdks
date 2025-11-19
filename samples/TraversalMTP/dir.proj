@@ -1,0 +1,12 @@
+<Project>
+
+	<Import Project="C:\Users\ygerges\source\repos\MSBuildSdks\src\Traversal\Sdk\Sdk.props" />
+
+	<ItemGroup>
+		<ProjectReference Include="t1/t1.csproj" />
+		<!-- <ProjectReference Include="t2/t2.csproj" /> -->
+	</ItemGroup>
+
+	<Import Project="C:\Users\ygerges\source\repos\MSBuildSdks\src\Traversal\Sdk\Sdk.targets" />
+
+</Project>
