@@ -83,14 +83,13 @@ jobs:
       testRunTitle: 'Windows .NET 9.0'
     condition: succeededOrFailed()
 
-  # Disabled due to MSBuild.ProjectCreation dependency issue
-  # - task: DotNetCoreCLI@2
-  #   displayName: 'Run Unit Tests (.NET 10.0)'
-  #   inputs:
-  #     command: 'test'
-  #     arguments: '--no-restore --no-build --framework net10.0 /noautorsp'
-  #     testRunTitle: 'Windows .NET 10.0'
-  #   condition: succeededOrFailed()
+  - task: DotNetCoreCLI@2
+    displayName: 'Run Unit Tests (.NET 10.0)'
+    inputs:
+      command: 'test'
+      arguments: '--no-restore --no-build --framework net10.0 /noautorsp'
+      testRunTitle: 'Windows .NET 10.0'
+    condition: succeededOrFailed()
 
   - powershell: |
       $bin = "$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\bin"
@@ -150,14 +149,13 @@ jobs:
       testRunTitle: 'Linux .NET 9.0'
     condition: succeededOrFailed()
 
-  # Disabled due to MSBuild.ProjectCreation dependency issue
-  # - task: DotNetCoreCLI@2
-  #   displayName: 'Run Unit Tests (.NET 10.0)'
-  #   inputs:
-  #     command: 'test'
-  #     arguments: '--no-restore --no-build --framework net10.0 /noautorsp'
-  #     testRunTitle: 'Linux .NET 10.0'
-  #   condition: succeededOrFailed()
+  - task: DotNetCoreCLI@2
+    displayName: 'Run Unit Tests (.NET 10.0)'
+    inputs:
+      command: 'test'
+      arguments: '--no-restore --no-build --framework net10.0 /noautorsp'
+      testRunTitle: 'Linux .NET 10.0'
+    condition: succeededOrFailed()
 
   - bash: |
       BIN_DIR="$(Build.SourcesDirectory)/$(ArtifactsDirectoryName)/bin"
@@ -217,14 +215,13 @@ jobs:
       testRunTitle: 'MacOS .NET 9.0'
     condition: succeededOrFailed()
 
-  # Disabled due to MSBuild.ProjectCreation dependency issue
-  # - task: DotNetCoreCLI@2
-  #   displayName: 'Run Unit Tests (.NET 10.0)'
-  #   inputs:
-  #     command: 'test'
-  #     arguments: '--no-restore --no-build --framework net10.0 /noautorsp'
-  #     testRunTitle: 'MacOS .NET 10.0'
-  #   condition: succeededOrFailed()
+  - task: DotNetCoreCLI@2
+    displayName: 'Run Unit Tests (.NET 10.0)'
+    inputs:
+      command: 'test'
+      arguments: '--no-restore --no-build --framework net10.0 /noautorsp'
+      testRunTitle: 'MacOS .NET 10.0'
+    condition: succeededOrFailed()
 
   - bash: |
       BIN_DIR="$(Build.SourcesDirectory)/$(ArtifactsDirectoryName)/bin"

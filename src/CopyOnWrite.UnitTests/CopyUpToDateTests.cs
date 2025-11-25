@@ -6,17 +6,14 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Tasks;
 using Microsoft.Build.UnitTests.Common;
 using Microsoft.Build.Utilities;
+using Microsoft.Build.Utilities.ProjectCreation;
+using Shouldly;
 using System;
 using System.IO;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.Build.CopyOnWrite.UnitTests;
-
-// These tests rely on Microsoft.Build.Framework which has only a net472 and current-framework target.
-// Don't compile these tests for .NET versions in between as Microsoft.Build.Framework.dll will not be
-// propagated to the output dir.
-#if !NET8_0_OR_GREATER
 
 public class CopyUpToDateTests : MSBuildSdkTestBase
 {
@@ -61,13 +58,13 @@ public class CopyUpToDateTests : MSBuildSdkTestBase
             var originalFileInfo = new FileInfo(file1Path);
             string destDir = Path.Combine(tempDir.Path, "dest");
 
-            var engine = new MockEngine(logToConsole: true);
+            BuildEngine engine = BuildEngine.Create();
 
             Copy copy = CreateFreshCopyTask();
 
             copy.Execute();
-            engine.MockLogger.AssertNoErrors();
-            engine.MockLogger.AssertNoWarnings();
+            engine.ErrorEvents.ShouldBeEmpty();
+            engine.WarningEvents.ShouldBeEmpty();
             var file1Info = new FileInfo(file1Path);
             AssertExistenceAndEqualTimes();
 
@@ -82,8 +79,8 @@ public class CopyUpToDateTests : MSBuildSdkTestBase
             {
                 copy = CreateFreshCopyTask();
                 copy.Execute();
-                engine.MockLogger.AssertNoErrors();
-                engine.MockLogger.AssertNoWarnings();
+                engine.ErrorEvents.ShouldBeEmpty();
+                engine.WarningEvents.ShouldBeEmpty();
 
                 file1Info = new FileInfo(file1Path);
                 AssertExistenceAndEqualTimes();
@@ -127,5 +124,3 @@ public class CopyUpToDateTests : MSBuildSdkTestBase
         }
     }
 }
-
-#endif
