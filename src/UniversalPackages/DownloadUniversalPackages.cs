@@ -225,6 +225,7 @@ public sealed class DownloadUniversalPackages : Task
         var packages = new HashSet<UniversalPackage>();
         foreach (ProjectGraphNode node in graph.ProjectNodes)
         {
+            SortedDictionary<string, string> pathProperties = new SortedDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             foreach (ProjectItemInstance packageItem in node.ProjectInstance.GetItems(PackageItemName))
             {
                 string name = packageItem.EvaluatedInclude;
@@ -272,6 +273,44 @@ public sealed class DownloadUniversalPackages : Task
 
                 var package = new UniversalPackage(project, feed, name, version, path, filter);
                 packages.Add(package);
+
+                string? generatePathProperty = packageItem.GetMetadataValue("GeneratePathProperty");
+                if (string.Equals(generatePathProperty, bool.TrueString, StringComparison.OrdinalIgnoreCase))
+                {
+                    pathProperties.Add($"Pkg{name.Replace(".", "_")}", path);
+                }
+            }
+
+            string generatedPropsFilePath = Path.Combine(
+                node.ProjectInstance.Directory,
+                node.ProjectInstance.GetPropertyValue("MSBuildProjectExtensionsPath"),
+                $"{Path.GetFileName(node.ProjectInstance.FullPath)}.upack.g.props");
+            generatedPropsFilePath = Path.GetFullPath(generatedPropsFilePath);
+            if (pathProperties.Count > 0)
+            {
+                Log.LogMessage(MessageImportance.Normal, $"Generating MSBuild file {generatedPropsFilePath}.");
+                using (StreamWriter generatedPropsFileStreamWriter = new StreamWriter(generatedPropsFilePath))
+                {
+                    generatedPropsFileStreamWriter.WriteLine("<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"no\"?>");
+                    generatedPropsFileStreamWriter.WriteLine("<Project>");
+                    generatedPropsFileStreamWriter.WriteLine("  <PropertyGroup Condition=\" '$(ExcludeRestorePackageImports)' != 'true' \">");
+
+                    foreach (KeyValuePair<string, string> pathProperty in pathProperties)
+                    {
+                        generatedPropsFileStreamWriter.WriteLine($"    <{pathProperty.Key} Condition=\" '$({pathProperty.Key})' == '' \">{pathProperty.Value}</{pathProperty.Key}>");
+                    }
+
+                    generatedPropsFileStreamWriter.WriteLine("  </PropertyGroup>");
+                    generatedPropsFileStreamWriter.WriteLine("</Project>");
+                }
+            }
+            else
+            {
+                // If there are no path properties, delete any stale file so we don't leave them around causing these properties to still be available.
+                if (File.Exists(generatedPropsFilePath))
+                {
+                    File.Delete(generatedPropsFilePath);
+                }
             }
         }
 
