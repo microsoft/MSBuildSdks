@@ -5,6 +5,9 @@
 namespace Microsoft.Build.UniversalPackages;
 
 using System.Diagnostics;
+#if !NETFRAMEWORK
+using System.Formats.Tar;
+#endif
 using System.IO;
 using System.IO.Compression;
 #if NETFRAMEWORK
@@ -706,7 +709,7 @@ public sealed class DownloadUniversalPackages : Task
                     releaseInfo.Value.DownloadUri,
                     credentialProviderDir,
                     GetArtifactsCredentialProviderRelativePath(),
-                    isZip: RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
+                    isZip: releaseInfo.Value.DownloadUri.EndsWith(".zip", StringComparison.OrdinalIgnoreCase));
                 if (!downloadResult)
                 {
                     return null;
@@ -754,25 +757,21 @@ public sealed class DownloadUniversalPackages : Task
         Log.LogMessage($"Current Artifacts Credential Provider version: {version}");
 
         string rid;
-        string fileExtension;
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             rid = "win-x64";
-            fileExtension = ".zip";
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
             rid = RuntimeInformation.ProcessArchitecture == Architecture.Arm64
                 ? "linux-arm64"
                 : "linux-x64";
-            fileExtension = ".tar.gz";
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
             rid = RuntimeInformation.ProcessArchitecture == Architecture.Arm64
                 ? "osx-arm64"
                 : "osx-x64";
-            fileExtension = ".zip";
         }
         else
         {
@@ -780,12 +779,20 @@ public sealed class DownloadUniversalPackages : Task
             return null;
         }
 
-        string fileNamePattern = $@"Microsoft.Net(\d+).{rid}.NuGet.CredentialProvider{fileExtension}";
+        // We currently only support zip on with .NET Framework.
+#if NETFRAMEWORK
+        const string fileExtention = "zip";
+#else
+        const string fileExtention = @"(zip|tar\.gz)";
+#endif
+        string fileNamePattern = $@"Microsoft(\.Net(?<RuntimeVersion>\d+))?\.{rid}\.NuGet\.CredentialProvider\.{fileExtention}";
         Log.LogMessage(MessageImportance.Low, $"Looking for Artifacts Credential Provider asset with name: {fileNamePattern}");
-        Regex fileNameRegex = new Regex(fileNamePattern, RegexOptions.IgnoreCase);
+        Regex fileNameRegex = new Regex(fileNamePattern, RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture);
 
-        int maxNetVersion = 0;
-        string? maxVersionDownloadUrl = null;
+        List<JsonElement> matchingAssets = new List<JsonElement>();
+
+        int maxRuntimeVersion = 0;
+        string? downloadUri = null;
         foreach (JsonElement asset in root.GetProperty("assets").EnumerateArray())
         {
             string? assetName = asset.GetProperty("name").GetString();
@@ -800,26 +807,37 @@ public sealed class DownloadUniversalPackages : Task
                 continue;
             }
 
-            string netVersionStr = match.Groups[1].Value;
-            if (!int.TryParse(netVersionStr, out int netVersion))
+            Group runtimeVersionGroup = match.Groups["RuntimeVersion"];
+            if (runtimeVersionGroup.Success)
             {
-                continue;
-            }
+                if (!int.TryParse(runtimeVersionGroup.Value, out int runtimeVersion))
+                {
+                    continue;
+                }
 
-            if (netVersion > maxNetVersion)
+                // Prefer the highest runtime version available.
+                // Note: Starting in v2 the runtime version is no longer included in the asset name for self-contained flavors of the tool (names sense; it's self-contained).
+                //       Once v2 ships and is stable, this logic can be removed entirely in favor of the pattern without the version.
+                if (runtimeVersion > maxRuntimeVersion)
+                {
+                    maxRuntimeVersion = runtimeVersion;
+                    downloadUri = asset.GetProperty("browser_download_url").GetString();
+                }
+            }
+            else
             {
-                maxNetVersion = netVersion;
-                maxVersionDownloadUrl = asset.GetProperty("browser_download_url").GetString();
+                downloadUri = asset.GetProperty("browser_download_url").GetString();
+
+                // Newer releases do not have the runtime version in the name, so short circuit once we find one.
+                break;
             }
         }
 
-        if (maxVersionDownloadUrl is null)
+        if (downloadUri is null)
         {
             Log.LogError($"Unable to find a download url for the Artifact Credential Provider.");
             return null;
         }
-
-        string downloadUri = maxVersionDownloadUrl;
 
         return (version, downloadUri);
     }
@@ -878,19 +896,18 @@ public sealed class DownloadUniversalPackages : Task
             }
             else
             {
-                // There is no built-in support for extracting tar.gz files, so fall back to the tar command.
-                // Note: the tar command requires that the destination directory already exist.
+#if NETFRAMEWORK
+                Log.LogError($"Extracting non-zip archives is not supported in this scenario.");
+                return false;
+#else
                 Directory.CreateDirectory(archiveExtractPath);
-                int exitCode = ProcessHelper.Execute(
-                    "/bin/bash",
-                    $"-c \"tar -xzf \\\"{archiveDownloadPath}\\\" -C \\\"{archiveExtractPath}\\\"\"",
-                    processStdOut: message => Log.LogMessage(MessageImportance.Low, message),
-                    processStdErr: message => Log.LogError(message));
-                if (exitCode != 0)
+
+                using (var archiveStream = File.OpenRead(archiveDownloadPath))
+                using (var archiveGzipStream = new GZipStream(archiveStream, CompressionMode.Decompress))
                 {
-                    Log.LogError($"Extracting Artifacts Credential Provider failed with exit code: {exitCode}");
-                    return false;
+                    TarFile.ExtractToDirectory(archiveGzipStream, archiveExtractPath, overwriteFiles: false);
                 }
+#endif
             }
 
             Log.LogMessage(MessageImportance.Low, "Extracted Artifacts Credential Provider");
