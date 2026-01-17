@@ -76,9 +76,8 @@ extends:
           inputs:
             version: '$(DotNetVersion)'
             includePreviewVersions: true
-        - task: VSBuild@1
+        - task: DotNetCoreCLI@2
           displayName: 'Build Solution'
           inputs:
-            projects: 'MSBuildSdks.sln'
-            msbuildArgs: '$(MSBuildArgs)'
-            msbuildArchitecture: 'x64'
+            command: 'build'
+            arguments: '$(MSBuildArgs)'
