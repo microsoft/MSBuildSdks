@@ -26,9 +26,12 @@
     <EnableDefaultItems>false</EnableDefaultItems>
 
     <!--
-      TargetFramework is required for restore and used to default to .NET Framework v4.5.  However, Traversal projects don't specify a version so it needs to be defaulted here.
+      TargetFramework is required for restore. If the user specifies a version, use that. Otherwise, use the
+      NETCoreAppMaximumVersion so that the project acts as if it were part of the SDK. If for some reason that's also
+      not set, fallback to the SDK's old default of .NET Framework v4.5.
     -->
-    <TargetFramework Condition="'$(TargetFramework)' == ''">net45</TargetFramework>
+    <TargetFramework Condition=" '$(TargetFramework)' == '' And '$(NETCoreAppMaximumVersion)' != ''">net$(NETCoreAppMaximumVersion)</TargetFramework>
+    <TargetFramework Condition=" '$(TargetFramework)' == ''">net45</TargetFramework>
   </PropertyGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
