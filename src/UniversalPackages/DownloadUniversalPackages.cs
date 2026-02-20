@@ -144,6 +144,9 @@ public sealed class DownloadUniversalPackages : Task
             return true;
         }
 
+        Log.LogMessage(MessageImportance.High, $"Downloading {packages.Count} universal package(s)...");
+        Stopwatch downloadStopwatch = Stopwatch.StartNew();
+
         // To ensure package integrity, eg to deal with cancellation, we will download the packages to a temp dir and then move (directory moves are atomic) them to the final location.
         var remappedPackages = new List<UniversalPackage>(packages.Count);
         var packagePathMappings = new List<(string TempPath, string FinalPath)>(packages.Count);
@@ -187,6 +190,8 @@ public sealed class DownloadUniversalPackages : Task
         {
             Directory.Move(tempPath, finalPath);
         }
+
+        Log.LogMessage(MessageImportance.High, $"Downloaded {packages.Count} universal package(s) in {downloadStopwatch.Elapsed.TotalSeconds:F1}s");
 
         return !Log.HasLoggedErrors;
     }
