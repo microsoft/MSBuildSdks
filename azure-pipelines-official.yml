@@ -29,7 +29,7 @@ extends:
       sbom:
         enabled: false
     pool:
-      name: VSEngSS-MicroBuild2022-1ES
+      name: VSEng-MicroBuildVSStable
       demands:
       - msbuild
       - visualstudio
@@ -41,7 +41,7 @@ extends:
       - job: Build
         displayName: 'Build'
         pool:
-          name: 'VSEngSS-MicroBuild2022-1ES'
+          name: 'VSEng-MicroBuildVSStable'
         templateContext:
           mb:
             signing:
