@@ -55,6 +55,13 @@ extends:
             condition: always()
             targetPath: '$(ArtifactsDirectoryName)'
             artifactName: $(ArtifactsDirectoryName)
+          - output: nuget
+            displayName: 'Push NuGet Packages to nuget.org'
+            condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/Microsoft.Build'))
+            packageParentPath: '$(ArtifactsDirectoryName)'
+            packagesToPush: '$(ArtifactsDirectoryName)/**/$(Build.SourceBranchName).nupkg'
+            nuGetFeedType: 'external'
+            publishFeedCredentials: 'MSBuild SDKs'
         steps:
         - task: PowerShell@2
           displayName: 'Update Build Number, and Add Build Tag for tagged commits'
