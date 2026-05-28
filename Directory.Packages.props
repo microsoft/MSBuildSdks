@@ -51,6 +51,7 @@
     <PackageVersion Include="System.CodeDom" Version="9.0.0" />
     <PackageVersion Include="Microsoft.Win32.Registry" Version="5.0.0" />
     <PackageVersion Include="System.Collections.Immutable" Version="9.0.0" />
+    <PackageVersion Include="System.Security.Cryptography.Xml" Version="8.0.3" />
     <!--
     
     
