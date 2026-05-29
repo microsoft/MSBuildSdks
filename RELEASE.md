@@ -31,4 +31,4 @@ Create a new release at https://github.com/Microsoft/MSBuildSdks/releases.  The 
 Publishing the release will push a git tag which triggers [the governed official build](https://devdiv.visualstudio.com/DefaultCollection/DevDiv/_build?definitionId=13584) defined in [`azure-pipelines-official.yml`](azure-pipelines-official.yml). This build creates signed packages and uploads them as artifacts.
 
 ## NuGet.org publish
-The governed official build replaces the classic VSTS release. For tags in the `packageid.version` format, the pipeline publishes only the matching package to NuGet.org using the `MSBuild SDKs` service connection. The package should be available within 15 minutes after the pipeline completes.
+For tags in the `packageid.version` format, the governed official build publishes only the matching package to NuGet.org using the `MSBuild SDKs` service connection. The package should be available within 15 minutes after the pipeline completes.
