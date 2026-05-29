@@ -56,12 +56,69 @@ extends:
             targetPath: '$(ArtifactsDirectoryName)'
             artifactName: $(ArtifactsDirectoryName)
           - output: nuget
-            displayName: 'Push NuGet Packages to nuget.org'
-            condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/Microsoft.Build'))
+            displayName: 'Push Microsoft.Build.Artifacts to NuGet.org'
+            condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/Microsoft.Build.Artifacts'))
             packageParentPath: '$(ArtifactsDirectoryName)'
-            packagesToPush: '$(ArtifactsDirectoryName)/**/$(Build.SourceBranchName).nupkg'
+            packagesToPush: '$(ArtifactsDirectoryName)/**/Microsoft.Build.Artifacts.*.nupkg'
             nuGetFeedType: 'external'
             publishFeedCredentials: 'MSBuild SDKs'
+            publishPackageMetadata: true
+          - output: nuget
+            displayName: 'Push Microsoft.Build.CentralPackageVersions to NuGet.org'
+            condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/Microsoft.Build.CentralPackageVersions'))
+            packageParentPath: '$(ArtifactsDirectoryName)'
+            packagesToPush: '$(ArtifactsDirectoryName)/**/Microsoft.Build.CentralPackageVersions.*.nupkg'
+            nuGetFeedType: 'external'
+            publishFeedCredentials: 'MSBuild SDKs'
+            publishPackageMetadata: true
+          - output: nuget
+            displayName: 'Push Microsoft.Build.NoTargets to NuGet.org'
+            condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/Microsoft.Build.NoTargets'))
+            packageParentPath: '$(ArtifactsDirectoryName)'
+            packagesToPush: '$(ArtifactsDirectoryName)/**/Microsoft.Build.NoTargets.*.nupkg'
+            nuGetFeedType: 'external'
+            publishFeedCredentials: 'MSBuild SDKs'
+            publishPackageMetadata: true
+          - output: nuget
+            displayName: 'Push Microsoft.Build.Traversal to NuGet.org'
+            condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/Microsoft.Build.Traversal'))
+            packageParentPath: '$(ArtifactsDirectoryName)'
+            packagesToPush: '$(ArtifactsDirectoryName)/**/Microsoft.Build.Traversal.*.nupkg'
+            nuGetFeedType: 'external'
+            publishFeedCredentials: 'MSBuild SDKs'
+            publishPackageMetadata: true
+          - output: nuget
+            displayName: 'Push Microsoft.Build.CopyOnWrite to NuGet.org'
+            condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/Microsoft.Build.CopyOnWrite'))
+            packageParentPath: '$(ArtifactsDirectoryName)'
+            packagesToPush: '$(ArtifactsDirectoryName)/**/Microsoft.Build.CopyOnWrite.*.nupkg'
+            nuGetFeedType: 'external'
+            publishFeedCredentials: 'MSBuild SDKs'
+            publishPackageMetadata: true
+          - output: nuget
+            displayName: 'Push Microsoft.Build.RunVSTest to NuGet.org'
+            condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/Microsoft.Build.RunVSTest'))
+            packageParentPath: '$(ArtifactsDirectoryName)'
+            packagesToPush: '$(ArtifactsDirectoryName)/**/Microsoft.Build.RunVSTest.*.nupkg'
+            nuGetFeedType: 'external'
+            publishFeedCredentials: 'MSBuild SDKs'
+            publishPackageMetadata: true
+          - output: nuget
+            displayName: 'Push Microsoft.Build.Cargo to NuGet.org'
+            condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/Microsoft.Build.Cargo'))
+            packageParentPath: '$(ArtifactsDirectoryName)'
+            packagesToPush: '$(ArtifactsDirectoryName)/**/Microsoft.Build.Cargo.*.nupkg'
+            nuGetFeedType: 'external'
+            publishFeedCredentials: 'MSBuild SDKs'
+            publishPackageMetadata: true
+          - output: nuget
+            displayName: 'Push Microsoft.Build.UniversalPackages to NuGet.org'
+            condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/Microsoft.Build.UniversalPackages'))
+            packageParentPath: '$(ArtifactsDirectoryName)'
+            packagesToPush: '$(ArtifactsDirectoryName)/**/Microsoft.Build.UniversalPackages.*.nupkg'
+            nuGetFeedType: 'external'
+            publishFeedCredentials: 'MSBuild SDKs'
+            publishPackageMetadata: true
         steps:
         - task: PowerShell@2
           displayName: 'Update Build Number, and Add Build Tag for tagged commits'
