@@ -1,0 +1,35 @@
+{
+  "run_id": "39d6d5d7-89eb-4b1f-94e4-35a06d26eb85",
+  "session_run_id": "39d6d5d7-89eb-4b1f-94e4-35a06d26eb85",
+  "agent_name": "s360-breeze-orchestrator",
+  "invoked_skills": [
+    "sfi-es424-central-feed-services"
+  ],
+  "kpi_id": "ES-4.2.4",
+  "kpi_name": "Network Isolation for CFS endpoints",
+  "program": "SFI",
+  "skill_used": "sfi-es424-central-feed-services",
+  "mode": "interactive",
+  "dev_feedback": {
+    "asked": true,
+    "question_id": "human_feedback_v1",
+    "question_scope": "kpi",
+    "prompt_variant": "result",
+    "rating": null,
+    "rating_scale": "1-5",
+    "freetext_routed": "none",
+    "arm": "dedicated_skill"
+  },
+  "session_summary": {
+    "changes_proposed": "Proposed Central Feed Services remediation for a NuGet-based build by moving restore traffic to an internal Azure Artifacts feed, adding feed authentication to build jobs, and enabling the appropriate network isolation policy on the governed pipeline.",
+    "changes_applied": true,
+    "developer_accepted": true,
+    "developer_modified": false,
+    "escalation_needed": false,
+    "escape_hatch_used": null,
+    "turns_taken": 22,
+    "improvisation_needed": true,
+    "pr_url": null,
+    "full_journey": "The developer requested ES-4.2.4 remediation with unknown pipeline and endpoint details. The session confirmed a bounded scope, discovered NuGet restore as the relevant package-manager surface, found a public package source in build configuration, added authentication tasks to the requested pipeline definitions, appended the CFSClean policy only to the governed template pipeline, and preserved package publishing behavior. An initially considered public Azure Artifacts feed was rejected after a restore sanity check showed missing packages; a private Azure Artifacts feed was then verified to contain all centrally declared package versions, and a single restore check succeeded with temporary feed authentication. Final handoff requires the developer to run the pipeline and check Stop Network Isolation logs for three clean runs over seven days."
+  }
+}
