@@ -53,6 +53,9 @@ jobs:
       version: '$(DotNet10Version)'
       includePreviewVersions: true
 
+  - task: NuGetAuthenticate@1
+    displayName: 'Authenticate NuGet feeds'
+
   - task: DotNetCoreCLI@2
     displayName: 'Build Solution'
     inputs:
@@ -127,6 +130,9 @@ jobs:
       version: '$(DotNet10Version)'
       includePreviewVersions: true
 
+  - task: NuGetAuthenticate@1
+    displayName: 'Authenticate NuGet feeds'
+
   - task: DotNetCoreCLI@2
     displayName: 'dotnet build'
     inputs:
@@ -192,6 +198,9 @@ jobs:
     inputs:
       version: '$(DotNet10Version)'
       includePreviewVersions: true
+
+  - task: NuGetAuthenticate@1
+    displayName: 'Authenticate NuGet feeds'
 
   - task: DotNetCoreCLI@2
     displayName: 'dotnet build'

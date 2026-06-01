@@ -25,6 +25,8 @@ pr: none
 extends:
   template: azure-pipelines/MicroBuild.1ES.Official.yml@MicroBuildTemplate
   parameters:
+    settings:
+      networkIsolationPolicy: Permissive,CFSClean
     sdl:
       sbom:
         enabled: false
@@ -83,6 +85,8 @@ extends:
           inputs:
             version: '$(DotNetVersion)'
             includePreviewVersions: true
+        - task: NuGetAuthenticate@1
+          displayName: 'Authenticate NuGet feeds'
         - task: DotNetCoreCLI@2
           displayName: 'Build Solution'
           inputs:
