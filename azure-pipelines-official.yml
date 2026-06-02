@@ -9,7 +9,7 @@ variables:
   BuildConfiguration: 'Release'
   BuildPlatform: 'Any CPU'
   DotNetVersion: '10.x'
-  MSBuildArgs: '"/p:Platform=$(BuildPlatform)" "/p:Configuration=$(BuildConfiguration)" "/p:RestoreConfigFile=$(Build.SourcesDirectory)\NuGet.CFS.config" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
+  MSBuildArgs: '"/p:Platform=$(BuildPlatform)" "/p:Configuration=$(BuildConfiguration)" "/p:RestoreConfigFile=$(Build.SourcesDirectory)\NuGet.config" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
   SignType: 'Real'
 trigger:
   batch: 'true'
@@ -87,6 +87,9 @@ extends:
             includePreviewVersions: true
         - task: NuGetAuthenticate@1
           displayName: 'Authenticate Azure Artifacts feeds'
+        - powershell: |
+            Copy-Item -LiteralPath '$(Build.SourcesDirectory)\NuGet.CFS.config' -Destination '$(Build.SourcesDirectory)\NuGet.config' -Force
+          displayName: 'Use CFS NuGet config'
         - task: DotNetCoreCLI@2
           displayName: 'Build Solution'
           inputs:
