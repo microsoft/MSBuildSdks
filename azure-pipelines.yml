@@ -8,7 +8,7 @@ variables:
   DotNet8Version: '8.x'
   DotNet9Version: '9.x'
   DotNet10Version: '10.x'
-  MSBuildArgs: '"/p:Platform=$(BuildPlatform)" "/p:Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
+  MSBuildArgs: '"/p:Platform=$(BuildPlatform)" "/p:Configuration=$(BuildConfiguration)" "/p:RestoreConfigFile=$(Build.SourcesDirectory)\NuGet.config" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
   SignType: 'Test'
 
 trigger:
@@ -54,7 +54,7 @@ jobs:
       includePreviewVersions: true
 
   - task: NuGetAuthenticate@1
-    displayName: 'Authenticate NuGet feeds'
+    displayName: 'Authenticate Azure Artifacts feeds'
 
   - task: DotNetCoreCLI@2
     displayName: 'Build Solution'
@@ -131,7 +131,7 @@ jobs:
       includePreviewVersions: true
 
   - task: NuGetAuthenticate@1
-    displayName: 'Authenticate NuGet feeds'
+    displayName: 'Authenticate Azure Artifacts feeds'
 
   - task: DotNetCoreCLI@2
     displayName: 'dotnet build'
@@ -200,7 +200,7 @@ jobs:
       includePreviewVersions: true
 
   - task: NuGetAuthenticate@1
-    displayName: 'Authenticate NuGet feeds'
+    displayName: 'Authenticate Azure Artifacts feeds'
 
   - task: DotNetCoreCLI@2
     displayName: 'dotnet build'

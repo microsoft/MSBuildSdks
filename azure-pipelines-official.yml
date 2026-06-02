@@ -9,7 +9,7 @@ variables:
   BuildConfiguration: 'Release'
   BuildPlatform: 'Any CPU'
   DotNetVersion: '10.x'
-  MSBuildArgs: '"/p:Platform=$(BuildPlatform)" "/p:Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
+  MSBuildArgs: '"/p:Platform=$(BuildPlatform)" "/p:Configuration=$(BuildConfiguration)" "/p:RestoreConfigFile=$(Build.SourcesDirectory)\NuGet.config" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
   SignType: 'Real'
 trigger:
   batch: 'true'
@@ -86,7 +86,7 @@ extends:
             version: '$(DotNetVersion)'
             includePreviewVersions: true
         - task: NuGetAuthenticate@1
-          displayName: 'Authenticate NuGet feeds'
+          displayName: 'Authenticate Azure Artifacts feeds'
         - task: DotNetCoreCLI@2
           displayName: 'Build Solution'
           inputs:
