@@ -26,22 +26,8 @@ namespace Microsoft.Build.UnitTests.Common
 <configuration>
   <packageSources>
     <clear />
-    <add key=""dotnet-public"" value=""https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json"" />
-    <add key=""dotnet-tools"" value=""https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json"" />
-    <add key=""dotnet10"" value=""https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet10/nuget/v3/index.json"" />
+    <add key=""NuGet.org"" value=""https://api.nuget.org/v3/index.json"" />
   </packageSources>
-  <packageSourceMapping>
-    <packageSource key=""dotnet-public"">
-      <package pattern=""Microsoft.*"" />
-      <package pattern=""*"" />
-    </packageSource>
-    <packageSource key=""dotnet-tools"">
-      <package pattern=""Microsoft.*"" />
-    </packageSource>
-    <packageSource key=""dotnet10"">
-      <package pattern=""Microsoft.*"" />
-    </packageSource>
-  </packageSourceMapping>
 </configuration>");
         }
 

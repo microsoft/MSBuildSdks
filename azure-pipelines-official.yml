@@ -9,7 +9,7 @@ variables:
   BuildConfiguration: 'Release'
   BuildPlatform: 'Any CPU'
   DotNetVersion: '10.x'
-  MSBuildArgs: '"/p:Platform=$(BuildPlatform)" "/p:Configuration=$(BuildConfiguration)" "/p:RestoreConfigFile=$(Build.SourcesDirectory)\NuGet.config" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
+  MSBuildArgs: '"/p:Platform=$(BuildPlatform)" "/p:Configuration=$(BuildConfiguration)" "/p:RestoreConfigFile=$(Build.SourcesDirectory)\NuGet.CFS.config" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
   SignType: 'Real'
 trigger:
   batch: 'true'
