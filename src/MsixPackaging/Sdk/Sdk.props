@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (c) Microsoft Corporation. All rights reserved.
+  
+  Licensed under the MIT license.
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- Import NoTargets SDK props — the consuming project doesn't compile anything -->
+  <Import Project="Sdk.props" Sdk="Microsoft.Build.NoTargets" />
+
+  <PropertyGroup>
+    <!-- MSIX layout directory (intermediate, cleaned on rebuild) -->
+    <MsixLayoutDir Condition="'$(MsixLayoutDir)' == ''">$([System.IO.Path]::Combine($(MSBuildProjectDirectory), $(IntermediateOutputPath), 'MsixLayout'))</MsixLayoutDir>
+
+    <!-- MSIX output directory (where the .msix file is written) -->
+    <MsixOutputDir Condition="'$(MsixOutputDir)' == ''">$([System.IO.Path]::Combine($(MSBuildProjectDirectory), $(OutputPath)))</MsixOutputDir>
+
+    <!-- Output package file name (without extension) -->
+    <MsixFileName Condition="'$(MsixFileName)' == ''">$(MSBuildProjectName)</MsixFileName>
+
+    <!-- Path to the base AppxManifest template with the fragment marker -->
+    <BaseAppxManifest Condition="'$(BaseAppxManifest)' == ''">$(MSBuildProjectDirectory)\Package.base.appxmanifest</BaseAppxManifest>
+
+    <!-- Name of per-project fragment files to discover -->
+    <AppxFragmentFileName Condition="'$(AppxFragmentFileName)' == ''">AppxFragment.xml</AppxFragmentFileName>
+
+    <!-- Signing (disabled by default) -->
+    <MsixSigningEnabled Condition="'$(MsixSigningEnabled)' == ''">false</MsixSigningEnabled>
+
+    <!-- Directory containing package-level images (StoreLogo, etc.) -->
+    <MsixPackageImagesDir Condition="'$(MsixPackageImagesDir)' == ''">$(MSBuildProjectDirectory)\Images</MsixPackageImagesDir>
+
+    <!-- Resource indexing (MakePri.exe) -->
+    <MsixResourceIndexEnabled Condition="'$(MsixResourceIndexEnabled)' == ''">auto</MsixResourceIndexEnabled>
+    <MsixPriConfigPath Condition="'$(MsixPriConfigPath)' == ''"></MsixPriConfigPath>
+    <MsixPriDefaultLanguage Condition="'$(MsixPriDefaultLanguage)' == ''">en-US</MsixPriDefaultLanguage>
+
+    <!-- Deploy-on-Build: auto-register the layout after build for fast dev-loop testing -->
+    <MsixDeployOnBuild Condition="'$(MsixDeployOnBuild)' == ''">false</MsixDeployOnBuild>
+    <!-- When true, auto-enables MsixDeployOnBuild when building inside Visual Studio -->
+    <MsixAutoDeployInVS Condition="'$(MsixAutoDeployInVS)' == ''">true</MsixAutoDeployInVS>
+    <!-- Deployment mode: 'layout' (fast, Add-AppxPackage -Register) or 'msix' (full install) -->
+    <MsixDeployMode Condition="'$(MsixDeployMode)' == ''">layout</MsixDeployMode>
+  </PropertyGroup>
+
+  <!-- Auto-enable deploy when building inside Visual Studio -->
+  <PropertyGroup Condition="'$(BuildingInsideVisualStudio)' == 'true' AND '$(MsixAutoDeployInVS)' == 'true'">
+    <MsixDeployOnBuild>true</MsixDeployOnBuild>
+  </PropertyGroup>
+
+  <!-- Register the VS property page for Project Properties UI -->
+  <ItemGroup>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)Microsoft.Build.MsixPackaging.PropertyPage.xaml">
+      <Context>Project</Context>
+    </PropertyPageSchema>
+  </ItemGroup>
+
+  <!-- Import per-user settings from .user file (for property page persistence) -->
+  <Import Project="$(MSBuildProjectFullPath).user" Condition="Exists('$(MSBuildProjectFullPath).user') AND '$(MsixUserSettingsImported)' != 'true'" />
+  <PropertyGroup>
+    <MsixUserSettingsImported>true</MsixUserSettingsImported>
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (c) Microsoft Corporation. All rights reserved.
+  
+  Licensed under the MIT license.
+-->
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- Import NoTargets SDK targets -->
+  <Import Project="Sdk.targets" Sdk="Microsoft.Build.NoTargets" />
+
+  <!-- ============================================================
+       Task registration — compiled tasks from the SDK assembly
+       ============================================================ -->
+  <PropertyGroup>
+    <!-- When consumed as a NuGet SDK, tasks live at ../build/netstandard2.0/ relative to this file.
+         For local development, override _MsixSdkTasksAssembly in Directory.Build.props. -->
+    <_MsixSdkTasksAssembly Condition="'$(_MsixSdkTasksAssembly)' == ''">$(MSBuildThisFileDirectory)..\build\netstandard2.0\Microsoft.Build.MsixPackaging.dll</_MsixSdkTasksAssembly>
+  </PropertyGroup>
+
+  <UsingTask TaskName="Microsoft.Build.MsixPackaging.Tasks.MergeAppxFragments" AssemblyFile="$(_MsixSdkTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.Build.MsixPackaging.Tasks.FindWindowsSdkTool" AssemblyFile="$(_MsixSdkTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.Build.MsixPackaging.Tasks.ValidateAppxManifest" AssemblyFile="$(_MsixSdkTasksAssembly)" />
+
+  <!-- ============================================================
+       Orchestrator: BuildMsix
+       Runs the full packaging pipeline via DependsOnTargets.
+       Individual targets can also be invoked directly.
+       ============================================================ -->
+  <PropertyGroup>
+    <!-- Full pipeline (default): build, merge, validate, copy, index, pack, sign -->
+    <_BuildMsixCoreDependsOn>
+      PublishToLayout;
+      DiscoverAppxFragments;
+      MergeAppxManifest;
+      ValidateAppxManifest;
+      CopyMsixAssets;
+      GenerateResourceIndex
+    </_BuildMsixCoreDependsOn>
+
+    <!-- Layout-deploy mode: skip PackMsix and SignMsix for faster dev builds -->
+    <BuildMsixDependsOn Condition="'$(MsixDeployOnBuild)' == 'true' AND '$(MsixDeployMode)' == 'layout'">
+      $(_BuildMsixCoreDependsOn);
+      DeployMsixLayout
+    </BuildMsixDependsOn>
+
+    <!-- MSIX-deploy mode: full pipeline + install -->
+    <BuildMsixDependsOn Condition="'$(MsixDeployOnBuild)' == 'true' AND '$(MsixDeployMode)' == 'msix'">
+      $(_BuildMsixCoreDependsOn);
+      PackMsix;
+      SignMsix;
+      DeployMsixInstall
+    </BuildMsixDependsOn>
+
+    <!-- No deploy: full pipeline (pack + sign) -->
+    <BuildMsixDependsOn Condition="'$(MsixDeployOnBuild)' != 'true'">
+      $(_BuildMsixCoreDependsOn);
+      PackMsix;
+      SignMsix
+    </BuildMsixDependsOn>
+  </PropertyGroup>
+
+  <Target Name="BuildMsix" DependsOnTargets="$(BuildMsixDependsOn)" AfterTargets="Build" />
+
+  <!-- ============================================================
+       Target: PublishToLayout
+       Publishes each referenced project into MsixLayout/{LayoutDir}/
+       ============================================================ -->
+  <Target Name="PublishToLayout">
+    <Message Text="Publishing projects to MSIX layout: $(MsixLayoutDir)" Importance="high" />
+
+    <MakeDir Directories="$(MsixLayoutDir)" />
+
+    <!--
+      Publish each ProjectReference that has LayoutDir metadata.
+      Projects without LayoutDir are built normally but not published to the layout.
+    -->
+    <MSBuild
+      Projects="@(ProjectReference)"
+      Targets="Publish"
+      Properties="
+        Configuration=$(Configuration);
+        PublishDir=$(MsixLayoutDir)\%(ProjectReference.LayoutDir)\;
+        SelfContained=false;
+        PublishSingleFile=false"
+      Condition="'%(ProjectReference.LayoutDir)' != ''" />
+
+    <Message Text="  Published all projects to layout" Importance="high" />
+  </Target>
+
+  <!-- ============================================================
+       Target: DiscoverAppxFragments
+       Discovers fragment files early for incremental build inputs.
+       ============================================================ -->
+  <Target Name="DiscoverAppxFragments">
+    <ItemGroup>
+      <_FragmentCandidate Include="@(ProjectReference->'%(RootDir)%(Directory)$(AppxFragmentFileName)')" />
+      <_DiscoveredFragment Include="@(_FragmentCandidate)" Condition="Exists('%(Identity)')" />
+    </ItemGroup>
+  </Target>
+
+  <!-- ============================================================
+       Target: MergeAppxManifest
+       Discovers AppxFragment.xml from project dirs and merges.
+       ============================================================ -->
+  <Target Name="MergeAppxManifest" DependsOnTargets="DiscoverAppxFragments">
+    <Message Text="Merging AppxManifest from fragments..." Importance="high" />
+
+    <Message Text="  Found fragment: %(_DiscoveredFragment.Identity)" Importance="high"
+             Condition="'@(_DiscoveredFragment)' != ''" />
+    <Warning Text="No $(AppxFragmentFileName) files found in any project reference directory."
+             Condition="'@(_DiscoveredFragment)' == ''" />
+
+    <MergeAppxFragments
+      BaseManifestPath="$(BaseAppxManifest)"
+      FragmentPaths="@(_DiscoveredFragment)"
+      OutputPath="$(MsixLayoutDir)\AppxManifest.xml"
+      PackageVersion="$(MsixPackageVersion)"
+      TargetArchitecture="$(MsixTargetArchitecture)" />
+  </Target>
+
+  <!-- ============================================================
+       Target: ValidateAppxManifest
+       Validates the merged manifest for well-formedness and required elements.
+       ============================================================ -->
+  <Target Name="ValidateAppxManifest">
+    <ValidateAppxManifest ManifestPath="$(MsixLayoutDir)\AppxManifest.xml" />
+  </Target>
+
+  <!-- ============================================================
+       Target: CopyMsixAssets
+       Copies images into the MSIX layout.
+       ============================================================ -->
+  <Target Name="CopyMsixAssets">
+    <Message Text="Copying MSIX assets to layout..." Importance="high" />
+
+    <!-- Package-level images (StoreLogo, etc.) -->
+    <ItemGroup>
+      <_PackageImage Include="$(MsixPackageImagesDir)\*.png" Condition="Exists('$(MsixPackageImagesDir)')" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_PackageImage)"
+          DestinationFolder="$(MsixLayoutDir)\Images"
+          SkipUnchangedFiles="true"
+          Condition="'@(_PackageImage)' != ''" />
+
+    <!-- Per-project images from MsixImages/ directories -->
+    <ItemGroup>
+      <_MsixImageCandidate Include="@(ProjectReference->'%(RootDir)%(Directory)MsixImages\*.png')" />
+      <_DiscoveredMsixImage Include="@(_MsixImageCandidate)" Condition="Exists('%(Identity)')" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_DiscoveredMsixImage)"
+          DestinationFolder="$(MsixLayoutDir)\Images"
+          SkipUnchangedFiles="true"
+          Condition="'@(_DiscoveredMsixImage)' != ''" />
+
+    <!-- Arbitrary content files declared by the consumer -->
+    <Copy SourceFiles="@(MsixContent)"
+          DestinationFiles="@(MsixContent->'$(MsixLayoutDir)\%(PackagePath)')"
+          SkipUnchangedFiles="true"
+          Condition="'@(MsixContent)' != ''" />
+
+    <Message Text="  Copied assets to layout" Importance="high" />
+  </Target>
+
+  <!-- ============================================================
+       Target: GenerateResourceIndex
+       Runs MakePri.exe to create resources.pri for localized assets.
+       ============================================================ -->
+  <Target Name="GenerateResourceIndex">
+    <!-- Auto-detect: check if any .resw files exist in the layout -->
+    <ItemGroup Condition="'$(MsixResourceIndexEnabled)' == 'auto'">
+      <_ReswFile Include="$(MsixLayoutDir)\**\*.resw" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <_RunMakePri Condition="'$(MsixResourceIndexEnabled)' == 'true'">true</_RunMakePri>
+      <_RunMakePri Condition="'$(MsixResourceIndexEnabled)' == 'auto' AND '@(_ReswFile)' != ''">true</_RunMakePri>
+      <_RunMakePri Condition="'$(MsixResourceIndexEnabled)' == 'false'">false</_RunMakePri>
+      <_RunMakePri Condition="'$(_RunMakePri)' == ''">false</_RunMakePri>
+
+      <_PriConfigPath>$(MsixPriConfigPath)</_PriConfigPath>
+      <_PriConfigPath Condition="'$(_PriConfigPath)' == ''">$(IntermediateOutputPath)priconfig.xml</_PriConfigPath>
+      <_GeneratePriConfig Condition="'$(_RunMakePri)' == 'true' AND '$(MsixPriConfigPath)' == ''">true</_GeneratePriConfig>
+    </PropertyGroup>
+
+    <Message Text="Resource indexing skipped (no .resw files found in layout)" Importance="normal"
+             Condition="'$(_RunMakePri)' == 'false' AND '$(MsixResourceIndexEnabled)' == 'auto'" />
+
+    <!-- Locate MakePri.exe -->
+    <FindWindowsSdkTool ToolName="makepri.exe" Architecture="$(MsixToolArchitecture)" Condition="'$(_RunMakePri)' == 'true'">
+      <Output TaskParameter="ToolPath" PropertyName="_MakePriPath" />
+    </FindWindowsSdkTool>
+
+    <!-- Auto-generate a PRI config if the consumer didn't provide one -->
+    <Exec Command="&quot;$(_MakePriPath)&quot; createconfig /cf &quot;$(_PriConfigPath)&quot; /dq &quot;$(MsixPriDefaultLanguage)&quot; /o"
+          Condition="'$(_GeneratePriConfig)' == 'true'" />
+
+    <!-- Generate resources.pri -->
+    <Message Text="Generating resources.pri from layout..." Importance="high"
+             Condition="'$(_RunMakePri)' == 'true'" />
+
+    <Exec Command="&quot;$(_MakePriPath)&quot; new /pr &quot;$(MsixLayoutDir)&quot; /cf &quot;$(_PriConfigPath)&quot; /of &quot;$(MsixLayoutDir)\resources.pri&quot; /mn &quot;$(MsixLayoutDir)\AppxManifest.xml&quot; /o"
+          Condition="'$(_RunMakePri)' == 'true'" />
+
+    <Message Text="  Generated resources.pri" Importance="high"
+             Condition="'$(_RunMakePri)' == 'true'" />
+  </Target>
+
+  <!-- ============================================================
+       Target: PackMsix
+       Calls MakeAppx.exe to produce the .msix from the layout.
+       ============================================================ -->
+  <Target Name="PackMsix">
+    <FindWindowsSdkTool ToolName="makeappx.exe" Architecture="$(MsixToolArchitecture)">
+      <Output TaskParameter="ToolPath" PropertyName="_MakeAppxPath" />
+    </FindWindowsSdkTool>
+
+    <MakeDir Directories="$(MsixOutputDir)" />
+
+    <Message Text="Packing MSIX: $(MsixOutputDir)\$(MsixFileName).msix" Importance="high" />
+
+    <Exec Command="&quot;$(_MakeAppxPath)&quot; pack /d &quot;$(MsixLayoutDir)&quot; /p &quot;$(MsixOutputDir)\$(MsixFileName).msix&quot; /o /nv" />
+
+    <Message Text="MSIX package created: $(MsixOutputDir)\$(MsixFileName).msix" Importance="high" />
+  </Target>
+
+  <!-- ============================================================
+       Target: SignMsix (optional)
+       Signs the MSIX when MsixSigningEnabled=true.
+       ============================================================ -->
+  <Target Name="SignMsix"
+          Condition="'$(MsixSigningEnabled)' == 'true' AND '$(MsixCertificatePath)' != ''">
+    <FindWindowsSdkTool ToolName="signtool.exe" Architecture="$(MsixToolArchitecture)">
+      <Output TaskParameter="ToolPath" PropertyName="_SignToolPath" />
+    </FindWindowsSdkTool>
+
+    <Message Text="Signing MSIX with certificate: $(MsixCertificatePath)" Importance="high" />
+
+    <Exec Command="&quot;$(_SignToolPath)&quot; sign /fd SHA256 /a /f &quot;$(MsixCertificatePath)&quot; /p &quot;$(MsixCertificatePassword)&quot; &quot;$(MsixOutputDir)\$(MsixFileName).msix&quot;"
+          Condition="'$(MsixCertificatePassword)' != ''" />
+
+    <Exec Command="&quot;$(_SignToolPath)&quot; sign /fd SHA256 /a /f &quot;$(MsixCertificatePath)&quot; &quot;$(MsixOutputDir)\$(MsixFileName).msix&quot;"
+          Condition="'$(MsixCertificatePassword)' == ''" />
+
+    <Message Text="MSIX signed successfully" Importance="high" />
+  </Target>
+
+  <!-- ============================================================
+       Target: CleanMsixLayout
+       Removes MSIX build artifacts and unregisters the package on clean.
+       ============================================================ -->
+  <Target Name="CleanMsixLayout" AfterTargets="Clean">
+    <!-- Unregister the package if it was deployed via layout registration -->
+    <Exec Command="powershell -NoProfile -Command &quot;Get-AppxPackage -Name '$(MsixFileName)' -ErrorAction SilentlyContinue | Remove-AppxPackage -ErrorAction SilentlyContinue&quot;"
+          IgnoreExitCode="true"
+          Condition="'$(MsixDeployOnBuild)' == 'true'" />
+    <RemoveDir Directories="$(MsixLayoutDir)" />
+    <Delete Files="$(MsixOutputDir)\$(MsixFileName).msix" Condition="Exists('$(MsixOutputDir)\$(MsixFileName).msix')" />
+    <Message Text="Cleaned MSIX layout and output" Importance="high" />
+  </Target>
+
+  <!-- ============================================================
+       Target: DeployMsixLayout
+       Auto-registers the layout directory during build (deploy-on-build).
+       ============================================================ -->
+  <Target Name="DeployMsixLayout">
+    <Error Text="Layout manifest not found: $(MsixLayoutDir)\AppxManifest.xml"
+           Condition="!Exists('$(MsixLayoutDir)\AppxManifest.xml')" />
+    <Message Text="Registering MSIX layout for dev-loop testing..." Importance="high" />
+    <Exec Command="powershell -NoProfile -Command &quot;Add-AppxPackage -Register '$(MsixLayoutDir)\AppxManifest.xml' -ForceApplicationShutdown&quot;" />
+    <Message Text="  Layout registered — apps are ready to launch" Importance="high" />
+  </Target>
+
+  <!-- ============================================================
+       Target: DeployMsixInstall
+       Auto-installs the built MSIX during build (deploy-on-build).
+       ============================================================ -->
+  <Target Name="DeployMsixInstall">
+    <Error Text="MSIX not found: $(MsixOutputDir)\$(MsixFileName).msix"
+           Condition="!Exists('$(MsixOutputDir)\$(MsixFileName).msix')" />
+    <Message Text="Installing MSIX package..." Importance="high" />
+    <Exec Command="powershell -NoProfile -Command &quot;Add-AppxPackage -Path '$(MsixOutputDir)\$(MsixFileName).msix' -ForceApplicationShutdown&quot;" />
+    <Message Text="  Installed $(MsixFileName).msix" Importance="high" />
+  </Target>
+
+  <!-- ============================================================
+       Target: InstallMsix (opt-in, not in default pipeline)
+       Invoke with: dotnet msbuild -t:InstallMsix
+       ============================================================ -->
+  <Target Name="InstallMsix">
+    <Error Text="MSIX not found: $(MsixOutputDir)\$(MsixFileName).msix. Run a build first."
+           Condition="!Exists('$(MsixOutputDir)\$(MsixFileName).msix')" />
+    <Exec Command="powershell -NoProfile -Command &quot;Add-AppxPackage -Path '$(MsixOutputDir)\$(MsixFileName).msix' -ForceApplicationShutdown&quot;" />
+    <Message Text="Installed $(MsixFileName).msix" Importance="high" />
+  </Target>
+
+  <!-- ============================================================
+       Target: RegisterMsixLayout (opt-in, not in default pipeline)
+       Invoke with: dotnet msbuild -t:RegisterMsixLayout
+       ============================================================ -->
+  <Target Name="RegisterMsixLayout">
+    <Error Text="Layout manifest not found: $(MsixLayoutDir)\AppxManifest.xml. Run a build first."
+           Condition="!Exists('$(MsixLayoutDir)\AppxManifest.xml')" />
+    <Exec Command="powershell -NoProfile -Command &quot;Add-AppxPackage -Register '$(MsixLayoutDir)\AppxManifest.xml'&quot;" />
+    <Message Text="Registered layout from $(MsixLayoutDir)" Importance="high" />
+  </Target>
+
+  <!-- ============================================================
+       Target: UninstallMsix (opt-in, not in default pipeline)
+       Invoke with: dotnet msbuild -t:UninstallMsix
+       ============================================================ -->
+  <Target Name="UninstallMsix">
+    <Exec Command="powershell -NoProfile -Command &quot;Get-AppxPackage -Name '$(MsixFileName)' | Remove-AppxPackage&quot;" />
+    <Message Text="Uninstalled $(MsixFileName)" Importance="high" />
+  </Target>
+
+</Project>
