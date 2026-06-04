@@ -1,0 +1,30 @@
+<!--
+  SamplePackaging.msbuildproj
+  ===========================
+  Sample project that consumes Microsoft.Build.MsixPackaging to package
+  SampleConsoleApp into an MSIX. During development, the SDK targets are
+  imported directly from the source tree rather than from a NuGet package.
+
+  Production usage would be:
+    <Project Sdk="Microsoft.Build.MsixPackaging/1.0.0">
+-->
+<Project>
+
+  <!-- Import SDK props (includes NoTargets Sdk.props) -->
+  <Import Project="..\..\src\MsixPackaging\Sdk\Sdk.props" />
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <MsixFileName>MsixPackagingSample</MsixFileName>
+  </PropertyGroup>
+
+  <!-- App projects to include in the MSIX -->
+  <ItemGroup>
+    <ProjectReference Include="..\SampleConsoleApp\SampleConsoleApp.csproj"
+                      LayoutDir="SampleConsoleApp" />
+  </ItemGroup>
+
+  <!-- Import SDK targets (includes NoTargets Sdk.targets + packaging pipeline) -->
+  <Import Project="..\..\src\MsixPackaging\Sdk\Sdk.targets" />
+
+</Project>

@@ -1,0 +1,6 @@
+<Project>
+  <!-- Point the SDK tasks at the locally-built assembly for development -->
+  <PropertyGroup>
+    <_MsixSdkTasksAssembly>$(MSBuildThisFileDirectory)..\..\src\MsixPackaging\bin\Release\netstandard2.0\Microsoft.Build.MsixPackaging.dll</_MsixSdkTasksAssembly>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Package.base.appxmanifest — Sample
+  ===================================
+  Base manifest template for the Microsoft.Build.MsixPackaging sample package.
+  AppxFragment.xml entries from referenced projects are inserted at the marker.
+-->
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+  xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  IgnorableNamespaces="uap uap3 uap5 desktop rescap">
+
+  <Identity
+    Name="MsixPackagingSdk.Sample"
+    Publisher="CN=MsixPackagingSdkSample"
+    Version="1.0.0.0"
+    ProcessorArchitecture="x64" />
+
+  <Properties>
+    <DisplayName>MsixPackaging Sample</DisplayName>
+    <PublisherDisplayName>Microsoft.Build.MsixPackaging</PublisherDisplayName>
+    <Logo>Images\StoreLogo.png</Logo>
+    <Description>Sample package built with Microsoft.Build.MsixPackaging.</Description>
+  </Properties>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.26100.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="en-us" />
+  </Resources>
+
+  <Applications>
+    <!-- APPX_FRAGMENTS_INSERTED_HERE -->
+  </Applications>
+
+  <Capabilities>
+    <Capability Name="internetClient" />
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+
+</Package>
