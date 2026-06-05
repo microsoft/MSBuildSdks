@@ -20,7 +20,7 @@
 
   <!-- App projects to include in the MSIX -->
   <ItemGroup>
-    <ProjectReference Include="..\SampleConsoleApp\SampleConsoleApp.csproj"
+    <ProjectReference Include="SampleConsoleApp\SampleConsoleApp.csproj"
                       LayoutDir="SampleConsoleApp" />
   </ItemGroup>
 
