@@ -10,7 +10,7 @@
   <Import Project="Sdk.targets" Sdk="Microsoft.Build.NoTargets" />
 
   <!-- ============================================================
-       Task registration — compiled tasks from the SDK assembly
+       Task registration — our own compiled tasks (fragment merge + validation)
        ============================================================ -->
   <PropertyGroup>
     <!-- When consumed as a NuGet SDK, tasks live at ../build/netstandard2.0/ relative to this file.
@@ -19,8 +19,73 @@
   </PropertyGroup>
 
   <UsingTask TaskName="Microsoft.Build.MsixPackaging.Tasks.MergeAppxFragments" AssemblyFile="$(_MsixSdkTasksAssembly)" />
-  <UsingTask TaskName="Microsoft.Build.MsixPackaging.Tasks.FindWindowsSdkTool" AssemblyFile="$(_MsixSdkTasksAssembly)" />
   <UsingTask TaskName="Microsoft.Build.MsixPackaging.Tasks.ValidateAppxManifest" AssemblyFile="$(_MsixSdkTasksAssembly)" />
+
+  <!-- ============================================================
+       Task registration — Windows SDK build tools (MakeAppx/SignTool wrappers
+       and SDK tool discovery) from the Microsoft.Windows.SDK.BuildTools.MSIX
+       package. The package reference is injected in Sdk.props; here we resolve
+       the task assembly from the restored package path and register only the
+       tasks we use. The net6.0 build is used under .NET (MSBuildRuntimeType=Core)
+       and net472 under desktop MSBuild.
+       ============================================================ -->
+  <PropertyGroup>
+    <_MsixBuildToolsTfm Condition="'$(MSBuildRuntimeType)' == 'Core'">net6.0</_MsixBuildToolsTfm>
+    <_MsixBuildToolsTfm Condition="'$(_MsixBuildToolsTfm)' == ''">net472</_MsixBuildToolsTfm>
+    <_MsixBuildToolsAssembly Condition="'$(_MsixBuildToolsAssembly)' == ''">$(PkgMicrosoft_Windows_SDK_BuildTools_MSIX)\tools\$(_MsixBuildToolsTfm)\Microsoft.Windows.SDK.BuildTools.MSIX.dll</_MsixBuildToolsAssembly>
+  </PropertyGroup>
+
+  <UsingTask TaskName="Microsoft.Build.Msix.WindowsTools.WinAppSdkGetSdkFileFullPath" AssemblyFile="$(_MsixBuildToolsAssembly)" />
+  <UsingTask TaskName="Microsoft.Build.Msix.MakeAppx.WinAppSdkMakeAppxPack" AssemblyFile="$(_MsixBuildToolsAssembly)" />
+  <UsingTask TaskName="Microsoft.Build.Msix.Crypto.WinAppSdkSignAppxPackage" AssemblyFile="$(_MsixBuildToolsAssembly)" />
+
+  <!-- Inline task: resolve the latest installed Windows 10/11 SDK version that contains MakeAppx.exe. -->
+  <UsingTask TaskName="_MsixGetLatestWindowsSdkVersion"
+             TaskFactory="RoslynCodeTaskFactory"
+             AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <LatestVersion ParameterType="System.String" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Code Type="Fragment" Language="cs"><![CDATA[
+        var root = System.IO.Path.Combine(
+            System.Environment.GetFolderPath(System.Environment.SpecialFolder.ProgramFilesX86),
+            "Windows Kits", "10");
+        var binDir = System.IO.Path.Combine(root, "bin");
+        System.Version best = null;
+        if (System.IO.Directory.Exists(binDir)) {
+            foreach (var d in System.IO.Directory.GetDirectories(binDir, "10.*")) {
+                var name = System.IO.Path.GetFileName(d);
+                System.Version v;
+                if (System.Version.TryParse(name, out v)) {
+                    if (System.IO.File.Exists(System.IO.Path.Combine(d, "x64", "makeappx.exe")) ||
+                        System.IO.File.Exists(System.IO.Path.Combine(d, "x86", "makeappx.exe"))) {
+                        if (best == null || v > best) best = v;
+                    }
+                }
+            }
+        }
+        LatestVersion = best == null ? string.Empty : best.ToString();
+      ]]></Code>
+    </Task>
+  </UsingTask>
+
+  <!-- ============================================================
+       Target: ResolveWindowsSdkVersion
+       Determines the Windows SDK version used to locate MakeAppx/SignTool/MakePri.
+       Honors MsixWindowsSdkVersion when set; otherwise auto-detects the latest.
+       ============================================================ -->
+  <Target Name="ResolveWindowsSdkVersion">
+    <_MsixGetLatestWindowsSdkVersion Condition="'$(MsixWindowsSdkVersion)' == ''">
+      <Output TaskParameter="LatestVersion" PropertyName="_MsixResolvedSdkVersion" />
+    </_MsixGetLatestWindowsSdkVersion>
+    <PropertyGroup>
+      <_MsixResolvedSdkVersion Condition="'$(MsixWindowsSdkVersion)' != ''">$(MsixWindowsSdkVersion)</_MsixResolvedSdkVersion>
+    </PropertyGroup>
+    <Error Text="No Windows SDK was found. Install the Windows 10/11 SDK, or set MsixWindowsSdkVersion explicitly."
+           Condition="'$(_MsixResolvedSdkVersion)' == ''" />
+    <Message Text="Using Windows SDK version: $(_MsixResolvedSdkVersion)" Importance="normal" />
+  </Target>
 
   <!-- ============================================================
        Orchestrator: BuildMsix
@@ -166,7 +231,7 @@
        Target: GenerateResourceIndex
        Runs MakePri.exe to create resources.pri for localized assets.
        ============================================================ -->
-  <Target Name="GenerateResourceIndex">
+  <Target Name="GenerateResourceIndex" DependsOnTargets="ResolveWindowsSdkVersion">
     <!-- Auto-detect: check if any .resw files exist in the layout -->
     <ItemGroup Condition="'$(MsixResourceIndexEnabled)' == 'auto'">
       <_ReswFile Include="$(MsixLayoutDir)\**\*.resw" />
@@ -186,10 +251,10 @@
     <Message Text="Resource indexing skipped (no .resw files found in layout)" Importance="normal"
              Condition="'$(_RunMakePri)' == 'false' AND '$(MsixResourceIndexEnabled)' == 'auto'" />
 
-    <!-- Locate MakePri.exe -->
-    <FindWindowsSdkTool ToolName="makepri.exe" Architecture="$(MsixToolArchitecture)" Condition="'$(_RunMakePri)' == 'true'">
-      <Output TaskParameter="ToolPath" PropertyName="_MakePriPath" />
-    </FindWindowsSdkTool>
+    <!-- Locate MakePri.exe via the Windows SDK build tools -->
+    <WinAppSdkGetSdkFileFullPath FileName="makepri.exe" TargetPlatformVersion="$(_MsixResolvedSdkVersion)" Condition="'$(_RunMakePri)' == 'true'">
+      <Output TaskParameter="ActualFullFilePath" PropertyName="_MakePriPath" />
+    </WinAppSdkGetSdkFileFullPath>
 
     <!-- Auto-generate a PRI config if the consumer didn't provide one -->
     <Exec Command="&quot;$(_MakePriPath)&quot; createconfig /cf &quot;$(_PriConfigPath)&quot; /dq &quot;$(MsixPriDefaultLanguage)&quot; /o"
@@ -208,39 +273,59 @@
 
   <!-- ============================================================
        Target: PackMsix
-       Calls MakeAppx.exe to produce the .msix from the layout.
+       Produces the .msix from the layout using the MakeAppx build task.
+       The task packs from a generated mapping file (the [Files] section
+       lists each layout file and its package-relative destination).
        ============================================================ -->
-  <Target Name="PackMsix">
-    <FindWindowsSdkTool ToolName="makeappx.exe" Architecture="$(MsixToolArchitecture)">
-      <Output TaskParameter="ToolPath" PropertyName="_MakeAppxPath" />
-    </FindWindowsSdkTool>
+  <Target Name="PackMsix" DependsOnTargets="ResolveWindowsSdkVersion">
+    <WinAppSdkGetSdkFileFullPath FileName="MakeAppx.exe" TargetPlatformVersion="$(_MsixResolvedSdkVersion)">
+      <Output TaskParameter="ActualFullFilePath" PropertyName="_MakeAppxPath" />
+    </WinAppSdkGetSdkFileFullPath>
 
     <MakeDir Directories="$(MsixOutputDir)" />
 
+    <!-- Build a MakeAppx mapping file describing every file in the layout. -->
+    <ItemGroup>
+      <_MsixLayoutFile Include="$(MsixLayoutDir)\**\*" />
+      <_MsixMapLine Include="&quot;%(_MsixLayoutFile.FullPath)&quot; &quot;%(_MsixLayoutFile.RecursiveDir)%(_MsixLayoutFile.Filename)%(_MsixLayoutFile.Extension)&quot;" />
+    </ItemGroup>
+    <PropertyGroup>
+      <_MsixMapFile>$(IntermediateOutputPath)$(MsixFileName).map.txt</_MsixMapFile>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(_MsixMapFile)" Lines="[Files]" Overwrite="true" />
+    <WriteLinesToFile File="$(_MsixMapFile)" Lines="@(_MsixMapLine)" Overwrite="false" />
+
     <Message Text="Packing MSIX: $(MsixOutputDir)\$(MsixFileName).msix" Importance="high" />
 
-    <Exec Command="&quot;$(_MakeAppxPath)&quot; pack /d &quot;$(MsixLayoutDir)&quot; /p &quot;$(MsixOutputDir)\$(MsixFileName).msix&quot; /o /nv" />
+    <WinAppSdkMakeAppxPack
+        MakeAppxExeFullPath="$(_MakeAppxPath)"
+        FileMap="$(_MsixMapFile)"
+        Output="$(MsixOutputDir)\$(MsixFileName).msix"
+        HashAlgorithmId="$(MsixHashAlgorithmId)" />
 
     <Message Text="MSIX package created: $(MsixOutputDir)\$(MsixFileName).msix" Importance="high" />
   </Target>
 
   <!-- ============================================================
        Target: SignMsix (optional)
-       Signs the MSIX when MsixSigningEnabled=true.
+       Signs the MSIX when MsixSigningEnabled=true using the SignTool build task.
        ============================================================ -->
   <Target Name="SignMsix"
+          DependsOnTargets="ResolveWindowsSdkVersion"
           Condition="'$(MsixSigningEnabled)' == 'true' AND '$(MsixCertificatePath)' != ''">
-    <FindWindowsSdkTool ToolName="signtool.exe" Architecture="$(MsixToolArchitecture)">
-      <Output TaskParameter="ToolPath" PropertyName="_SignToolPath" />
-    </FindWindowsSdkTool>
+    <WinAppSdkGetSdkFileFullPath FileName="signtool.exe" TargetPlatformVersion="$(_MsixResolvedSdkVersion)">
+      <Output TaskParameter="ActualFullFilePath" PropertyName="_SignToolPath" />
+    </WinAppSdkGetSdkFileFullPath>
 
     <Message Text="Signing MSIX with certificate: $(MsixCertificatePath)" Importance="high" />
 
-    <Exec Command="&quot;$(_SignToolPath)&quot; sign /fd SHA256 /a /f &quot;$(MsixCertificatePath)&quot; /p &quot;$(MsixCertificatePassword)&quot; &quot;$(MsixOutputDir)\$(MsixFileName).msix&quot;"
-          Condition="'$(MsixCertificatePassword)' != ''" />
-
-    <Exec Command="&quot;$(_SignToolPath)&quot; sign /fd SHA256 /a /f &quot;$(MsixCertificatePath)&quot; &quot;$(MsixOutputDir)\$(MsixFileName).msix&quot;"
-          Condition="'$(MsixCertificatePassword)' == ''" />
+    <WinAppSdkSignAppxPackage
+        AppxPackageToSign="$(MsixOutputDir)\$(MsixFileName).msix"
+        SignAppxPackageExeFullPath="$(_SignToolPath)"
+        CertificateFile="$(MsixCertificatePath)"
+        CertificatePassword="$(MsixCertificatePassword)"
+        TempCertificateFilePath="$(IntermediateOutputPath)$(MsixFileName).signing.cer"
+        HashAlgorithmId="$(MsixHashAlgorithmId)" />
 
     <Message Text="MSIX signed successfully" Importance="high" />
   </Target>

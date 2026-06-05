@@ -36,6 +36,21 @@
     <MsixPriConfigPath Condition="'$(MsixPriConfigPath)' == ''"></MsixPriConfigPath>
     <MsixPriDefaultLanguage Condition="'$(MsixPriDefaultLanguage)' == ''">en-US</MsixPriDefaultLanguage>
 
+    <!--
+      Windows SDK tooling (MakeAppx/SignTool/MakePri) is located via the
+      Microsoft.Windows.SDK.BuildTools.MSIX package tasks. The package resolves
+      the architecture-specific tool automatically; MsixToolArchitecture is no
+      longer used and is kept only for backward compatibility.
+    -->
+    <!-- Version of Microsoft.Windows.SDK.BuildTools.MSIX restored for the build tasks. -->
+    <MsixSdkBuildToolsVersion Condition="'$(MsixSdkBuildToolsVersion)' == ''">1.7.260518100</MsixSdkBuildToolsVersion>
+
+    <!-- Windows SDK version used to resolve the build tools (e.g. 10.0.26100.0). Empty = auto-detect latest. -->
+    <MsixWindowsSdkVersion Condition="'$(MsixWindowsSdkVersion)' == ''"></MsixWindowsSdkVersion>
+
+    <!-- Hash algorithm used when packing and signing the MSIX. -->
+    <MsixHashAlgorithmId Condition="'$(MsixHashAlgorithmId)' == ''">SHA256</MsixHashAlgorithmId>
+
     <!-- Deploy-on-Build: auto-register the layout after build for fast dev-loop testing -->
     <MsixDeployOnBuild Condition="'$(MsixDeployOnBuild)' == ''">false</MsixDeployOnBuild>
     <!-- When true, auto-enables MsixDeployOnBuild when building inside Visual Studio -->
@@ -43,6 +58,30 @@
     <!-- Deployment mode: 'layout' (fast, Add-AppxPackage -Register) or 'msix' (full install) -->
     <MsixDeployMode Condition="'$(MsixDeployMode)' == ''">layout</MsixDeployMode>
   </PropertyGroup>
+
+  <!--
+    Bring in the Microsoft.Windows.SDK.BuildTools.MSIX package that provides the
+    compiled MSBuild tasks (MakeAppx/SignTool wrappers and SDK tool discovery).
+    The package's own build/buildTransitive targets are excluded so its heavyweight
+    WinAppSDK packaging pipeline is not imported — only the task assembly is used,
+    located via the generated $(PkgMicrosoft_Windows_SDK_BuildTools_MSIX) path.
+    GeneratePathProperty requires the version inline; VersionOverride is used under
+    Central Package Management so no central PackageVersion entry is required.
+  -->
+  <ItemGroup Condition="'$(ManagePackageVersionsCentrally)' != 'true'">
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools.MSIX"
+                      Version="$(MsixSdkBuildToolsVersion)"
+                      GeneratePathProperty="true"
+                      ExcludeAssets="build;buildTransitive;compile;runtime"
+                      PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(ManagePackageVersionsCentrally)' == 'true'">
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools.MSIX"
+                      VersionOverride="$(MsixSdkBuildToolsVersion)"
+                      GeneratePathProperty="true"
+                      ExcludeAssets="build;buildTransitive;compile;runtime"
+                      PrivateAssets="all" />
+  </ItemGroup>
 
   <!-- Auto-enable deploy when building inside Visual Studio -->
   <PropertyGroup Condition="'$(BuildingInsideVisualStudio)' == 'true' AND '$(MsixAutoDeployInVS)' == 'true'">

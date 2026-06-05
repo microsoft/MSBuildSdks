@@ -123,7 +123,10 @@ Additional opt-in targets:
 | `MsixPriDefaultLanguage` | `en-US` | Default language for PRI config |
 | `MsixPackageVersion` | — | Patches `Identity/@Version` (four-part numeric) |
 | `MsixTargetArchitecture` | — | Patches `Identity/@ProcessorArchitecture` |
-| `MsixToolArchitecture` | auto-detect | Host architecture for Windows SDK tools |
+| `MsixHashAlgorithmId` | `SHA256` | Hash algorithm used when packing and signing |
+| `MsixWindowsSdkVersion` | auto-detect | Windows SDK version (e.g. `10.0.26100.0`) used to locate MakeAppx/SignTool/MakePri. Empty = latest installed |
+| `MsixSdkBuildToolsVersion` | pinned | Version of `Microsoft.Windows.SDK.BuildTools.MSIX` restored for the build tasks |
+| `MsixToolArchitecture` | — | **Deprecated / no-op.** Tool architecture is resolved automatically by the build tools package |
 | `MsixDeployOnBuild` | `false` | Auto-register layout after build |
 | `MsixAutoDeployInVS` | `true` | Auto-enables deploy when building in VS |
 | `MsixDeployMode` | `layout` | `layout` (fast) or `msix` (full install) |
@@ -168,4 +171,22 @@ The SDK includes a XAML Rule file that automatically adds an **MSIX Packaging** 
 ## Build Requirements
 
 - .NET SDK (version matching your `TargetFramework`)
-- Windows SDK (for `MakeAppx.exe`) — any version 10.0.17763.0+
+- Windows SDK (for `MakeAppx.exe`/`SignTool.exe`/`MakePri.exe`) — any version 10.0.17763.0+
+
+## Build tooling
+
+The SDK delegates SDK-tool discovery, MSIX packing, and signing to the compiled
+MSBuild tasks in the [`Microsoft.Windows.SDK.BuildTools.MSIX`](https://www.nuget.org/packages/Microsoft.Windows.SDK.BuildTools.MSIX)
+package. That package is **restored automatically** when you build (it is injected
+as a package reference by the SDK) — you do not need to add it yourself, and it is
+not bundled into this SDK. Only the package's task assembly is used; its full
+WinAppSDK packaging pipeline is not imported.
+
+Pin a specific version with `MsixSdkBuildToolsVersion`, and pin the Windows SDK
+version used to locate the tools with `MsixWindowsSdkVersion` (otherwise the latest
+installed Windows SDK is used).
+
+Signing is performed by the package's SignTool task, which also supports
+timestamping and Azure Code Signing / Azure Key Vault when the corresponding
+properties are supplied.
+
