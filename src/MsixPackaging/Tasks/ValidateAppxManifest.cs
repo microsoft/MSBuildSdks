@@ -1,9 +1,13 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+//
+// Licensed under the MIT license.
+
+using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml;
-using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 
 namespace Microsoft.Build.MsixPackaging.Tasks
 {
@@ -17,16 +21,17 @@ namespace Microsoft.Build.MsixPackaging.Tasks
         internal const string AppxNamespace = "http://schemas.microsoft.com/appx/manifest/foundation/windows10";
 
         /// <summary>
-        /// Path to the AppxManifest.xml to validate.
+        /// Gets or sets the path to the AppxManifest.xml to validate.
         /// </summary>
         [Required]
         public string ManifestPath { get; set; } = string.Empty;
 
         /// <summary>
-        /// When true, treat validation warnings as errors.
+        /// Gets or sets a value indicating whether validation warnings are treated as errors.
         /// </summary>
         public bool TreatWarningsAsErrors { get; set; }
 
+        /// <inheritdoc />
         public override bool Execute()
         {
             if (!File.Exists(ManifestPath))
@@ -43,8 +48,7 @@ namespace Microsoft.Build.MsixPackaging.Tasks
             }
             catch (XmlException ex)
             {
-                Log.LogError("Manifest is not well-formed XML: {0} (line {1}, pos {2})",
-                    ex.Message, ex.LineNumber, ex.LinePosition);
+                Log.LogError("Manifest is not well-formed XML: {0} (line {1}, pos {2})", ex.Message, ex.LineNumber, ex.LinePosition);
                 return false;
             }
 
@@ -150,13 +154,43 @@ namespace Microsoft.Build.MsixPackaging.Tasks
 
             if (valid)
             {
-                Log.LogMessage(MessageImportance.High,
-                    "  Manifest validation passed: {0} application(s)", applications?.Count ?? 0);
+                Log.LogMessage(MessageImportance.High, "  Manifest validation passed: {0} application(s)", applications?.Count ?? 0);
             }
 
             return valid;
         }
 
+        /// <summary>
+        /// Determines whether a version string is a valid four-part numeric version.
+        /// </summary>
+        /// <param name="version">The version string.</param>
+        /// <returns><see langword="true" /> if the version is valid.</returns>
+        private static bool IsValidMsixVersion(string version)
+        {
+            var parts = version.Split('.');
+            if (parts.Length != 4)
+            {
+                return false;
+            }
+
+            foreach (var part in parts)
+            {
+                if (!ushort.TryParse(part, out _))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Validates that a required attribute is present and non-empty.
+        /// </summary>
+        /// <param name="node">The element node.</param>
+        /// <param name="attributeName">The required attribute name.</param>
+        /// <param name="elementName">The element name (for diagnostics).</param>
+        /// <returns><see langword="true" /> if the attribute is present.</returns>
         private bool ValidateAttribute(XmlNode node, string attributeName, string elementName)
         {
             if (string.IsNullOrEmpty(node.Attributes?[attributeName]?.Value))
@@ -164,27 +198,25 @@ namespace Microsoft.Build.MsixPackaging.Tasks
                 LogValidation("{0} is missing required '{1}' attribute", elementName, attributeName);
                 return false;
             }
+
             return true;
         }
 
-        private static bool IsValidMsixVersion(string version)
-        {
-            var parts = version.Split('.');
-            if (parts.Length != 4) return false;
-
-            foreach (var part in parts)
-            {
-                if (!ushort.TryParse(part, out _)) return false;
-            }
-            return true;
-        }
-
+        /// <summary>
+        /// Logs a validation problem as an error or warning depending on configuration.
+        /// </summary>
+        /// <param name="message">The message format string.</param>
+        /// <param name="args">The message arguments.</param>
         private void LogValidation(string message, params object[] args)
         {
             if (TreatWarningsAsErrors)
+            {
                 Log.LogError(message, args);
+            }
             else
+            {
                 Log.LogWarning(message, args);
+            }
         }
     }
 }

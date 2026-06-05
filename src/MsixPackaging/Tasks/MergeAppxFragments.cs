@@ -1,10 +1,14 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+//
+// Licensed under the MIT license.
+
+using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Xml;
-using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 
 namespace Microsoft.Build.MsixPackaging.Tasks
 {
@@ -21,40 +25,38 @@ namespace Microsoft.Build.MsixPackaging.Tasks
         internal const string DependenciesMarker = "<!-- APPX_DEPENDENCIES_INSERTED_HERE -->";
 
         /// <summary>
-        /// Path to the base AppxManifest template containing the fragment marker(s).
+        /// Gets or sets the path to the base AppxManifest template containing the fragment marker(s).
         /// </summary>
         [Required]
         public string BaseManifestPath { get; set; } = string.Empty;
 
         /// <summary>
-        /// Paths to AppxFragment.xml files to merge into the manifest.
+        /// Gets or sets the paths to AppxFragment.xml files to merge into the manifest.
         /// </summary>
         public ITaskItem[] FragmentPaths { get; set; }
 
         /// <summary>
-        /// Path where the merged manifest will be written.
+        /// Gets or sets the path where the merged manifest will be written.
         /// </summary>
         [Required]
         public string OutputPath { get; set; } = string.Empty;
 
         /// <summary>
-        /// The primary marker comment to replace in the base manifest (for Application entries).
-        /// Defaults to <c>&lt;!-- APPX_FRAGMENTS_INSERTED_HERE --&gt;</c>.
+        /// Gets or sets the primary marker comment to replace in the base manifest (for Application entries).
         /// </summary>
         public string Marker { get; set; } = ApplicationsMarker;
 
         /// <summary>
-        /// When set, patches the Identity/@Version attribute in the merged manifest.
-        /// Must be a valid four-part numeric version (e.g. 1.2.3.0).
+        /// Gets or sets the version stamped into the Identity/@Version attribute. Must be four-part numeric.
         /// </summary>
         public string PackageVersion { get; set; }
 
         /// <summary>
-        /// When set, patches the Identity/@ProcessorArchitecture attribute in the merged manifest.
-        /// Valid values: x64, x86, arm64, neutral.
+        /// Gets or sets the architecture stamped into the Identity/@ProcessorArchitecture attribute.
         /// </summary>
         public string TargetArchitecture { get; set; }
 
+        /// <inheritdoc />
         public override bool Execute()
         {
             if (!File.Exists(BaseManifestPath))
@@ -84,6 +86,7 @@ namespace Microsoft.Build.MsixPackaging.Tasks
                 {
                     sortedPaths.Add(item.ItemSpec);
                 }
+
                 sortedPaths.Sort(StringComparer.OrdinalIgnoreCase);
 
                 foreach (var fragmentPath in sortedPaths)
@@ -99,15 +102,14 @@ namespace Microsoft.Build.MsixPackaging.Tasks
 
                     if (IsStructuredFragment(content))
                     {
-                        ParseStructuredFragment(content, fragmentPath,
-                            applicationFragments, capabilityFragments,
-                            extensionFragments, dependencyFragments);
+                        ParseStructuredFragment(content, fragmentPath, applicationFragments, capabilityFragments, extensionFragments, dependencyFragments);
                     }
                     else
                     {
                         // Plain fragment — treat as Application entry (backward compatible)
                         AppendIndented(applicationFragments, content);
                     }
+
                     fragmentCount++;
                 }
             }
@@ -116,13 +118,19 @@ namespace Microsoft.Build.MsixPackaging.Tasks
             var merged = baseContent.Replace(Marker, applicationFragments.ToString());
 
             if (baseContent.Contains(CapabilitiesMarker))
+            {
                 merged = merged.Replace(CapabilitiesMarker, capabilityFragments.ToString());
+            }
 
             if (baseContent.Contains(ExtensionsMarker))
+            {
                 merged = merged.Replace(ExtensionsMarker, extensionFragments.ToString());
+            }
 
             if (baseContent.Contains(DependenciesMarker))
+            {
                 merged = merged.Replace(DependenciesMarker, dependencyFragments.ToString());
+            }
 
             // Version stamping
             if (!string.IsNullOrEmpty(PackageVersion))
@@ -132,6 +140,7 @@ namespace Microsoft.Build.MsixPackaging.Tasks
                     Log.LogError("MsixPackageVersion '{0}' is not a valid four-part numeric version (e.g. 1.2.3.0)", PackageVersion);
                     return false;
                 }
+
                 merged = PatchAttribute(merged, "Version", PackageVersion);
                 Log.LogMessage(MessageImportance.High, "  Stamped version: {0}", PackageVersion);
             }
@@ -150,8 +159,7 @@ namespace Microsoft.Build.MsixPackaging.Tasks
             }
 
             File.WriteAllText(OutputPath, merged);
-            Log.LogMessage(MessageImportance.High,
-                "Generated manifest with {0} fragment(s): {1}", fragmentCount, OutputPath);
+            Log.LogMessage(MessageImportance.High, "Generated manifest with {0} fragment(s): {1}", fragmentCount, OutputPath);
 
             return true;
         }
@@ -159,17 +167,94 @@ namespace Microsoft.Build.MsixPackaging.Tasks
         /// <summary>
         /// Checks if a fragment uses the structured format with an AppxFragment root element.
         /// </summary>
+        /// <param name="content">The fragment content.</param>
+        /// <returns><see langword="true" /> if the fragment is structured.</returns>
         internal static bool IsStructuredFragment(string content)
         {
             return content.StartsWith("<AppxFragment", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
+        /// Appends content to the accumulator with manifest indentation.
+        /// </summary>
+        /// <param name="sb">The accumulator.</param>
+        /// <param name="content">The content to append.</param>
+        internal static void AppendIndented(StringBuilder sb, string content)
+        {
+            sb.AppendLine();
+            sb.Append("    ");
+            sb.AppendLine(content.Replace("\n", "\n    "));
+        }
+
+        /// <summary>
+        /// Replaces the value of an attribute on the Identity element using simple string patching.
+        /// </summary>
+        /// <param name="xml">The manifest XML.</param>
+        /// <param name="attributeName">The attribute to patch.</param>
+        /// <param name="value">The new value.</param>
+        /// <returns>The patched XML.</returns>
+        internal static string PatchAttribute(string xml, string attributeName, string value)
+        {
+            // Find the attribute in the Identity element and replace its value.
+            // This is intentionally simple string-based patching to avoid
+            // full XML round-tripping which can alter whitespace/formatting.
+            var searchPattern = attributeName + "=\"";
+            var idx = xml.IndexOf("<Identity", StringComparison.OrdinalIgnoreCase);
+            if (idx < 0)
+            {
+                return xml;
+            }
+
+            var attrIdx = xml.IndexOf(searchPattern, idx, StringComparison.OrdinalIgnoreCase);
+            if (attrIdx < 0)
+            {
+                return xml;
+            }
+
+            var valueStart = attrIdx + searchPattern.Length;
+            var valueEnd = xml.IndexOf('"', valueStart);
+            if (valueEnd < 0)
+            {
+                return xml;
+            }
+
+            return xml.Substring(0, valueStart) + value + xml.Substring(valueEnd);
+        }
+
+        /// <summary>
+        /// Determines whether a version string is a valid four-part numeric version.
+        /// </summary>
+        /// <param name="version">The version string.</param>
+        /// <returns><see langword="true" /> if the version is valid.</returns>
+        internal static bool IsValidMsixVersion(string version)
+        {
+            var parts = version.Split('.');
+            if (parts.Length != 4)
+            {
+                return false;
+            }
+
+            foreach (var part in parts)
+            {
+                if (!ushort.TryParse(part, out _))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Parses a structured fragment and distributes child elements to the appropriate section accumulators.
         /// </summary>
-        private void ParseStructuredFragment(string content, string fragmentPath,
-            StringBuilder applications, StringBuilder capabilities,
-            StringBuilder extensions, StringBuilder dependencies)
+        /// <param name="content">The fragment content.</param>
+        /// <param name="fragmentPath">The fragment file path (for diagnostics).</param>
+        /// <param name="applications">The applications accumulator.</param>
+        /// <param name="capabilities">The capabilities accumulator.</param>
+        /// <param name="extensions">The extensions accumulator.</param>
+        /// <param name="dependencies">The dependencies accumulator.</param>
+        private void ParseStructuredFragment(string content, string fragmentPath, StringBuilder applications, StringBuilder capabilities, StringBuilder extensions, StringBuilder dependencies)
         {
             XmlDocument doc;
             try
@@ -188,22 +273,30 @@ namespace Microsoft.Build.MsixPackaging.Tasks
             }
             catch (XmlException ex)
             {
-                Log.LogWarning("Fragment '{0}' is not valid XML, treating as plain Application entry: {1}",
-                    fragmentPath, ex.Message);
+                Log.LogWarning("Fragment '{0}' is not valid XML, treating as plain Application entry: {1}", fragmentPath, ex.Message);
                 AppendIndented(applications, content);
                 return;
             }
 
             var root = doc.DocumentElement;
-            if (root == null) return;
+            if (root == null)
+            {
+                return;
+            }
 
             // The AppxFragment element is the first child of our wrapper
             var fragment = root.FirstChild;
-            if (fragment == null) return;
+            if (fragment == null)
+            {
+                return;
+            }
 
             foreach (XmlNode child in fragment.ChildNodes)
             {
-                if (child.NodeType != XmlNodeType.Element) continue;
+                if (child.NodeType != XmlNodeType.Element)
+                {
+                    continue;
+                }
 
                 var outerXml = child.OuterXml;
                 switch (child.LocalName)
@@ -233,44 +326,6 @@ namespace Microsoft.Build.MsixPackaging.Tasks
                         break;
                 }
             }
-        }
-
-        internal static void AppendIndented(StringBuilder sb, string content)
-        {
-            sb.AppendLine();
-            sb.Append("    ");
-            sb.AppendLine(content.Replace("\n", "\n    "));
-        }
-
-        internal static string PatchAttribute(string xml, string attributeName, string value)
-        {
-            // Find the attribute in the Identity element and replace its value.
-            // This is intentionally simple string-based patching to avoid
-            // full XML round-tripping which can alter whitespace/formatting.
-            var searchPattern = attributeName + "=\"";
-            var idx = xml.IndexOf("<Identity", StringComparison.OrdinalIgnoreCase);
-            if (idx < 0) return xml;
-
-            var attrIdx = xml.IndexOf(searchPattern, idx, StringComparison.OrdinalIgnoreCase);
-            if (attrIdx < 0) return xml;
-
-            var valueStart = attrIdx + searchPattern.Length;
-            var valueEnd = xml.IndexOf('"', valueStart);
-            if (valueEnd < 0) return xml;
-
-            return xml.Substring(0, valueStart) + value + xml.Substring(valueEnd);
-        }
-
-        internal static bool IsValidMsixVersion(string version)
-        {
-            var parts = version.Split('.');
-            if (parts.Length != 4) return false;
-
-            foreach (var part in parts)
-            {
-                if (!ushort.TryParse(part, out _)) return false;
-            }
-            return true;
         }
     }
 }
