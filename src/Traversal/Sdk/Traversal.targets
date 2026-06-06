@@ -241,7 +241,7 @@
           DependsOnTargets="$(PublishDependsOn)"
           Condition=" '$(IsGraphBuild)' != 'true' ">
     <MSBuild Projects="@(ProjectReference)"
-             Properties="$(TraversalPublishGlobalProperties)"
+             Properties="$(TraversalPublishGlobalProperties); %(ProjectReference.SetConfiguration); %(ProjectReference.SetPlatform); %(ProjectReference.SetTargetFramework)"
              Targets="Publish"
              Condition="'%(ProjectReference.Publish)' != 'false'"
              BuildInParallel="$([MSBuild]::ValueOrDefault('%(ProjectReference.PublishInParallel)',
