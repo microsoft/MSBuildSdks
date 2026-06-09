@@ -75,6 +75,10 @@
     <MsixBundlePlatforms Condition="'$(MsixBundlePlatforms)' == ''">x64</MsixBundlePlatforms>
     <!-- MsixBundleOutput defaults to the output path with a .msixbundle extension. -->
 
+    <!-- Store upload package (.msixupload) — wraps the bundle (and symbol) for Partner Center. Requires a bundle. -->
+    <MsixStoreUploadEnabled Condition="'$(MsixStoreUploadEnabled)' == ''">false</MsixStoreUploadEnabled>
+    <!-- MsixStoreUploadOutput defaults to the output path with a .msixupload extension. -->
+
     <!--
       Windows SDK tooling (MakeAppx/SignTool/MakePri) is located via the
       Microsoft.Windows.SDK.BuildTools.MSIX package tasks. The package resolves

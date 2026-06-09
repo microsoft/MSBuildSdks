@@ -41,6 +41,7 @@
   <UsingTask TaskName="Microsoft.Build.Msix.BundleTasks.WinAppSdkValidatePublisherName" AssemblyFile="$(_MsixBuildToolsAssembly)" />
   <UsingTask TaskName="Microsoft.Build.Msix.BundleTasks.WinAppSdkValidateSigningCertificate" AssemblyFile="$(_MsixBuildToolsAssembly)" />
   <UsingTask TaskName="Microsoft.Build.Msix.Symbols.WinAppSdkGenerateAppxSymbolPackage" AssemblyFile="$(_MsixBuildToolsAssembly)" />
+  <UsingTask TaskName="Microsoft.Build.Msix.BundleTasks.WinAppSdkCreateAppStoreContainer" AssemblyFile="$(_MsixBuildToolsAssembly)" />
 
   <!-- Inline task: resolve the latest installed Windows 10/11 SDK version that contains MakeAppx.exe. -->
   <UsingTask TaskName="_MsixGetLatestWindowsSdkVersion"
@@ -111,12 +112,13 @@
     <_MsixPrimaryPackage Condition="'$(MsixBundleEnabled)' == 'true'">$(MsixBundleOutput)</_MsixPrimaryPackage>
     <_MsixPrimaryPackage Condition="'$(_MsixPrimaryPackage)' == ''">$(MsixOutputDir)\$(MsixFileName).msix</_MsixPrimaryPackage>
 
-    <!-- Bundle mode: build every architecture, bundle, then symbol/sign/appinstaller. -->
+    <!-- Bundle mode: build every architecture, bundle, then symbol/sign/appinstaller/upload. -->
     <BuildMsixDependsOn Condition="'$(MsixBundleEnabled)' == 'true'">
       BundleMsix;
       GenerateMsixSymbolPackage;
       SignMsix;
-      GenerateMsixAppInstaller
+      GenerateMsixAppInstaller;
+      CreateMsixUpload
     </BuildMsixDependsOn>
 
     <!-- Layout-deploy mode: skip PackMsix and SignMsix for faster dev builds -->
@@ -397,6 +399,38 @@
     <Message Text="Bundling MSIX: $(MsixBundleOutput)" Importance="high" />
     <Exec Command="&quot;$(_MakeAppxPath)&quot; bundle /d &quot;$(_MsixBundlePackagesDir)&quot; /p &quot;$(MsixBundleOutput)&quot; /o" />
     <Message Text="MSIX bundle created: $(MsixBundleOutput)" Importance="high" />
+  </Target>
+
+  <!-- ============================================================
+       Target: CreateMsixUpload (opt-in, bundle mode)
+       Wraps the .msixbundle (and the .msixsym symbol package when present)
+       into a .msixupload container for Partner Center submission.
+       ============================================================ -->
+  <Target Name="CreateMsixUpload" Condition="'$(MsixStoreUploadEnabled)' == 'true'">
+    <Error Text="MsixStoreUploadEnabled requires MsixBundleEnabled=true (a .msixupload wraps a bundle)."
+           Condition="'$(MsixBundleEnabled)' != 'true'" />
+    <Error Text="Bundle not found: $(MsixBundleOutput). Run a bundle build first."
+           Condition="!Exists('$(MsixBundleOutput)')" />
+
+    <PropertyGroup>
+      <MsixStoreUploadOutput Condition="'$(MsixStoreUploadOutput)' == ''">$(MsixOutputDir)\$(MsixFileName).msixupload</MsixStoreUploadOutput>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_MsixUploadItem Include="$(MsixBundleOutput)" />
+      <_MsixUploadItem Include="$(MsixSymbolPackageOutput)"
+                       Condition="'$(MsixSymbolPackageEnabled)' == 'true' AND '$(MsixSymbolPackageOutput)' != '' AND Exists('$(MsixSymbolPackageOutput)')" />
+    </ItemGroup>
+
+    <Delete Files="$(MsixStoreUploadOutput)" Condition="Exists('$(MsixStoreUploadOutput)')" />
+    <Message Text="Creating Store upload package: $(MsixStoreUploadOutput)" Importance="high" />
+
+    <WinAppSdkCreateAppStoreContainer
+        Items="@(_MsixUploadItem)"
+        ProjectName="$(MsixFileName)"
+        OutputPath="$(MsixStoreUploadOutput)" />
+
+    <Message Text="  Store upload package created: $(MsixStoreUploadOutput)" Importance="high" />
   </Target>
 
   <!-- ============================================================
