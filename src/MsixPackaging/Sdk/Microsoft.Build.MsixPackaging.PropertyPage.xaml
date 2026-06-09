@@ -16,6 +16,8 @@
         <Category Name="Package" DisplayName="Package Identity" />
         <Category Name="Deployment" DisplayName="Deployment" />
         <Category Name="Signing" DisplayName="Signing" />
+        <Category Name="Bundle" DisplayName="Bundle" />
+        <Category Name="Distribution" DisplayName="Distribution" />
         <Category Name="Resources" DisplayName="Resources" />
     </Rule.Categories>
 
@@ -124,6 +126,111 @@
         Description="Path to the .pfx certificate file used for signing."
         DisplayName="Certificate Path (.pfx)"
         Subtype="file">
+        <StringProperty.DataSource>
+            <DataSource HasConfigurationCondition="False" Persistence="ProjectFile" SourceOfDefaultValue="AfterContext" />
+        </StringProperty.DataSource>
+    </StringProperty>
+
+    <BoolProperty
+        Name="MsixGenerateTestCertificate"
+        Category="Signing"
+        Default="false"
+        Description="When signing is enabled and no certificate is supplied, generate a throwaway self-signed test certificate (matching the manifest Publisher) for local/dev signing."
+        DisplayName="Generate Test Certificate">
+        <BoolProperty.DataSource>
+            <DataSource HasConfigurationCondition="False" Persistence="UserFile" SourceOfDefaultValue="AfterContext" />
+        </BoolProperty.DataSource>
+    </BoolProperty>
+
+    <BoolProperty
+        Name="MsixValidateSigningCertificate"
+        Category="Signing"
+        Default="true"
+        Description="Validate the manifest Publisher matches the signing certificate before signing."
+        DisplayName="Validate Certificate">
+        <BoolProperty.DataSource>
+            <DataSource HasConfigurationCondition="False" Persistence="ProjectFile" SourceOfDefaultValue="AfterContext" />
+        </BoolProperty.DataSource>
+    </BoolProperty>
+
+    <StringProperty
+        Name="MsixTimestampUrl"
+        Category="Signing"
+        Description="Optional RFC 3161 timestamp server URL applied when signing with a certificate file."
+        DisplayName="Timestamp Server URL">
+        <StringProperty.DataSource>
+            <DataSource HasConfigurationCondition="False" Persistence="ProjectFile" SourceOfDefaultValue="AfterContext" />
+        </StringProperty.DataSource>
+    </StringProperty>
+
+    <!-- ============================================================
+         Bundle
+         ============================================================ -->
+
+    <BoolProperty
+        Name="MsixBundleEnabled"
+        Category="Bundle"
+        Default="false"
+        Description="Build one MSIX per architecture and combine them into a single .msixbundle."
+        DisplayName="Build App Bundle">
+        <BoolProperty.DataSource>
+            <DataSource HasConfigurationCondition="False" Persistence="ProjectFile" SourceOfDefaultValue="AfterContext" />
+        </BoolProperty.DataSource>
+    </BoolProperty>
+
+    <StringProperty
+        Name="MsixBundlePlatforms"
+        Category="Bundle"
+        Default="x64"
+        Description="Pipe-separated architectures to build and bundle, e.g. x64|x86|arm64. Referenced apps must declare these in &lt;RuntimeIdentifiers&gt;."
+        DisplayName="Bundle Platforms">
+        <StringProperty.DataSource>
+            <DataSource HasConfigurationCondition="False" Persistence="ProjectFile" SourceOfDefaultValue="AfterContext" />
+        </StringProperty.DataSource>
+    </StringProperty>
+
+    <BoolProperty
+        Name="MsixStoreUploadEnabled"
+        Category="Bundle"
+        Default="false"
+        Description="Wrap the bundle (and symbol package, if any) into a .msixupload for Partner Center. Requires Build App Bundle."
+        DisplayName="Create Store Upload (.msixupload)">
+        <BoolProperty.DataSource>
+            <DataSource HasConfigurationCondition="False" Persistence="ProjectFile" SourceOfDefaultValue="AfterContext" />
+        </BoolProperty.DataSource>
+    </BoolProperty>
+
+    <!-- ============================================================
+         Distribution
+         ============================================================ -->
+
+    <BoolProperty
+        Name="MsixSymbolPackageEnabled"
+        Category="Distribution"
+        Default="false"
+        Description="Produce a .msixsym symbol package (the PDBs from the layout) for Partner Center crash analysis."
+        DisplayName="Generate Symbol Package">
+        <BoolProperty.DataSource>
+            <DataSource HasConfigurationCondition="False" Persistence="ProjectFile" SourceOfDefaultValue="AfterContext" />
+        </BoolProperty.DataSource>
+    </BoolProperty>
+
+    <BoolProperty
+        Name="MsixAppInstallerEnabled"
+        Category="Distribution"
+        Default="false"
+        Description="Generate an .appinstaller file for sideload auto-update."
+        DisplayName="Generate App Installer">
+        <BoolProperty.DataSource>
+            <DataSource HasConfigurationCondition="False" Persistence="ProjectFile" SourceOfDefaultValue="AfterContext" />
+        </BoolProperty.DataSource>
+    </BoolProperty>
+
+    <StringProperty
+        Name="MsixAppInstallerUri"
+        Category="Distribution"
+        Description="Full URL where the .appinstaller file will be hosted (required when App Installer is enabled)."
+        DisplayName="App Installer URL">
         <StringProperty.DataSource>
             <DataSource HasConfigurationCondition="False" Persistence="ProjectFile" SourceOfDefaultValue="AfterContext" />
         </StringProperty.DataSource>
