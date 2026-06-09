@@ -57,6 +57,10 @@
     <MsixPriConfigPath Condition="'$(MsixPriConfigPath)' == ''"></MsixPriConfigPath>
     <MsixPriDefaultLanguage Condition="'$(MsixPriDefaultLanguage)' == ''">en-US</MsixPriDefaultLanguage>
 
+    <!-- Symbol package (.msixsym) — bundles the PDBs from the layout for Partner Center crash analysis. -->
+    <MsixSymbolPackageEnabled Condition="'$(MsixSymbolPackageEnabled)' == ''">false</MsixSymbolPackageEnabled>
+    <!-- MsixSymbolPackageOutput defaults to the .msix output path with a .msixsym extension. -->
+
     <!--
       Windows SDK tooling (MakeAppx/SignTool/MakePri) is located via the
       Microsoft.Windows.SDK.BuildTools.MSIX package tasks. The package resolves

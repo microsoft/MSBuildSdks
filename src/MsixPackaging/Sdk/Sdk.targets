@@ -40,6 +40,7 @@
   <UsingTask TaskName="Microsoft.Build.Msix.Crypto.WinAppSdkSignAppxPackage" AssemblyFile="$(_MsixBuildToolsAssembly)" />
   <UsingTask TaskName="Microsoft.Build.Msix.BundleTasks.WinAppSdkValidatePublisherName" AssemblyFile="$(_MsixBuildToolsAssembly)" />
   <UsingTask TaskName="Microsoft.Build.Msix.BundleTasks.WinAppSdkValidateSigningCertificate" AssemblyFile="$(_MsixBuildToolsAssembly)" />
+  <UsingTask TaskName="Microsoft.Build.Msix.Symbols.WinAppSdkGenerateAppxSymbolPackage" AssemblyFile="$(_MsixBuildToolsAssembly)" />
 
   <!-- Inline task: resolve the latest installed Windows 10/11 SDK version that contains MakeAppx.exe. -->
   <UsingTask TaskName="_MsixGetLatestWindowsSdkVersion"
@@ -115,6 +116,7 @@
     <BuildMsixDependsOn Condition="'$(MsixDeployOnBuild)' == 'true' AND '$(MsixDeployMode)' == 'msix'">
       $(_BuildMsixCoreDependsOn);
       PackMsix;
+      GenerateMsixSymbolPackage;
       SignMsix;
       DeployMsixInstall
     </BuildMsixDependsOn>
@@ -123,6 +125,7 @@
     <BuildMsixDependsOn Condition="'$(MsixDeployOnBuild)' != 'true'">
       $(_BuildMsixCoreDependsOn);
       PackMsix;
+      GenerateMsixSymbolPackage;
       SignMsix
     </BuildMsixDependsOn>
   </PropertyGroup>
@@ -306,6 +309,35 @@
         HashAlgorithmId="$(MsixHashAlgorithmId)" />
 
     <Message Text="MSIX package created: $(MsixOutputDir)\$(MsixFileName).msix" Importance="high" />
+  </Target>
+
+  <!-- ============================================================
+       Target: GenerateMsixSymbolPackage (opt-in)
+       Bundles the PDBs from the layout into a .msixsym symbol package for
+       Partner Center crash analysis. Enabled with MsixSymbolPackageEnabled.
+       ============================================================ -->
+  <Target Name="GenerateMsixSymbolPackage" Condition="'$(MsixSymbolPackageEnabled)' == 'true'">
+    <PropertyGroup>
+      <MsixSymbolPackageOutput Condition="'$(MsixSymbolPackageOutput)' == ''">$(MsixOutputDir)\$(MsixFileName).msixsym</MsixSymbolPackageOutput>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_MsixPdbPayload Include="$(MsixLayoutDir)\**\*.pdb" />
+    </ItemGroup>
+
+    <Warning Text="No .pdb files were found in the layout; the symbol package will be empty."
+             Condition="'@(_MsixPdbPayload)' == ''" />
+
+    <MakeDir Directories="$(MsixOutputDir)" />
+    <Message Text="Generating symbol package: $(MsixSymbolPackageOutput)" Importance="high" />
+
+    <WinAppSdkGenerateAppxSymbolPackage
+        InputPdbs="@(_MsixPdbPayload)"
+        ProjectName="$(MsixFileName)"
+        IntermediateSymbolRoot="$(IntermediateOutputPath)symbols"
+        AppxSymbolPackageOutput="$(MsixSymbolPackageOutput)" />
+
+    <Message Text="  Symbol package created: $(MsixSymbolPackageOutput)" Importance="high" />
   </Target>
 
   <!-- ============================================================
