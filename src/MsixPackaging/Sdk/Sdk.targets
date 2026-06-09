@@ -316,38 +316,87 @@
        file is not required.
        ============================================================ -->
   <PropertyGroup>
-    <_MsixSignReady Condition="'$(MsixSigningEnabled)' == 'true' AND ('$(MsixCertificatePath)' != '' OR '$(MsixAzureCodeSigningEnabled)' == 'true' OR '$(MsixAzureKeyVaultEnabled)' == 'true')">true</_MsixSignReady>
+    <_MsixUseTestCert Condition="'$(MsixSigningEnabled)' == 'true' AND '$(MsixGenerateTestCertificate)' == 'true' AND '$(MsixCertificatePath)' == '' AND '$(MsixAzureCodeSigningEnabled)' != 'true' AND '$(MsixAzureKeyVaultEnabled)' != 'true'">true</_MsixUseTestCert>
+    <_MsixSignReady Condition="'$(MsixSigningEnabled)' == 'true' AND ('$(MsixCertificatePath)' != '' OR '$(_MsixUseTestCert)' == 'true' OR '$(MsixAzureCodeSigningEnabled)' == 'true' OR '$(MsixAzureKeyVaultEnabled)' == 'true')">true</_MsixSignReady>
   </PropertyGroup>
+
+  <!-- ============================================================
+       Target: GenerateMsixTestCertificate
+       Creates a throwaway self-signed code-signing certificate whose subject
+       matches the merged manifest Publisher, exports it to a temporary .pfx,
+       and removes it from the certificate store. Used only for local/dev
+       signing when MsixGenerateTestCertificate=true and no certificate is set.
+       ============================================================ -->
+  <Target Name="GenerateMsixTestCertificate" Condition="'$(_MsixUseTestCert)' == 'true'">
+    <Error Text="Cannot generate a test certificate: merged manifest not found at $(MsixLayoutDir)\AppxManifest.xml"
+           Condition="!Exists('$(MsixLayoutDir)\AppxManifest.xml')" />
+
+    <!-- Read the Publisher subject from the merged manifest. -->
+    <XmlPeek XmlInputPath="$(MsixLayoutDir)\AppxManifest.xml"
+             Query="/appx:Package/appx:Identity/@Publisher"
+             Namespaces="&lt;Namespace Prefix='appx' Uri='http://schemas.microsoft.com/appx/manifest/foundation/windows10' /&gt;">
+      <Output TaskParameter="Result" PropertyName="_MsixTestCertSubject" />
+    </XmlPeek>
+    <Error Text="Could not read Identity/@Publisher from the merged manifest." Condition="'$(_MsixTestCertSubject)' == ''" />
+
+    <PropertyGroup>
+      <_MsixTestCertPath>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)$(MsixFileName).testcert.pfx'))</_MsixTestCertPath>
+      <_MsixTestCertPassword>$([System.Guid]::NewGuid().ToString())</_MsixTestCertPassword>
+    </PropertyGroup>
+
+    <MakeDir Directories="$(IntermediateOutputPath)" />
+    <Message Text="Generating test signing certificate for Publisher: $(_MsixTestCertSubject)" Importance="high" />
+
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)New-MsixTestCertificate.ps1&quot; -Subject &quot;$(_MsixTestCertSubject)&quot; -OutputPath &quot;$(_MsixTestCertPath)&quot; -Password &quot;$(_MsixTestCertPassword)&quot;" />
+
+    <Message Text="  Test certificate written to $(_MsixTestCertPath)" Importance="normal" />
+  </Target>
+
+  <!-- ============================================================
+       Target: SignMsix (optional)
+       Signs the MSIX when MsixSigningEnabled=true using the SignTool build task.
+       Supports a certificate file, an auto-generated test certificate, RFC 3161
+       timestamping, Azure Code Signing, and Azure Key Vault. When an Azure
+       signing mode is enabled a certificate file is not required.
+       ============================================================ -->
   <Target Name="SignMsix"
-          DependsOnTargets="ResolveWindowsSdkVersion"
+          DependsOnTargets="ResolveWindowsSdkVersion;GenerateMsixTestCertificate"
           Condition="'$(_MsixSignReady)' == 'true'">
     <WinAppSdkGetSdkFileFullPath FileName="signtool.exe" TargetPlatformVersion="$(_MsixResolvedSdkVersion)">
       <Output TaskParameter="ActualFullFilePath" PropertyName="_SignToolPath" />
     </WinAppSdkGetSdkFileFullPath>
 
+    <!-- Effective certificate: an explicit certificate file, or the generated test certificate. -->
+    <PropertyGroup>
+      <_MsixSignCertFile>$(MsixCertificatePath)</_MsixSignCertFile>
+      <_MsixSignCertPassword>$(MsixCertificatePassword)</_MsixSignCertPassword>
+      <_MsixSignCertFile Condition="'$(_MsixUseTestCert)' == 'true'">$(_MsixTestCertPath)</_MsixSignCertFile>
+      <_MsixSignCertPassword Condition="'$(_MsixUseTestCert)' == 'true'">$(_MsixTestCertPassword)</_MsixSignCertPassword>
+    </PropertyGroup>
+
     <Message Text="Signing MSIX: $(MsixOutputDir)\$(MsixFileName).msix" Importance="high" />
 
     <!-- Validate the manifest Publisher matches the signing certificate (skipped for Azure modes). -->
-    <ItemGroup Condition="'$(MsixValidateSigningCertificate)' == 'true' AND '$(MsixCertificatePath)' != '' AND '$(MsixAzureCodeSigningEnabled)' != 'true' AND '$(MsixAzureKeyVaultEnabled)' != 'true'">
+    <ItemGroup Condition="'$(MsixValidateSigningCertificate)' == 'true' AND '$(_MsixSignCertFile)' != '' AND '$(MsixAzureCodeSigningEnabled)' != 'true' AND '$(MsixAzureKeyVaultEnabled)' != 'true'">
       <_MsixMergedManifest Include="$(MsixLayoutDir)\AppxManifest.xml" />
     </ItemGroup>
     <WinAppSdkValidateSigningCertificate
         Condition="'@(_MsixMergedManifest)' != ''"
-        CertificateFile="$(MsixCertificatePath)"
-        CertificatePassword="$(MsixCertificatePassword)" />
+        CertificateFile="$(_MsixSignCertFile)"
+        CertificatePassword="$(_MsixSignCertPassword)" />
     <WinAppSdkValidatePublisherName
         Condition="'@(_MsixMergedManifest)' != ''"
         IsPackageSigningEnabled="true"
         EnableSigningChecks="true"
-        CertificateFile="$(MsixCertificatePath)"
-        CertificatePassword="$(MsixCertificatePassword)"
+        CertificateFile="$(_MsixSignCertFile)"
+        CertificatePassword="$(_MsixSignCertPassword)"
         AppxManifest="@(_MsixMergedManifest)" />
 
     <WinAppSdkSignAppxPackage
         AppxPackageToSign="$(MsixOutputDir)\$(MsixFileName).msix"
         SignAppxPackageExeFullPath="$(_SignToolPath)"
-        CertificateFile="$(MsixCertificatePath)"
-        CertificatePassword="$(MsixCertificatePassword)"
+        CertificateFile="$(_MsixSignCertFile)"
+        CertificatePassword="$(_MsixSignCertPassword)"
         TempCertificateFilePath="$(IntermediateOutputPath)$(MsixFileName).signing.cer"
         HashAlgorithmId="$(MsixHashAlgorithmId)"
         SigningTimestampServerUrl="$(MsixTimestampUrl)"
@@ -361,6 +410,9 @@
         AzureKeyVaultDlibFilePath="$(MsixAzureKeyVaultDlibPath)"
         AzureKeyVaultUrl="$(MsixAzureKeyVaultUrl)"
         AzureKeyVaultCertificateId="$(MsixAzureKeyVaultCertificateId)" />
+
+    <!-- The generated test certificate is throwaway; remove it once signing is done. -->
+    <Delete Files="$(_MsixTestCertPath)" Condition="'$(_MsixUseTestCert)' == 'true' AND Exists('$(_MsixTestCertPath)')" />
 
     <Message Text="MSIX signed successfully" Importance="high" />
   </Target>

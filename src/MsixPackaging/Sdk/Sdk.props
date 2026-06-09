@@ -31,6 +31,10 @@
     <!-- Validate the manifest Publisher matches the signing certificate before signing. -->
     <MsixValidateSigningCertificate Condition="'$(MsixValidateSigningCertificate)' == ''">true</MsixValidateSigningCertificate>
 
+    <!-- When signing is enabled with no certificate supplied, generate a throwaway self-signed
+         test certificate (matching the manifest Publisher) for local/dev signing. -->
+    <MsixGenerateTestCertificate Condition="'$(MsixGenerateTestCertificate)' == ''">false</MsixGenerateTestCertificate>
+
     <!-- Optional RFC 3161 timestamp server applied when signing with a certificate file. -->
     <MsixTimestampUrl Condition="'$(MsixTimestampUrl)' == ''"></MsixTimestampUrl>
     <MsixTimestampDigestAlgorithm Condition="'$(MsixTimestampDigestAlgorithm)' == ''">SHA256</MsixTimestampDigestAlgorithm>
