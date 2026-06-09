@@ -309,15 +309,21 @@
   <!-- ============================================================
        Target: SignMsix (optional)
        Signs the MSIX when MsixSigningEnabled=true using the SignTool build task.
+       Supports a certificate file, RFC 3161 timestamping, Azure Code Signing,
+       and Azure Key Vault. When an Azure signing mode is enabled a certificate
+       file is not required.
        ============================================================ -->
+  <PropertyGroup>
+    <_MsixSignReady Condition="'$(MsixSigningEnabled)' == 'true' AND ('$(MsixCertificatePath)' != '' OR '$(MsixAzureCodeSigningEnabled)' == 'true' OR '$(MsixAzureKeyVaultEnabled)' == 'true')">true</_MsixSignReady>
+  </PropertyGroup>
   <Target Name="SignMsix"
           DependsOnTargets="ResolveWindowsSdkVersion"
-          Condition="'$(MsixSigningEnabled)' == 'true' AND '$(MsixCertificatePath)' != ''">
+          Condition="'$(_MsixSignReady)' == 'true'">
     <WinAppSdkGetSdkFileFullPath FileName="signtool.exe" TargetPlatformVersion="$(_MsixResolvedSdkVersion)">
       <Output TaskParameter="ActualFullFilePath" PropertyName="_SignToolPath" />
     </WinAppSdkGetSdkFileFullPath>
 
-    <Message Text="Signing MSIX with certificate: $(MsixCertificatePath)" Importance="high" />
+    <Message Text="Signing MSIX: $(MsixOutputDir)\$(MsixFileName).msix" Importance="high" />
 
     <WinAppSdkSignAppxPackage
         AppxPackageToSign="$(MsixOutputDir)\$(MsixFileName).msix"
@@ -325,7 +331,18 @@
         CertificateFile="$(MsixCertificatePath)"
         CertificatePassword="$(MsixCertificatePassword)"
         TempCertificateFilePath="$(IntermediateOutputPath)$(MsixFileName).signing.cer"
-        HashAlgorithmId="$(MsixHashAlgorithmId)" />
+        HashAlgorithmId="$(MsixHashAlgorithmId)"
+        SigningTimestampServerUrl="$(MsixTimestampUrl)"
+        SigningTimestampDigestAlgorithm="$(MsixTimestampDigestAlgorithm)"
+        AzureCodeSigningEnabled="$(MsixAzureCodeSigningEnabled)"
+        AzureCodeSigningDlibFilePath="$(MsixAzureCodeSigningDlibPath)"
+        AzureCodeSigningEndpoint="$(MsixAzureCodeSigningEndpoint)"
+        AzureCodeSigningAccountName="$(MsixAzureCodeSigningAccountName)"
+        AzureCodeSigningCertificateProfileName="$(MsixAzureCodeSigningCertificateProfileName)"
+        AzureKeyVaultEnabled="$(MsixAzureKeyVaultEnabled)"
+        AzureKeyVaultDlibFilePath="$(MsixAzureKeyVaultDlibPath)"
+        AzureKeyVaultUrl="$(MsixAzureKeyVaultUrl)"
+        AzureKeyVaultCertificateId="$(MsixAzureKeyVaultCertificateId)" />
 
     <Message Text="MSIX signed successfully" Importance="high" />
   </Target>

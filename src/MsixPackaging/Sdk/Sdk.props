@@ -28,6 +28,20 @@
     <!-- Signing (disabled by default) -->
     <MsixSigningEnabled Condition="'$(MsixSigningEnabled)' == ''">false</MsixSigningEnabled>
 
+    <!-- Optional RFC 3161 timestamp server applied when signing with a certificate file. -->
+    <MsixTimestampUrl Condition="'$(MsixTimestampUrl)' == ''"></MsixTimestampUrl>
+    <MsixTimestampDigestAlgorithm Condition="'$(MsixTimestampDigestAlgorithm)' == ''">SHA256</MsixTimestampDigestAlgorithm>
+
+    <!-- Azure Code Signing (Trusted Signing). When enabled, a certificate file is not required. -->
+    <MsixAzureCodeSigningEnabled Condition="'$(MsixAzureCodeSigningEnabled)' == ''">false</MsixAzureCodeSigningEnabled>
+    <!-- MsixAzureCodeSigningDlibPath, MsixAzureCodeSigningEndpoint, MsixAzureCodeSigningAccountName,
+         MsixAzureCodeSigningCertificateProfileName — set by the consumer when Azure Code Signing is enabled. -->
+
+    <!-- Azure Key Vault signing. When enabled, a certificate file is not required. -->
+    <MsixAzureKeyVaultEnabled Condition="'$(MsixAzureKeyVaultEnabled)' == ''">false</MsixAzureKeyVaultEnabled>
+    <!-- MsixAzureKeyVaultDlibPath, MsixAzureKeyVaultUrl, MsixAzureKeyVaultCertificateId — set by the
+         consumer when Azure Key Vault signing is enabled. -->
+
     <!-- Directory containing package-level images (StoreLogo, etc.) -->
     <MsixPackageImagesDir Condition="'$(MsixPackageImagesDir)' == ''">$(MSBuildProjectDirectory)\Images</MsixPackageImagesDir>
 
