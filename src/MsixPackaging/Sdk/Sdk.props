@@ -28,6 +28,9 @@
     <!-- Signing (disabled by default) -->
     <MsixSigningEnabled Condition="'$(MsixSigningEnabled)' == ''">false</MsixSigningEnabled>
 
+    <!-- Validate the manifest Publisher matches the signing certificate before signing. -->
+    <MsixValidateSigningCertificate Condition="'$(MsixValidateSigningCertificate)' == ''">true</MsixValidateSigningCertificate>
+
     <!-- Optional RFC 3161 timestamp server applied when signing with a certificate file. -->
     <MsixTimestampUrl Condition="'$(MsixTimestampUrl)' == ''"></MsixTimestampUrl>
     <MsixTimestampDigestAlgorithm Condition="'$(MsixTimestampDigestAlgorithm)' == ''">SHA256</MsixTimestampDigestAlgorithm>

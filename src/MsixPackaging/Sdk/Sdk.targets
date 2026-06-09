@@ -38,6 +38,8 @@
   <UsingTask TaskName="Microsoft.Build.Msix.WindowsTools.WinAppSdkGetSdkFileFullPath" AssemblyFile="$(_MsixBuildToolsAssembly)" />
   <UsingTask TaskName="Microsoft.Build.Msix.MakeAppx.WinAppSdkMakeAppxPack" AssemblyFile="$(_MsixBuildToolsAssembly)" />
   <UsingTask TaskName="Microsoft.Build.Msix.Crypto.WinAppSdkSignAppxPackage" AssemblyFile="$(_MsixBuildToolsAssembly)" />
+  <UsingTask TaskName="Microsoft.Build.Msix.BundleTasks.WinAppSdkValidatePublisherName" AssemblyFile="$(_MsixBuildToolsAssembly)" />
+  <UsingTask TaskName="Microsoft.Build.Msix.BundleTasks.WinAppSdkValidateSigningCertificate" AssemblyFile="$(_MsixBuildToolsAssembly)" />
 
   <!-- Inline task: resolve the latest installed Windows 10/11 SDK version that contains MakeAppx.exe. -->
   <UsingTask TaskName="_MsixGetLatestWindowsSdkVersion"
@@ -324,6 +326,22 @@
     </WinAppSdkGetSdkFileFullPath>
 
     <Message Text="Signing MSIX: $(MsixOutputDir)\$(MsixFileName).msix" Importance="high" />
+
+    <!-- Validate the manifest Publisher matches the signing certificate (skipped for Azure modes). -->
+    <ItemGroup Condition="'$(MsixValidateSigningCertificate)' == 'true' AND '$(MsixCertificatePath)' != '' AND '$(MsixAzureCodeSigningEnabled)' != 'true' AND '$(MsixAzureKeyVaultEnabled)' != 'true'">
+      <_MsixMergedManifest Include="$(MsixLayoutDir)\AppxManifest.xml" />
+    </ItemGroup>
+    <WinAppSdkValidateSigningCertificate
+        Condition="'@(_MsixMergedManifest)' != ''"
+        CertificateFile="$(MsixCertificatePath)"
+        CertificatePassword="$(MsixCertificatePassword)" />
+    <WinAppSdkValidatePublisherName
+        Condition="'@(_MsixMergedManifest)' != ''"
+        IsPackageSigningEnabled="true"
+        EnableSigningChecks="true"
+        CertificateFile="$(MsixCertificatePath)"
+        CertificatePassword="$(MsixCertificatePassword)"
+        AppxManifest="@(_MsixMergedManifest)" />
 
     <WinAppSdkSignAppxPackage
         AppxPackageToSign="$(MsixOutputDir)\$(MsixFileName).msix"
