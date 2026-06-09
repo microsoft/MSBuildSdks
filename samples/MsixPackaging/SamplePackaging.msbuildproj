@@ -16,6 +16,27 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <MsixFileName>MsixPackagingSample</MsixFileName>
+
+    <!-- Demonstrate signing with an auto-generated test certificate (no .pfx needed). -->
+    <MsixSigningEnabled>true</MsixSigningEnabled>
+    <MsixGenerateTestCertificate>true</MsixGenerateTestCertificate>
+
+    <!-- Demonstrate the symbol package (.msixsym) and App Installer (.appinstaller). -->
+    <MsixSymbolPackageEnabled>true</MsixSymbolPackageEnabled>
+    <MsixAppInstallerEnabled>true</MsixAppInstallerEnabled>
+    <MsixAppInstallerUri>https://example.com/apps/MsixPackagingSample.appinstaller</MsixAppInstallerUri>
+
+    <!--
+      Multi-architecture bundle (.msixbundle) and Store upload (.msixupload) are
+      opt-in because they build every architecture. Try them with:
+
+        dotnet build SamplePackaging.msbuildproj `
+          /p:MsixBundleEnabled=true `
+          "/p:MsixBundlePlatforms=x64|x86" `
+          /p:MsixStoreUploadEnabled=true
+
+      SampleConsoleApp declares the matching <RuntimeIdentifiers> so restore covers them.
+    -->
   </PropertyGroup>
 
   <!-- App projects to include in the MSIX -->
