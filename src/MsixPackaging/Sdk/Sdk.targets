@@ -118,6 +118,7 @@
       PackMsix;
       GenerateMsixSymbolPackage;
       SignMsix;
+      GenerateMsixAppInstaller;
       DeployMsixInstall
     </BuildMsixDependsOn>
 
@@ -126,7 +127,8 @@
       $(_BuildMsixCoreDependsOn);
       PackMsix;
       GenerateMsixSymbolPackage;
-      SignMsix
+      SignMsix;
+      GenerateMsixAppInstaller
     </BuildMsixDependsOn>
   </PropertyGroup>
 
@@ -338,6 +340,65 @@
         AppxSymbolPackageOutput="$(MsixSymbolPackageOutput)" />
 
     <Message Text="  Symbol package created: $(MsixSymbolPackageOutput)" Importance="high" />
+  </Target>
+
+  <!-- ============================================================
+       Target: GenerateMsixAppInstaller (opt-in)
+       Generates an .appinstaller file for sideload auto-update. Reads the
+       package identity from the merged manifest and points at the hosted
+       package. References the bundle when MsixBundleEnabled=true, else the .msix.
+       ============================================================ -->
+  <Target Name="GenerateMsixAppInstaller" Condition="'$(MsixAppInstallerEnabled)' == 'true'">
+    <Error Text="MsixAppInstallerUri must be set to the URL where the .appinstaller file will be hosted."
+           Condition="'$(MsixAppInstallerUri)' == ''" />
+    <Error Text="Merged manifest not found at $(MsixLayoutDir)\AppxManifest.xml"
+           Condition="!Exists('$(MsixLayoutDir)\AppxManifest.xml')" />
+
+    <PropertyGroup>
+      <_AppInstallerNs>&lt;Namespace Prefix='appx' Uri='http://schemas.microsoft.com/appx/manifest/foundation/windows10' /&gt;</_AppInstallerNs>
+      <MsixAppInstallerOutput Condition="'$(MsixAppInstallerOutput)' == ''">$(MsixOutputDir)\$(MsixFileName).appinstaller</MsixAppInstallerOutput>
+      <_AppInstallerIsBundle Condition="'$(MsixBundleEnabled)' == 'true'">true</_AppInstallerIsBundle>
+      <_AppInstallerPkgFile Condition="'$(_AppInstallerIsBundle)' == 'true'">$(MsixFileName).msixbundle</_AppInstallerPkgFile>
+      <_AppInstallerPkgFile Condition="'$(_AppInstallerPkgFile)' == ''">$(MsixFileName).msix</_AppInstallerPkgFile>
+    </PropertyGroup>
+
+    <!-- Read identity from the merged manifest. -->
+    <XmlPeek XmlInputPath="$(MsixLayoutDir)\AppxManifest.xml" Query="/appx:Package/appx:Identity/@Name" Namespaces="$(_AppInstallerNs)">
+      <Output TaskParameter="Result" PropertyName="_AppInstallerName" />
+    </XmlPeek>
+    <XmlPeek XmlInputPath="$(MsixLayoutDir)\AppxManifest.xml" Query="/appx:Package/appx:Identity/@Publisher" Namespaces="$(_AppInstallerNs)">
+      <Output TaskParameter="Result" PropertyName="_AppInstallerPublisher" />
+    </XmlPeek>
+    <XmlPeek XmlInputPath="$(MsixLayoutDir)\AppxManifest.xml" Query="/appx:Package/appx:Identity/@Version" Namespaces="$(_AppInstallerNs)">
+      <Output TaskParameter="Result" PropertyName="_AppInstallerVersion" />
+    </XmlPeek>
+    <XmlPeek XmlInputPath="$(MsixLayoutDir)\AppxManifest.xml" Query="/appx:Package/appx:Identity/@ProcessorArchitecture" Namespaces="$(_AppInstallerNs)">
+      <Output TaskParameter="Result" PropertyName="_AppInstallerArch" />
+    </XmlPeek>
+
+    <!-- Derive the package URL from the .appinstaller URL when not given explicitly. -->
+    <PropertyGroup>
+      <_AppInstallerPkgUri>$(MsixAppInstallerPackageUri)</_AppInstallerPkgUri>
+      <_AppInstallerPkgUri Condition="'$(_AppInstallerPkgUri)' == ''">$(MsixAppInstallerUri.Substring(0, $(MsixAppInstallerUri.LastIndexOf('/'))))/$(_AppInstallerPkgFile)</_AppInstallerPkgUri>
+      <_AppInstallerMainElement Condition="'$(_AppInstallerIsBundle)' == 'true'">&lt;MainBundle Name="$(_AppInstallerName)" Publisher="$(_AppInstallerPublisher)" Version="$(_AppInstallerVersion)" Uri="$(_AppInstallerPkgUri)" /&gt;</_AppInstallerMainElement>
+      <_AppInstallerMainElement Condition="'$(_AppInstallerMainElement)' == ''">&lt;MainPackage Name="$(_AppInstallerName)" Publisher="$(_AppInstallerPublisher)" Version="$(_AppInstallerVersion)" ProcessorArchitecture="$(_AppInstallerArch)" Uri="$(_AppInstallerPkgUri)" /&gt;</_AppInstallerMainElement>
+    </PropertyGroup>
+
+    <MakeDir Directories="$(MsixOutputDir)" />
+    <Message Text="Generating App Installer file: $(MsixAppInstallerOutput)" Importance="high" />
+
+    <ItemGroup>
+      <_AppInstallerLines Include="&lt;AppInstaller xmlns=&quot;http://schemas.microsoft.com/appx/appinstaller/2018&quot; Version=&quot;$(_AppInstallerVersion)&quot; Uri=&quot;$(MsixAppInstallerUri)&quot;&gt;" />
+      <_AppInstallerLines Include="  $(_AppInstallerMainElement)" />
+      <_AppInstallerLines Include="  &lt;UpdateSettings&gt;" />
+      <_AppInstallerLines Include="    &lt;OnLaunch HoursBetweenUpdateChecks=&quot;$(MsixAppInstallerUpdateCheckHours)&quot; /&gt;" />
+      <_AppInstallerLines Include="  &lt;/UpdateSettings&gt;" />
+      <_AppInstallerLines Include="&lt;/AppInstaller&gt;" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(MsixAppInstallerOutput)" Lines="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;" Overwrite="true" />
+    <WriteLinesToFile File="$(MsixAppInstallerOutput)" Lines="@(_AppInstallerLines)" Overwrite="false" />
+
+    <Message Text="  App Installer file created: $(MsixAppInstallerOutput)" Importance="high" />
   </Target>
 
   <!-- ============================================================

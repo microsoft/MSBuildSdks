@@ -61,6 +61,14 @@
     <MsixSymbolPackageEnabled Condition="'$(MsixSymbolPackageEnabled)' == ''">false</MsixSymbolPackageEnabled>
     <!-- MsixSymbolPackageOutput defaults to the .msix output path with a .msixsym extension. -->
 
+    <!-- App Installer (.appinstaller) — generates a sideload auto-update file. -->
+    <MsixAppInstallerEnabled Condition="'$(MsixAppInstallerEnabled)' == ''">false</MsixAppInstallerEnabled>
+    <!-- MsixAppInstallerUri — full URL where the .appinstaller file will be hosted (required when enabled). -->
+    <!-- MsixAppInstallerPackageUri — full URL of the hosted .msix/.msixbundle; derived from MsixAppInstallerUri when empty. -->
+    <!-- Hours between update checks on launch. 0 checks on every launch. -->
+    <MsixAppInstallerUpdateCheckHours Condition="'$(MsixAppInstallerUpdateCheckHours)' == ''">0</MsixAppInstallerUpdateCheckHours>
+    <!-- MsixAppInstallerOutput defaults to the .msix output path with an .appinstaller extension. -->
+
     <!--
       Windows SDK tooling (MakeAppx/SignTool/MakePri) is located via the
       Microsoft.Windows.SDK.BuildTools.MSIX package tasks. The package resolves
