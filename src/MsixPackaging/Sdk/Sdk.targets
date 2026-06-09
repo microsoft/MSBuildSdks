@@ -106,14 +106,27 @@
       GenerateResourceIndex
     </_BuildMsixCoreDependsOn>
 
+    <!-- Bundle output and the primary artifact downstream targets (sign/appinstaller) act on. -->
+    <MsixBundleOutput Condition="'$(MsixBundleOutput)' == ''">$(MsixOutputDir)\$(MsixFileName).msixbundle</MsixBundleOutput>
+    <_MsixPrimaryPackage Condition="'$(MsixBundleEnabled)' == 'true'">$(MsixBundleOutput)</_MsixPrimaryPackage>
+    <_MsixPrimaryPackage Condition="'$(_MsixPrimaryPackage)' == ''">$(MsixOutputDir)\$(MsixFileName).msix</_MsixPrimaryPackage>
+
+    <!-- Bundle mode: build every architecture, bundle, then symbol/sign/appinstaller. -->
+    <BuildMsixDependsOn Condition="'$(MsixBundleEnabled)' == 'true'">
+      BundleMsix;
+      GenerateMsixSymbolPackage;
+      SignMsix;
+      GenerateMsixAppInstaller
+    </BuildMsixDependsOn>
+
     <!-- Layout-deploy mode: skip PackMsix and SignMsix for faster dev builds -->
-    <BuildMsixDependsOn Condition="'$(MsixDeployOnBuild)' == 'true' AND '$(MsixDeployMode)' == 'layout'">
+    <BuildMsixDependsOn Condition="'$(MsixBundleEnabled)' != 'true' AND '$(MsixDeployOnBuild)' == 'true' AND '$(MsixDeployMode)' == 'layout'">
       $(_BuildMsixCoreDependsOn);
       DeployMsixLayout
     </BuildMsixDependsOn>
 
     <!-- MSIX-deploy mode: full pipeline + install -->
-    <BuildMsixDependsOn Condition="'$(MsixDeployOnBuild)' == 'true' AND '$(MsixDeployMode)' == 'msix'">
+    <BuildMsixDependsOn Condition="'$(MsixBundleEnabled)' != 'true' AND '$(MsixDeployOnBuild)' == 'true' AND '$(MsixDeployMode)' == 'msix'">
       $(_BuildMsixCoreDependsOn);
       PackMsix;
       GenerateMsixSymbolPackage;
@@ -123,7 +136,7 @@
     </BuildMsixDependsOn>
 
     <!-- No deploy: full pipeline (pack + sign) -->
-    <BuildMsixDependsOn Condition="'$(MsixDeployOnBuild)' != 'true'">
+    <BuildMsixDependsOn Condition="'$(MsixBundleEnabled)' != 'true' AND '$(MsixDeployOnBuild)' != 'true'">
       $(_BuildMsixCoreDependsOn);
       PackMsix;
       GenerateMsixSymbolPackage;
@@ -146,6 +159,8 @@
     <!--
       Publish each ProjectReference that has LayoutDir metadata.
       Projects without LayoutDir are built normally but not published to the layout.
+      In bundle mode a RuntimeIdentifier is set; referenced apps must declare the
+      target architectures in <RuntimeIdentifiers> so restore covers them.
     -->
     <MSBuild
       Projects="@(ProjectReference)"
@@ -153,6 +168,7 @@
       Properties="
         Configuration=$(Configuration);
         PublishDir=$(MsixLayoutDir)\%(ProjectReference.LayoutDir)\;
+        RuntimeIdentifier=$(_MsixPublishRid);
         SelfContained=false;
         PublishSingleFile=false"
       Condition="'%(ProjectReference.LayoutDir)' != ''" />
@@ -314,6 +330,84 @@
   </Target>
 
   <!-- ============================================================
+       Bundle mode: shared properties/items and the per-architecture loop.
+       ============================================================ -->
+  <PropertyGroup Condition="'$(MsixBundleEnabled)' == 'true'">
+    <!-- Absolute roots so per-architecture publish/pack paths resolve against this
+         project (not the referenced app projects). -->
+    <_MsixBundleRoot>$([System.IO.Path]::Combine($(MSBuildProjectDirectory), $(IntermediateOutputPath), 'bundle'))</_MsixBundleRoot>
+    <_MsixBundlePackagesDir>$(_MsixBundleRoot)\packages</_MsixBundlePackagesDir>
+    <!-- First architecture in the list, used for the representative layout. -->
+    <_MsixFirstArch>$(MsixBundlePlatforms)</_MsixFirstArch>
+    <_MsixFirstArch Condition="$(MsixBundlePlatforms.Contains('|'))">$(MsixBundlePlatforms.Substring(0, $(MsixBundlePlatforms.IndexOf('|'))))</_MsixFirstArch>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(MsixBundleEnabled)' == 'true'">
+    <!-- Split "x64|x86|arm64" into items. Unescape so the ';' acts as a list separator. -->
+    <_MsixBundleArch Include="$([MSBuild]::Unescape($(MsixBundlePlatforms.Replace('|', ';'))))" />
+  </ItemGroup>
+
+  <!-- Start from a clean packages directory (makeappx bundle /d requires only .msix files). -->
+  <Target Name="_PrepareBundlePackages">
+    <RemoveDir Directories="$(_MsixBundlePackagesDir)" />
+    <MakeDir Directories="$(_MsixBundlePackagesDir);$(MsixOutputDir)" />
+    <Message Text="Building MSIX bundle for architectures: $(MsixBundlePlatforms)" Importance="high" />
+  </Target>
+
+  <!-- Pack one architecture (target-batched once per architecture). -->
+  <Target Name="_PackOneArchitecture"
+          DependsOnTargets="_PrepareBundlePackages"
+          Outputs="%(_MsixBundleArch.Identity)">
+    <Message Text="  Packing architecture: %(_MsixBundleArch.Identity)" Importance="high" />
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="_PackArchitecture"
+      Properties="
+        MsixBundleEnabled=false;
+        MsixTargetArchitecture=%(_MsixBundleArch.Identity);
+        _MsixPublishRid=win-%(_MsixBundleArch.Identity);
+        MsixLayoutDir=$(_MsixBundleRoot)\%(_MsixBundleArch.Identity)\MsixLayout;
+        MsixOutputDir=$(_MsixBundlePackagesDir);
+        MsixFileName=$(MsixFileName)-%(_MsixBundleArch.Identity);
+        MsixSigningEnabled=false;
+        MsixSymbolPackageEnabled=false;
+        MsixAppInstallerEnabled=false;
+        MsixDeployOnBuild=false" />
+  </Target>
+
+  <!-- ============================================================
+       Target: BundleMsix (bundle mode)
+       Builds one MSIX per architecture in MsixBundlePlatforms (each via the
+       per-architecture pack chain), then combines them into a .msixbundle.
+       A representative layout is copied to MsixLayoutDir so the downstream
+       sign/symbol/appinstaller targets can read identity and PDBs.
+       ============================================================ -->
+  <Target Name="BundleMsix" DependsOnTargets="ResolveWindowsSdkVersion;_PackOneArchitecture">
+    <WinAppSdkGetSdkFileFullPath FileName="MakeAppx.exe" TargetPlatformVersion="$(_MsixResolvedSdkVersion)">
+      <Output TaskParameter="ActualFullFilePath" PropertyName="_MakeAppxPath" />
+    </WinAppSdkGetSdkFileFullPath>
+
+    <!-- Copy the first architecture's layout so downstream targets can read identity and PDBs. -->
+    <ItemGroup>
+      <_MsixRepresentativeLayout Include="$(_MsixBundleRoot)\$(_MsixFirstArch)\MsixLayout\**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_MsixRepresentativeLayout)"
+          DestinationFiles="@(_MsixRepresentativeLayout->'$(MsixLayoutDir)\%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true" />
+
+    <Message Text="Bundling MSIX: $(MsixBundleOutput)" Importance="high" />
+    <Exec Command="&quot;$(_MakeAppxPath)&quot; bundle /d &quot;$(_MsixBundlePackagesDir)&quot; /p &quot;$(MsixBundleOutput)&quot; /o" />
+    <Message Text="MSIX bundle created: $(MsixBundleOutput)" Importance="high" />
+  </Target>
+
+  <!-- ============================================================
+       Target: _PackArchitecture (internal)
+       Runs the single-package pack chain for one architecture. Invoked by
+       _PackOneArchitecture with per-architecture global property overrides.
+       ============================================================ -->
+  <Target Name="_PackArchitecture"
+          DependsOnTargets="PublishToLayout;DiscoverAppxFragments;MergeAppxManifest;ValidateAppxManifest;CopyMsixAssets;GenerateResourceIndex;PackMsix" />
+
+  <!-- ============================================================
        Target: GenerateMsixSymbolPackage (opt-in)
        Bundles the PDBs from the layout into a .msixsym symbol package for
        Partner Center crash analysis. Enabled with MsixSymbolPackageEnabled.
@@ -467,7 +561,7 @@
       <_MsixSignCertPassword Condition="'$(_MsixUseTestCert)' == 'true'">$(_MsixTestCertPassword)</_MsixSignCertPassword>
     </PropertyGroup>
 
-    <Message Text="Signing MSIX: $(MsixOutputDir)\$(MsixFileName).msix" Importance="high" />
+    <Message Text="Signing MSIX: $(_MsixPrimaryPackage)" Importance="high" />
 
     <!-- Validate the manifest Publisher matches the signing certificate (skipped for Azure modes). -->
     <ItemGroup Condition="'$(MsixValidateSigningCertificate)' == 'true' AND '$(_MsixSignCertFile)' != '' AND '$(MsixAzureCodeSigningEnabled)' != 'true' AND '$(MsixAzureKeyVaultEnabled)' != 'true'">
@@ -486,7 +580,7 @@
         AppxManifest="@(_MsixMergedManifest)" />
 
     <WinAppSdkSignAppxPackage
-        AppxPackageToSign="$(MsixOutputDir)\$(MsixFileName).msix"
+        AppxPackageToSign="$(_MsixPrimaryPackage)"
         SignAppxPackageExeFullPath="$(_SignToolPath)"
         CertificateFile="$(_MsixSignCertFile)"
         CertificatePassword="$(_MsixSignCertPassword)"

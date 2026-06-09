@@ -69,6 +69,12 @@
     <MsixAppInstallerUpdateCheckHours Condition="'$(MsixAppInstallerUpdateCheckHours)' == ''">0</MsixAppInstallerUpdateCheckHours>
     <!-- MsixAppInstallerOutput defaults to the .msix output path with an .appinstaller extension. -->
 
+    <!-- App bundle (.msixbundle) — packs each architecture and bundles them together. -->
+    <MsixBundleEnabled Condition="'$(MsixBundleEnabled)' == ''">false</MsixBundleEnabled>
+    <!-- Pipe-separated architectures to build and bundle, e.g. x64|x86|arm64. -->
+    <MsixBundlePlatforms Condition="'$(MsixBundlePlatforms)' == ''">x64</MsixBundlePlatforms>
+    <!-- MsixBundleOutput defaults to the output path with a .msixbundle extension. -->
+
     <!--
       Windows SDK tooling (MakeAppx/SignTool/MakePri) is located via the
       Microsoft.Windows.SDK.BuildTools.MSIX package tasks. The package resolves
