@@ -100,6 +100,10 @@ Additional opt-in targets:
 
 | Target | Description |
 |--------|-------------|
+| `BundleMsix` | Builds each architecture and combines them into a `.msixbundle` (bundle mode) |
+| `GenerateMsixSymbolPackage` | Produces a `.msixsym` symbol package from the layout PDBs |
+| `GenerateMsixAppInstaller` | Writes an `.appinstaller` file for sideload auto-update |
+| `CreateMsixUpload` | Wraps the bundle (and symbol) into a `.msixupload` for Partner Center |
 | `CleanMsixLayout` | Removes layout directory and `.msix` on `dotnet clean` |
 | `InstallMsix` | Installs the built `.msix` via `Add-AppxPackage` |
 | `RegisterMsixLayout` | Registers the layout directory for dev-loop testing without packing |
@@ -115,9 +119,6 @@ Additional opt-in targets:
 | `BaseAppxManifest` | `Package.base.appxmanifest` | Path to the base manifest template |
 | `AppxFragmentFileName` | `AppxFragment.xml` | Name of per-project fragment files |
 | `MsixPackageImagesDir` | `$(ProjectDir)\Images` | Package-level images directory |
-| `MsixSigningEnabled` | `false` | Enable MSIX signing |
-| `MsixCertificatePath` | — | Path to `.pfx` certificate |
-| `MsixCertificatePassword` | — | Certificate password |
 | `MsixResourceIndexEnabled` | `auto` | Resource indexing: `true`, `false`, `auto` |
 | `MsixPriConfigPath` | — | Custom MakePri config file |
 | `MsixPriDefaultLanguage` | `en-US` | Default language for PRI config |
@@ -130,6 +131,36 @@ Additional opt-in targets:
 | `MsixDeployOnBuild` | `false` | Auto-register layout after build |
 | `MsixAutoDeployInVS` | `true` | Auto-enables deploy when building in VS |
 | `MsixDeployMode` | `layout` | `layout` (fast) or `msix` (full install) |
+
+### Signing
+
+| Property | Default | Description |
+|----------|---------|-------------|
+| `MsixSigningEnabled` | `false` | Enable MSIX signing |
+| `MsixCertificatePath` | — | Path to `.pfx` certificate |
+| `MsixCertificatePassword` | — | Certificate password |
+| `MsixGenerateTestCertificate` | `false` | When signing with no certificate, generate a throwaway self-signed test certificate matching the manifest Publisher |
+| `MsixValidateSigningCertificate` | `true` | Validate the manifest Publisher matches the signing certificate before signing |
+| `MsixTimestampUrl` | — | RFC 3161 timestamp server URL |
+| `MsixTimestampDigestAlgorithm` | `SHA256` | Timestamp digest algorithm |
+| `MsixAzureCodeSigningEnabled` | `false` | Sign via Azure Code Signing (Trusted Signing). Also set `MsixAzureCodeSigningDlibPath`, `…Endpoint`, `…AccountName`, `…CertificateProfileName` |
+| `MsixAzureKeyVaultEnabled` | `false` | Sign via Azure Key Vault. Also set `MsixAzureKeyVaultDlibPath`, `…Url`, `…CertificateId` |
+
+### Distribution & bundling
+
+| Property | Default | Description |
+|----------|---------|-------------|
+| `MsixSymbolPackageEnabled` | `false` | Produce a `.msixsym` symbol package from the layout PDBs |
+| `MsixSymbolPackageOutput` | `<msix>.msixsym` | Symbol package output path |
+| `MsixAppInstallerEnabled` | `false` | Generate an `.appinstaller` file |
+| `MsixAppInstallerUri` | — | URL where the `.appinstaller` is hosted (required when enabled) |
+| `MsixAppInstallerPackageUri` | derived | URL of the hosted `.msix`/`.msixbundle`; derived from `MsixAppInstallerUri` when empty |
+| `MsixAppInstallerUpdateCheckHours` | `0` | Hours between update checks on launch (`0` = every launch) |
+| `MsixBundleEnabled` | `false` | Build each architecture and combine into a `.msixbundle` |
+| `MsixBundlePlatforms` | `x64` | Pipe-separated architectures, e.g. `x64\|x86\|arm64` |
+| `MsixBundleOutput` | `<name>.msixbundle` | Bundle output path |
+| `MsixStoreUploadEnabled` | `false` | Wrap the bundle (and symbol) into a `.msixupload` (requires a bundle) |
+| `MsixStoreUploadOutput` | `<name>.msixupload` | Store upload package output path |
 
 ## Items
 
@@ -158,6 +189,46 @@ Supported insertion markers:
 - `<!-- APPX_EXTENSIONS_INSERTED_HERE -->` — in `<Extensions>` (optional)
 - `<!-- APPX_DEPENDENCIES_INSERTED_HERE -->` — in `<Dependencies>` (optional)
 
+## Signing
+
+Signing is opt-in (`MsixSigningEnabled=true`) and uses the Windows SDK SignTool task. Provide a certificate file, generate a test certificate for local development, or sign in the cloud:
+
+```xml
+<!-- Certificate file -->
+<MsixSigningEnabled>true</MsixSigningEnabled>
+<MsixCertificatePath>my.pfx</MsixCertificatePath>
+<MsixCertificatePassword>…</MsixCertificatePassword>
+<MsixTimestampUrl>http://timestamp.digicert.com</MsixTimestampUrl>
+
+<!-- Or generate a throwaway test certificate (matches the manifest Publisher) -->
+<MsixSigningEnabled>true</MsixSigningEnabled>
+<MsixGenerateTestCertificate>true</MsixGenerateTestCertificate>
+```
+
+Azure Code Signing (Trusted Signing) and Azure Key Vault are supported via the `MsixAzureCodeSigning*` / `MsixAzureKeyVault*` properties. The manifest `Publisher` is validated against the certificate before signing (`MsixValidateSigningCertificate`).
+
+## Multi-architecture bundles & distribution
+
+Build one package per architecture and combine them into a `.msixbundle`:
+
+```powershell
+dotnet build MyPackage.msbuildproj `
+  /p:MsixBundleEnabled=true `
+  "/p:MsixBundlePlatforms=x64|x86|arm64"
+```
+
+Each referenced app must declare the target architectures so restore covers them:
+
+```xml
+<RuntimeIdentifiers>win-x64;win-x86;win-arm64</RuntimeIdentifiers>
+```
+
+Optional distribution outputs (each opt-in):
+
+- **Symbol package** — `MsixSymbolPackageEnabled=true` produces a `.msixsym` (layout PDBs) for Partner Center crash analysis.
+- **App Installer** — `MsixAppInstallerEnabled=true` with `MsixAppInstallerUri` writes an `.appinstaller` for sideload auto-update (references the bundle when bundling, else the `.msix`).
+- **Store upload** — `MsixStoreUploadEnabled=true` wraps the bundle (and symbol) into a `.msixupload` for Partner Center (requires a bundle).
+
 ## VS Property Page
 
 The SDK includes a XAML Rule file that automatically adds an **MSIX Packaging** page to the VS Project Properties UI.
@@ -165,7 +236,9 @@ The SDK includes a XAML Rule file that automatically adds an **MSIX Packaging** 
 **Categories:**
 - **Package Identity** — `MsixFileName`, `MsixPackageVersion`, `MsixTargetArchitecture`
 - **Deployment** — `MsixDeployOnBuild`, `MsixAutoDeployInVS`, `MsixDeployMode`
-- **Signing** — `MsixSigningEnabled`, `MsixCertificatePath`
+- **Signing** — `MsixSigningEnabled`, `MsixCertificatePath`, `MsixGenerateTestCertificate`, `MsixValidateSigningCertificate`, `MsixTimestampUrl`
+- **Bundle** — `MsixBundleEnabled`, `MsixBundlePlatforms`, `MsixStoreUploadEnabled`
+- **Distribution** — `MsixSymbolPackageEnabled`, `MsixAppInstallerEnabled`, `MsixAppInstallerUri`
 - **Resources** — `MsixResourceIndexEnabled`, `MsixPriDefaultLanguage`
 
 ## Build Requirements
