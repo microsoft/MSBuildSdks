@@ -103,6 +103,29 @@ namespace Microsoft.Build.Cargo
         /// </summary>
         public string CargoOutputDir { get; set; } = string.Empty;
 
+        /// <summary>
+        /// Gets or sets an optional Cargo profile to pass to cargo as "--profile &lt;value&gt;" for MSRustup.
+        /// When set, this overrides the behavior of deriving the profile from Configuration.
+        /// </summary>
+        public string CargoProfile { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets an optional override for whether to install the public Rust toolchain via rustup-init.exe.
+        /// <list type="bullet">
+        ///   <item><description>"" (default) - Skip the public install iff rust-toolchain.toml selects an "ms-" channel.</description></item>
+        ///   <item><description>"true" - Always skip the public rustup-init download and install.</description></item>
+        ///   <item><description>"false" - Always run the public rustup-init install, even when MSRustup is detected.</description></item>
+        /// </list>
+        /// </summary>
+        public string SkipPublicRustUpInstall { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets an optional semicolon-separated list of additional target triples to install when running "msrustup toolchain install"
+        /// (e.g. "aarch64-pc-windows-msvc;x86_64-pc-windows-msvc"). Each value is passed to MSRustup as "--target &lt;triple&gt;".
+        /// Use this to enable cross-compilation.
+        /// </summary>
+        public string MsRustupTargets { get; set; } = string.Empty;
+
         /// <inheritdoc/>
         public override bool Execute()
         {
@@ -178,7 +201,7 @@ namespace Microsoft.Build.Cargo
 
                             foreach (var registry in GetRegistries(Path.Combine(RepoRoot, _cargoConfigFilePath)))
                             {
-                                var registryName = registry.Key.Trim().ToUpper();
+                                var registryName = registry.Key.Trim().ToUpper().Replace('-', '_');
                                 _cargoRegistries.Add(registryName);
                                 var tokenName = $"CARGO_REGISTRIES_{registryName}_TOKEN";
                                 AddOrUpdateEnvVar(tokenName, $"Bearer {val}");
@@ -247,13 +270,7 @@ namespace Microsoft.Build.Cargo
 
                 if (!string.IsNullOrEmpty(customCargo))
                 {
-                    bool isDebugConfiguration = true;
-                    if (!Configuration.Equals("debug", StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        isDebugConfiguration = false;
-                    }
-
-                    return await ExecuteProcessAsync(GetCustomToolChainCargoBin() !, $"{command} {args}  --offline {(isDebugConfiguration ? string.Empty : "--" + Configuration.ToLowerInvariant())} --config {Path.Combine(RepoRoot, _cargoConfigFilePath)}", ".", _envVars);
+                    return await ExecuteProcessAsync(GetCustomToolChainCargoBin() !, $"{command} {args}  --offline {GetMsRustupProfileArgument()} --config {Path.Combine(RepoRoot, _cargoConfigFilePath)}", ".", _envVars);
                 }
 
                 return ExitCode.Failed;
@@ -262,16 +279,44 @@ namespace Microsoft.Build.Cargo
             return await ExecuteProcessAsync(_cargoPath, $"{command} {args}", ".", _envVars);
         }
 
+        /// <summary>
+        /// For MSRustup, determines the appropriate Cargo profile argument to pass based on the CargoProfile and Configuration properties.
+        /// </summary>
+        /// <returns>The Cargo profile argument string, if needed; else an empty string.</returns>
+        private string GetMsRustupProfileArgument()
+        {
+            // Explicit CargoProfile wins over the Configuration-derived value.
+            if (!string.IsNullOrEmpty(CargoProfile))
+            {
+                return $"--profile {CargoProfile}";
+            }
+
+            // No flag for the default (Debug) profile.
+            if (string.IsNullOrEmpty(Configuration) || Configuration.Equals("debug", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return string.Empty;
+            }
+
+            // Use the Configuration as a Cargo profile shorthand (e.g. "--release").
+            return "--" + Configuration.ToLowerInvariant();
+        }
+
         private async Task<bool> DownloadAndInstallRust()
         {
             try
             {
-                bool downloadSuccess = await DownloadRustUpAsync();
+                bool skipPublicRustUp = ShouldSkipPublicRustUp();
+                if (skipPublicRustUp)
+                {
+                    Log.LogMessage(MessageImportance.Normal, "Skipping public Rust toolchain install.");
+                }
+
+                bool downloadSuccess = skipPublicRustUp || await DownloadRustUpAsync();
                 bool installSuccess = false;
                 if (downloadSuccess)
                 {
-                    installSuccess = await InstallRust();
-                    if (installSuccess)
+                    installSuccess = await InstallRust(skipPublicRustUp);
+                    if (installSuccess && !skipPublicRustUp)
                     {
                         _shouldCleanRustPath = true;
                     }
@@ -543,16 +588,26 @@ namespace Microsoft.Build.Cargo
             return await VerifyInitHashAsync();
         }
 
-        private async Task<bool> InstallRust()
+        private async Task<bool> InstallRust(bool skipPublicRustUp)
         {
             var rootToolchainPath = Path.Combine(StartupProj, _rustToolChainFileName);
             var useMsRustUp = File.Exists(rootToolchainPath) && IsMSToolChain(rootToolchainPath);
             var rustUpBinary = useMsRustUp ? _msRustUpBinary : _rustUpBinary;
+            bool msRustupBinaryExists = File.Exists(_msRustUpBinary);
             bool msRustupToolChainExists = useMsRustUp && !string.IsNullOrEmpty(GetCustomToolChainCargoBin());
             bool cargoPathAndRustPathsExists = Directory.Exists(_cargoHome) && Directory.Exists(_rustUpHome);
             bool cargoBinaryExists = File.Exists(_cargoPath);
 
-            if ((msRustupToolChainExists && cargoPathAndRustPathsExists && useMsRustUp) || cargoPathAndRustPathsExists && cargoBinaryExists && !useMsRustUp)
+            // Early-return when everything we need is already installed.
+            if (skipPublicRustUp && useMsRustUp)
+            {
+                // MSRustup-only flow: only require MSRustup binary and the requested toolchain.
+                if (msRustupBinaryExists && msRustupToolChainExists)
+                {
+                    return true;
+                }
+            }
+            else if ((msRustupToolChainExists && cargoPathAndRustPathsExists && useMsRustUp) || (cargoPathAndRustPathsExists && cargoBinaryExists && !useMsRustUp))
             {
                 return true;
             }
@@ -592,7 +647,8 @@ namespace Microsoft.Build.Cargo
                 }
             }
 
-            if ((!cargoBinaryExists && !useMsRustUp) || !cargoPathAndRustPathsExists)
+            // Public rustup-init step. Skipped when the caller asks us to skip the public toolchain entirely, or MSRustup-only is auto-detected.
+            if (!skipPublicRustUp && ((!cargoBinaryExists && !useMsRustUp) || !cargoPathAndRustPathsExists))
             {
                 Log.LogMessage(MessageImportance.Normal, "Installing Rust");
                 exitCode = await ExecuteProcessAsync(_rustUpInitBinary, "-y", ".", _envVars);
@@ -605,33 +661,10 @@ namespace Microsoft.Build.Cargo
                     Log.LogError("Rust failed to install successfully");
                     return false;
                 }
-
-                if (useMsRustUp)
-                {
-                    string? workingDirPart = new DirectoryInfo(BuildEngine.ProjectFileOfTaskNode).Parent?.Parent?.FullName;
-
-                    if (Directory.Exists(workingDirPart))
-                    {
-                        Log.LogMessage(MessageImportance.Normal, "Installing MSRustup");
-                        string distRootPath = Path.Combine(workingDirPart!, "content\\dist");
-                        var installationExitCode = await ExecuteProcessAsync("powershell.exe", $".\\msrustup.ps1 '{_msRustUpHome}'", distRootPath, _envVars);
-                        if (installationExitCode == ExitCode.Succeeded)
-                        {
-                            Log.LogMessage(MessageImportance.Normal, "Installed MSRustup successfully");
-                        }
-                        else
-                        {
-                            Log.LogError("MSRustup failed to installed successfully");
-                            return false;
-                        }
-                    }
-                }
             }
 
             if (useMsRustUp)
             {
-                Log.LogMessage(MessageImportance.Normal, "Installing custom toolchain");
-
                 if (string.IsNullOrEmpty(_rustUpFile) || !File.Exists(_rustUpFile))
                 {
                     Log.LogMessage($"MSRUSTUP_FILE environment variable is not set or the file does not exist. Assuming local build.");
@@ -642,8 +675,40 @@ namespace Microsoft.Build.Cargo
                     var val = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(File.ReadAllText(_rustUpFile)));
                     AddOrUpdateEnvVar("MSRUSTUP_PAT", val);
                 }
+            }
 
-                exitCodeLatest = await ExecuteProcessAsync(rustUpBinary, $"toolchain install {GetToolChainVersion()}", StartupProj, _envVars);
+            // Install MSRustup itself (independent of the public rustup install) when needed.
+            if (useMsRustUp && !msRustupBinaryExists)
+            {
+                string? workingDirPart = new DirectoryInfo(BuildEngine.ProjectFileOfTaskNode).Parent?.Parent?.FullName;
+
+                if (Directory.Exists(workingDirPart))
+                {
+                    Log.LogMessage(MessageImportance.Normal, "Installing MSRustup");
+                    string scriptPath = Path.Combine(workingDirPart!, "content\\dist", "msrustup.ps1");
+
+                    // The MSRustup script installs the compiler and tools into the working directory.
+                    // Ensure the desired install location exists, then run Powershell with that directory as the working directory.
+                    Directory.CreateDirectory(_msRustUpHome);
+
+                    var installationExitCode = await ExecuteProcessAsync(fileName: "powershell.exe", args: $"-File \"{scriptPath}\"", workingDir: _msRustUpHome, envars: _envVars);
+                    if (installationExitCode == ExitCode.Succeeded)
+                    {
+                        Log.LogMessage(MessageImportance.Normal, "Installed MSRustup successfully");
+                    }
+                    else
+                    {
+                        Log.LogError("MSRustup failed to installed successfully");
+                        return false;
+                    }
+                }
+            }
+
+            if (useMsRustUp)
+            {
+                Log.LogMessage(MessageImportance.Normal, "Installing custom toolchain");
+
+                exitCodeLatest = await ExecuteProcessAsync(rustUpBinary, $"toolchain install {GetToolChainVersion()}{GetMsRustupTargetArgs()}", StartupProj, _envVars);
 
                 if (exitCodeLatest == ExitCode.Succeeded)
                 {
@@ -655,12 +720,57 @@ namespace Microsoft.Build.Cargo
                     return false;
                 }
             }
-            else
+            else if (!skipPublicRustUp)
             {
                 exitCodeLatest = await ExecuteProcessAsync(rustUpBinary, "default stable", ".", _envVars); // ensure we have the latest stable version
             }
 
             return exitCode == 0 && exitCodeLatest == 0;
+        }
+
+        /// <summary>
+        /// Determines whether to skip the public RustUp installation.
+        /// </summary>
+        /// <returns>Whether to skip the public RustUp installation.</returns>
+        private bool ShouldSkipPublicRustUp()
+        {
+            // Explicit override wins over auto-detection.
+            if (bool.TryParse(SkipPublicRustUpInstall, out bool explicitValue))
+            {
+                return explicitValue;
+            }
+
+            // Auto-detect: skip when MSRustup is detected from rust-toolchain.toml.
+            return _isMsRustUp;
+        }
+
+        /// <summary>
+        /// Builds the target arguments to pass to "msrustup toolchain install" from the <see cref="MsRustupTargets"/> property.
+        /// </summary>
+        /// <returns>
+        /// Each target in the semicolon-separated list becomes its own "--target &lt;triple&gt;" argument in the returned string.
+        /// Returns the empty string when no targets are configured.
+        /// </returns>
+        private string GetMsRustupTargetArgs()
+        {
+            if (string.IsNullOrWhiteSpace(MsRustupTargets))
+            {
+                return string.Empty;
+            }
+
+            var sb = new System.Text.StringBuilder();
+            foreach (var target in MsRustupTargets.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                var trimmed = target.Trim();
+                if (trimmed.Length == 0)
+                {
+                    continue;
+                }
+
+                sb.Append(" --target ").Append(trimmed);
+            }
+
+            return sb.ToString();
         }
 
         private async Task<bool> VerifyInitHashAsync()

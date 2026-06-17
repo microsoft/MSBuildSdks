@@ -91,6 +91,25 @@
     <CargoInstallationRoot Condition="'$(CargoInstallationRoot)' == ''"></CargoInstallationRoot>
     <MsRustupAuthType Condition="'$(MsRustupAuthType)' == ''">AzureAuth</MsRustupAuthType>
     <CargoOutputDir Condition="'$(CargoOutputDir)' == ''">$(MSBuildProjectDirectory)\bin</CargoOutputDir>
+    <!--
+      Optional Cargo profile override, e.g. "release-windows".
+      When set, the SDK passes the value as the cargo "profile" argument, instead of deriving the profile from Configuration.
+      Only applies when the msrustup toolchain is in use.
+    -->
+    <CargoProfile Condition="'$(CargoProfile)' == ''"></CargoProfile>
+    <!--
+      Optional override for whether to install the public Rust toolchain via the public rustup installer.
+        ""      : Skip the public install iff rust-toolchain.toml selects an "ms-" channel.
+        "true"  : Always skip the public rustup install.
+        "false" : Always run the public rustup install, even when msrustup use is detected.
+    -->
+    <SkipPublicRustUpInstall Condition="'$(SkipPublicRustUpInstall)' == ''"></SkipPublicRustUpInstall>
+    <!--
+      Optional semicolon-separated list of additional target triples to install when running "msrustup toolchain install"
+      (e.g. "aarch64-pc-windows-msvc;x86_64-pc-windows-msvc"). Each value becomes a "&#45;&#45;target <triple>" argument.
+      Use to enable cross-compilation. Only applies when the msrustup toolchain is in use.
+    -->
+    <MsRustupTargets Condition="'$(MsRustupTargets)' == ''"></MsRustupTargets>
   </PropertyGroup>
   <ItemGroup>
     <None Include="**\*.rs" />

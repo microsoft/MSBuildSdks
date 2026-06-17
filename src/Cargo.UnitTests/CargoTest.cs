@@ -190,6 +190,8 @@ namespace Microsoft.Build.Cargo.UnitTests
         [Theory]
         [InlineData("AutomaticallyUseReferenceAssemblyPackages", "true", "true")]
         [InlineData("AutomaticallyUseReferenceAssemblyPackages", null, "false")]
+        [InlineData("CargoProfile", "release-windows", "release-windows")]
+        [InlineData("CargoProfile", null, "")]
         [InlineData("DebugSymbols", "true", "false")]
         [InlineData("DebugSymbols", null, "false")]
         [InlineData("DebugType", "Full", "None")]
@@ -217,6 +219,12 @@ namespace Microsoft.Build.Cargo.UnitTests
         [InlineData("SkipCopyFilesMarkedCopyLocal", "false", "false")]
         [InlineData("SkipCopyFilesMarkedCopyLocal", "true", "true")]
         [InlineData("SkipCopyFilesMarkedCopyLocal", null, "")]
+        [InlineData("SkipPublicRustUpInstall", "true", "true")]
+        [InlineData("SkipPublicRustUpInstall", "false", "false")]
+        [InlineData("SkipPublicRustUpInstall", null, "")]
+        [InlineData("MsRustupTargets", "aarch64-pc-windows-msvc", "aarch64-pc-windows-msvc")]
+        [InlineData("MsRustupTargets", "aarch64-pc-windows-msvc;x86_64-pc-windows-msvc", "aarch64-pc-windows-msvc;x86_64-pc-windows-msvc")]
+        [InlineData("MsRustupTargets", null, "")]
         public void PropertiesHaveExpectedValues(string propertyName, string value, string expectedValue)
         {
             ProjectCreator.Templates.CargoProject(
