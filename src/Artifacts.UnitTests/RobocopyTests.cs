@@ -36,7 +36,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
                 Path.Combine("baz", "baz.txt"));
 
             DirectoryInfo destination = new DirectoryInfo(Path.Combine(TestRootPath, "destination"));
-            BuildEngine buildEngine = BuildEngine.Create();
+            ThreadSafeBuildEngine buildEngine = ThreadSafeBuildEngine.Create();
 
             Robocopy copyArtifacts = new Robocopy
             {
@@ -92,7 +92,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
 
             DirectoryInfo destination = new DirectoryInfo(Path.Combine(TestRootPath, "destination"));
 
-            BuildEngine buildEngine = BuildEngine.Create();
+            ThreadSafeBuildEngine buildEngine = ThreadSafeBuildEngine.Create();
 
             Robocopy copyArtifacts = new Robocopy
             {
@@ -150,7 +150,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
 
             DirectoryInfo destination = new DirectoryInfo(Path.Combine(TestRootPath, "destination"));
 
-            BuildEngine buildEngine = BuildEngine.Create();
+            ThreadSafeBuildEngine buildEngine = ThreadSafeBuildEngine.Create();
 
             Robocopy copyArtifacts = new Robocopy
             {
@@ -204,7 +204,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
 
             DirectoryInfo destination = new DirectoryInfo(Path.Combine(TestRootPath, "destination"));
 
-            BuildEngine buildEngine = BuildEngine.Create();
+            ThreadSafeBuildEngine buildEngine = ThreadSafeBuildEngine.Create();
 
             Robocopy copyArtifacts = new Robocopy
             {
@@ -245,7 +245,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
                 @"foo.txt");
 
             DirectoryInfo destination = new DirectoryInfo(Path.Combine(TestRootPath, "destination"));
-            BuildEngine buildEngine = BuildEngine.Create();
+            ThreadSafeBuildEngine buildEngine = ThreadSafeBuildEngine.Create();
             MockFileSystem fs = new MockFileSystem
             {
                 // Ensure same test result whether on NTFS or ReFS.
@@ -311,7 +311,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
                 "source",
                 @"foo.txt");
 
-            BuildEngine buildEngine = BuildEngine.Create();
+            ThreadSafeBuildEngine buildEngine = ThreadSafeBuildEngine.Create();
             MockFileSystem fs = new MockFileSystem();
 
             Robocopy copyArtifacts = new Robocopy
@@ -348,7 +348,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
             string localSource = Path.Combine(Environment.CurrentDirectory, "foo.txt");
             File.WriteAllText(localSource, string.Empty);
 
-            BuildEngine buildEngine = BuildEngine.Create();
+            ThreadSafeBuildEngine buildEngine = ThreadSafeBuildEngine.Create();
             MockFileSystem fs = new MockFileSystem();
 
             Robocopy copyArtifacts = new Robocopy
@@ -389,7 +389,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
                 Path.Combine("source2", "foo.txt"),
                 Path.Combine("source3", "foo.txt"));
 
-            BuildEngine buildEngine = BuildEngine.Create();
+            ThreadSafeBuildEngine buildEngine = ThreadSafeBuildEngine.Create();
             MockFileSystem fs = new MockFileSystem();
 
             Robocopy copyArtifacts = new Robocopy
@@ -456,7 +456,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
 
             DirectoryInfo wildcardDestination1 = new DirectoryInfo(Path.Combine(TestRootPath, "wildcardDestination1"));
 
-            BuildEngine buildEngine = BuildEngine.Create();
+            ThreadSafeBuildEngine buildEngine = ThreadSafeBuildEngine.Create();
             MockFileSystem fs = new MockFileSystem();
 
             // Note that Robocopy semantics are that when the source is a directory it must exist at the start of the call,
@@ -589,7 +589,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
             preexistingWildcardDestination2.Create();
             DirectoryInfo wildcardDestination3 = new DirectoryInfo(Path.Combine(TestRootPath, "wildcardDestination3"));
 
-            BuildEngine buildEngine = BuildEngine.Create();
+            ThreadSafeBuildEngine buildEngine = ThreadSafeBuildEngine.Create();
             MockFileSystem fs = new MockFileSystem();
 
             Robocopy copyArtifacts = new Robocopy
@@ -685,7 +685,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
                 "foo.txt");
 
             DirectoryInfo destination = new DirectoryInfo(Path.Combine(TestRootPath, "destination"));
-            BuildEngine buildEngine = BuildEngine.Create();
+            ThreadSafeBuildEngine buildEngine = ThreadSafeBuildEngine.Create();
 
             MockFileSystem fs = new MockFileSystem
             {
@@ -732,7 +732,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
                 @"foo.txt");
 
             DirectoryInfo destination = new DirectoryInfo(Path.Combine(TestRootPath, "destination"));
-            BuildEngine buildEngine = BuildEngine.Create();
+            ThreadSafeBuildEngine buildEngine = ThreadSafeBuildEngine.Create();
             MockFileSystem fs = new MockFileSystem();
 
             Robocopy copyArtifacts = new Robocopy
@@ -778,7 +778,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
                 @"foo.txt");
 
             DirectoryInfo destination = new DirectoryInfo(Path.Combine(TestRootPath, "destination"));
-            BuildEngine buildEngine = BuildEngine.Create();
+            ThreadSafeBuildEngine buildEngine = ThreadSafeBuildEngine.Create();
 
             MockFileSystem fs = new MockFileSystem
             {
@@ -831,7 +831,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
             DirectoryInfo source = CreateFiles("source", "bar.txt");
 
             DirectoryInfo destination = new DirectoryInfo(Path.Combine(TestRootPath, "destination"));
-            BuildEngine buildEngine = BuildEngine.Create();
+            ThreadSafeBuildEngine buildEngine = ThreadSafeBuildEngine.Create();
 
             Robocopy copyArtifacts = new ()
             {
@@ -862,7 +862,7 @@ namespace Microsoft.Build.Artifacts.UnitTests
                 "foo.txt");
 
             DirectoryInfo destination = new DirectoryInfo(Path.Combine(TestRootPath, "destination"));
-            BuildEngine buildEngine = BuildEngine.Create();
+            ThreadSafeBuildEngine buildEngine = ThreadSafeBuildEngine.Create();
 
             Robocopy copyArtifacts = new ()
             {
