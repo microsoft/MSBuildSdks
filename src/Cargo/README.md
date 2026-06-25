@@ -94,15 +94,6 @@ passed as the `--<Configuration>` value (so `Release` becomes `--release`).
 Set `CargoProfile` to override this and pass `--profile <CargoProfile>` to Cargo instead. This is useful when your `Cargo.toml` defines a custom profile
 such as `release-windows`.
 
-##### `SkipPublicRustUpInstall`
-
-The `InstallCargo` step normally downloads `rustup-init.exe` from `static.rust-lang.org` and runs it before falling through to the MSRustup install path.
-
-The SDK auto-skips the public step when it detects an `ms-` channel in `rust-toolchain.toml`. You can also force the behavior explicitly via `SkipPublicRustUpInstall`:
-- Unset/empty (default): Skip the public install only when an `ms-` channel is detected.
-- `true`: Always skip the public rustup-init download and install.
-- `false`: Always run the public rustup-init install, even when MSRustup is detected.
-
 ##### `MsRustupTargets`
 
 A semicolon-separated list of target triples to install when running `msrustup toolchain install`.
