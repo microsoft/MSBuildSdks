@@ -5,9 +5,6 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>Build logic for staging artifacts from build outputs.</Description>
     <DevelopmentDependency>true</DevelopmentDependency>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Shared\CopyExceptionHandling.cs" />

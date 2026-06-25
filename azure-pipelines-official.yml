@@ -9,7 +9,7 @@ variables:
   BuildConfiguration: 'Release'
   BuildPlatform: 'Any CPU'
   DotNetVersion: '10.x'
-  MSBuildArgs: '"/p:Platform=$(BuildPlatform)" "/p:Configuration=$(BuildConfiguration)" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
+  MSBuildArgs: '"/p:Platform=$(BuildPlatform)" "/p:Configuration=$(BuildConfiguration)" "/p:RestoreConfigFile=$(Build.SourcesDirectory)\NuGet.config" "/BinaryLogger:$(Build.SourcesDirectory)\$(ArtifactsDirectoryName)\msbuild.binlog"'
   SignType: 'Real'
 trigger:
   batch: 'true'
@@ -25,11 +25,13 @@ pr: none
 extends:
   template: azure-pipelines/MicroBuild.1ES.Official.yml@MicroBuildTemplate
   parameters:
+    settings:
+      networkIsolationPolicy: Permissive,CFSClean
     sdl:
       sbom:
         enabled: false
     pool:
-      name: VSEngSS-MicroBuild2022-1ES
+      name: VSEng-MicroBuildVSStable
       demands:
       - msbuild
       - visualstudio
@@ -41,7 +43,7 @@ extends:
       - job: Build
         displayName: 'Build'
         pool:
-          name: 'VSEngSS-MicroBuild2022-1ES'
+          name: 'VSEng-MicroBuildVSStable'
         templateContext:
           mb:
             signing:
@@ -55,6 +57,13 @@ extends:
             condition: always()
             targetPath: '$(ArtifactsDirectoryName)'
             artifactName: $(ArtifactsDirectoryName)
+          - output: nuget
+            displayName: 'Push NuGet Packages to nuget.org'
+            condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/Microsoft.Build'))
+            packageParentPath: '$(ArtifactsDirectoryName)'
+            packagesToPush: '$(ArtifactsDirectoryName)/**/$(Build.SourceBranchName).nupkg'
+            nuGetFeedType: 'external'
+            publishFeedCredentials: 'MSBuild SDKs'
         steps:
         - task: PowerShell@2
           displayName: 'Update Build Number, and Add Build Tag for tagged commits'
@@ -76,6 +85,11 @@ extends:
           inputs:
             version: '$(DotNetVersion)'
             includePreviewVersions: true
+        - task: NuGetAuthenticate@1
+          displayName: 'Authenticate Azure Artifacts feeds'
+        - powershell: |
+            Copy-Item -LiteralPath '$(Build.SourcesDirectory)\NuGet.CFS.config' -Destination '$(Build.SourcesDirectory)\NuGet.config' -Force
+          displayName: 'Use CFS NuGet config'
         - task: DotNetCoreCLI@2
           displayName: 'Build Solution'
           inputs:

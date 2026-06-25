@@ -7,9 +7,6 @@
     <DevelopmentDependency>true</DevelopmentDependency>
     <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>    
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Shared\CopyExceptionHandling.cs" />

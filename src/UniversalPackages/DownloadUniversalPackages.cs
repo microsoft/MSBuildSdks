@@ -526,9 +526,6 @@ public sealed class DownloadUniversalPackages : Task
         string releaseInfoUrl = GetArtifactToolReleaseInfoUrl(osName, arch);
         Log.LogMessage($"Fetching ArtifactTool release information from {releaseInfoUrl}");
 
-        // TODO: Currently the release info url unexpectedly requires auth.
-        //       For now just use the versionless download url and a static version number. This means that once downloaded,
-        //       the same version of the tool will be used going forward without any updates.
         string pat = Environment.GetEnvironmentVariable(patVar) !;
 
 #if NETFRAMEWORK
@@ -541,26 +538,39 @@ public sealed class DownloadUniversalPackages : Task
         string json = httpClient.GetStringAsync(releaseInfoUrl).GetAwaiter().GetResult();
 #endif
 
-        using JsonDocument jsonDocument = JsonDocument.Parse(json);
-        JsonElement root = jsonDocument.RootElement;
-
-        string? version = root.GetProperty("version").GetString();
-        if (version is null)
+        JsonDocument jsonDocument;
+        try
         {
-            Log.LogError($"ArtifactTool release info json was missing the 'version' property. Json content: {json}");
+            jsonDocument = JsonDocument.Parse(json);
+        }
+        catch (JsonException ex)
+        {
+            Log.LogError($"ArtifactTool release info response was not valid JSON. This may indicate an authentication failure. Response: {json}. Exception: {ex.Message}");
             return null;
         }
 
-        string? downloadUri = root.GetProperty("uri").GetString();
-        if (downloadUri is null)
+        using (jsonDocument)
         {
-            Log.LogError($"ArtifactTool release info json was missing the 'uri' property. Json content: {json}");
-            return null;
+            JsonElement root = jsonDocument.RootElement;
+
+            string? version = root.GetProperty("version").GetString();
+            if (version is null)
+            {
+                Log.LogError($"ArtifactTool release info json was missing the 'version' property. Json content: {json}");
+                return null;
+            }
+
+            string? downloadUri = root.GetProperty("uri").GetString();
+            if (downloadUri is null)
+            {
+                Log.LogError($"ArtifactTool release info json was missing the 'uri' property. Json content: {json}");
+                return null;
+            }
+
+            Log.LogMessage($"Current ArtifactTool version: {version}");
+
+            return (version, downloadUri);
         }
-
-        Log.LogMessage($"Current ArtifactTool version: {version}");
-
-        return (version, downloadUri);
     }
 
     private string GetArtifactToolReleaseInfoUrl(string osName, string arch)
@@ -749,102 +759,115 @@ public sealed class DownloadUniversalPackages : Task
         string json = httpClient.GetStringAsync(ReleaseInfoUrl).GetAwaiter().GetResult();
 #endif
 
-        using JsonDocument jsonDocument = JsonDocument.Parse(json);
-        JsonElement root = jsonDocument.RootElement;
-
-        string? version = root.GetProperty("name").GetString();
-        if (version is null)
+        JsonDocument jsonDocument;
+        try
         {
-            Log.LogError($"Artifacts Credential Provider release info json was missing the 'name' property. Json content: {json}");
+            jsonDocument = JsonDocument.Parse(json);
+        }
+        catch (JsonException ex)
+        {
+            Log.LogError($"Artifacts Credential Provider release info response was not valid JSON. Response: {json}. Exception: {ex.Message}");
             return null;
         }
 
-        Log.LogMessage($"Current Artifacts Credential Provider version: {version}");
+        using (jsonDocument)
+        {
+            JsonElement root = jsonDocument.RootElement;
 
-        string rid;
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            rid = "win-x64";
-        }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-        {
-            rid = RuntimeInformation.ProcessArchitecture == Architecture.Arm64
-                ? "linux-arm64"
-                : "linux-x64";
-        }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-            rid = RuntimeInformation.ProcessArchitecture == Architecture.Arm64
-                ? "osx-arm64"
-                : "osx-x64";
-        }
-        else
-        {
-            Log.LogError($"Could not determine correct runtime to download the Artifact Credential Provider.");
-            return null;
-        }
+            string? version = root.GetProperty("name").GetString();
+            if (version is null)
+            {
+                Log.LogError($"Artifacts Credential Provider release info json was missing the 'name' property. Json content: {json}");
+                return null;
+            }
 
-        // We currently only support zip on with .NET Framework.
+            Log.LogMessage($"Current Artifacts Credential Provider version: {version}");
+
+            string rid;
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                rid = "win-x64";
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                rid = RuntimeInformation.ProcessArchitecture == Architecture.Arm64
+                    ? "linux-arm64"
+                    : "linux-x64";
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                rid = RuntimeInformation.ProcessArchitecture == Architecture.Arm64
+                    ? "osx-arm64"
+                    : "osx-x64";
+            }
+            else
+            {
+                Log.LogError($"Could not determine correct runtime to download the Artifact Credential Provider.");
+                return null;
+            }
+
+            // We currently only support zip on with .NET Framework.
 #if NETFRAMEWORK
-        const string fileExtention = "zip";
+            const string fileExtention = "zip";
 #else
-        const string fileExtention = @"(zip|tar\.gz)";
+            const string fileExtention = @"(zip|tar\.gz)";
 #endif
-        string fileNamePattern = $@"Microsoft(\.Net(?<RuntimeVersion>\d+))?\.{rid}\.NuGet\.CredentialProvider\.{fileExtention}";
-        Log.LogMessage(MessageImportance.Low, $"Looking for Artifacts Credential Provider asset with name: {fileNamePattern}");
-        Regex fileNameRegex = new Regex(fileNamePattern, RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture);
+            string fileNamePattern = $@"Microsoft(\.Net(?<RuntimeVersion>\d+))?\.{rid}\.NuGet\.CredentialProvider\.{fileExtention}";
+            Log.LogMessage(MessageImportance.Low, $"Looking for Artifacts Credential Provider asset with name: {fileNamePattern}");
+            Regex fileNameRegex = new Regex(fileNamePattern, RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture);
 
-        List<JsonElement> matchingAssets = new List<JsonElement>();
+            List<JsonElement> matchingAssets = new List<JsonElement>();
 
-        int maxRuntimeVersion = 0;
-        string? downloadUri = null;
-        foreach (JsonElement asset in root.GetProperty("assets").EnumerateArray())
-        {
-            string? assetName = asset.GetProperty("name").GetString();
-            if (assetName is null)
+            int maxRuntimeVersion = 0;
+            string? downloadUri = null;
+            foreach (JsonElement asset in root.GetProperty("assets").EnumerateArray())
             {
-                continue;
-            }
-
-            Match match = fileNameRegex.Match(assetName);
-            if (!match.Success)
-            {
-                continue;
-            }
-
-            Group runtimeVersionGroup = match.Groups["RuntimeVersion"];
-            if (runtimeVersionGroup.Success)
-            {
-                if (!int.TryParse(runtimeVersionGroup.Value, out int runtimeVersion))
+                string? assetName = asset.GetProperty("name").GetString();
+                if (assetName is null)
                 {
                     continue;
                 }
 
-                // Prefer the highest runtime version available.
-                // Note: Starting in v2 the runtime version is no longer included in the asset name for self-contained flavors of the tool (names sense; it's self-contained).
-                //       Once v2 ships and is stable, this logic can be removed entirely in favor of the pattern without the version.
-                if (runtimeVersion > maxRuntimeVersion)
+                Match match = fileNameRegex.Match(assetName);
+                if (!match.Success)
                 {
-                    maxRuntimeVersion = runtimeVersion;
+                    continue;
+                }
+
+                Group runtimeVersionGroup = match.Groups["RuntimeVersion"];
+                if (runtimeVersionGroup.Success)
+                {
+                    if (!int.TryParse(runtimeVersionGroup.Value, out int runtimeVersion))
+                    {
+                        continue;
+                    }
+
+                    // Prefer the highest runtime version available.
+                    // Note: Starting in v2 the runtime version is no longer included in the asset name for self-contained flavors of the tool (names sense; it's self-contained).
+                    //       Once v2 ships and is stable, this logic can be removed entirely in favor of the pattern without the version.
+                    if (runtimeVersion > maxRuntimeVersion)
+                    {
+                        maxRuntimeVersion = runtimeVersion;
+                        downloadUri = asset.GetProperty("browser_download_url").GetString();
+                    }
+                }
+                else
+                {
                     downloadUri = asset.GetProperty("browser_download_url").GetString();
+
+                    // Newer releases do not have the runtime version in the name, so short circuit once we find one.
+                    break;
                 }
             }
-            else
+
+            if (downloadUri is null)
             {
-                downloadUri = asset.GetProperty("browser_download_url").GetString();
-
-                // Newer releases do not have the runtime version in the name, so short circuit once we find one.
-                break;
+                Log.LogError($"Unable to find a download url for the Artifact Credential Provider.");
+                return null;
             }
-        }
 
-        if (downloadUri is null)
-        {
-            Log.LogError($"Unable to find a download url for the Artifact Credential Provider.");
-            return null;
+            return (version, downloadUri);
         }
-
-        return (version, downloadUri);
     }
 
     private bool DownloadAndExtractArchive(string displayName, string downloadUri, string path, string exeRelativePath, bool isZip)
