@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <BuildOutputTargetFolder>build\</BuildOutputTargetFolder>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Description>MSBuild SDK for packaging multiple .NET projects into a single sideloadable MSIX using per-project AppxFragment manifest merging.</Description>
+    <PackageTags>MSBuild MSBuildSdk MSIX Packaging AppxManifest</PackageTags>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <!-- The Sdk\*.ps1 helper is invoked by our targets, not a NuGet install script;
+         suppress NuGet's legacy PowerShell-script-convention validation. -->
+    <NoWarn>$(NoWarn);NU5110;NU5111</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Note these are API dependencies to support a minimum version of MSBuild. -->
+    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" PrivateAssets="All" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="build\*"
+          Pack="true"
+          PackagePath="build\" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Build.MsixPackaging.UnitTests" />
+  </ItemGroup>
+  <ItemGroup>
+    <FilesToSign Include="$(TargetPath)"
+                 Authenticode="Microsoft400"
+                 StrongName="StrongName" />
+  </ItemGroup>
+  <Target Name="SignNuGetPackage" />
+  <Target Name="CopyArtifacts"
+          AfterTargets="Pack"
+          DependsOnTargets="SignNuGetPackage"
+          Condition="'$(IsInnerBuild)' != 'true'">
+    <ItemGroup>
+      <Artifact Include="$(OutputPath)\**" />
+    </ItemGroup>
+    <Copy SourceFiles="@(Artifact)"
+          DestinationFiles="@(Artifact->'$(ArtifactsPath)%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
+          OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)" />
+  </Target>
+</Project>

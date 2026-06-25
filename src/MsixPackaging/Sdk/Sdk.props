@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (c) Microsoft Corporation. All rights reserved.
+  
+  Licensed under the MIT license.
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- Import NoTargets SDK props — the consuming project doesn't compile anything -->
+  <Import Project="Sdk.props" Sdk="Microsoft.Build.NoTargets" />
+
+  <PropertyGroup>
+    <!-- MSIX layout directory (intermediate, cleaned on rebuild) -->
+    <MsixLayoutDir Condition="'$(MsixLayoutDir)' == ''">$([System.IO.Path]::Combine($(MSBuildProjectDirectory), $(IntermediateOutputPath), 'MsixLayout'))</MsixLayoutDir>
+
+    <!-- MSIX output directory (where the .msix file is written) -->
+    <MsixOutputDir Condition="'$(MsixOutputDir)' == ''">$([System.IO.Path]::Combine($(MSBuildProjectDirectory), $(OutputPath)))</MsixOutputDir>
+
+    <!-- Output package file name (without extension) -->
+    <MsixFileName Condition="'$(MsixFileName)' == ''">$(MSBuildProjectName)</MsixFileName>
+
+    <!-- Path to the base AppxManifest template with the fragment marker -->
+    <BaseAppxManifest Condition="'$(BaseAppxManifest)' == ''">$(MSBuildProjectDirectory)\Package.base.appxmanifest</BaseAppxManifest>
+
+    <!-- Name of per-project fragment files to discover -->
+    <AppxFragmentFileName Condition="'$(AppxFragmentFileName)' == ''">AppxFragment.xml</AppxFragmentFileName>
+
+    <!-- Signing (disabled by default) -->
+    <MsixSigningEnabled Condition="'$(MsixSigningEnabled)' == ''">false</MsixSigningEnabled>
+
+    <!-- Validate the manifest Publisher matches the signing certificate before signing. -->
+    <MsixValidateSigningCertificate Condition="'$(MsixValidateSigningCertificate)' == ''">true</MsixValidateSigningCertificate>
+
+    <!-- When signing is enabled with no certificate supplied, generate a throwaway self-signed
+         test certificate (matching the manifest Publisher) for local/dev signing. -->
+    <MsixGenerateTestCertificate Condition="'$(MsixGenerateTestCertificate)' == ''">false</MsixGenerateTestCertificate>
+
+    <!-- Optional RFC 3161 timestamp server applied when signing with a certificate file. -->
+    <MsixTimestampUrl Condition="'$(MsixTimestampUrl)' == ''"></MsixTimestampUrl>
+    <MsixTimestampDigestAlgorithm Condition="'$(MsixTimestampDigestAlgorithm)' == ''">SHA256</MsixTimestampDigestAlgorithm>
+
+    <!-- Azure Code Signing (Trusted Signing). When enabled, a certificate file is not required. -->
+    <MsixAzureCodeSigningEnabled Condition="'$(MsixAzureCodeSigningEnabled)' == ''">false</MsixAzureCodeSigningEnabled>
+    <!-- MsixAzureCodeSigningDlibPath, MsixAzureCodeSigningEndpoint, MsixAzureCodeSigningAccountName,
+         MsixAzureCodeSigningCertificateProfileName — set by the consumer when Azure Code Signing is enabled. -->
+
+    <!-- Azure Key Vault signing. When enabled, a certificate file is not required. -->
+    <MsixAzureKeyVaultEnabled Condition="'$(MsixAzureKeyVaultEnabled)' == ''">false</MsixAzureKeyVaultEnabled>
+    <!-- MsixAzureKeyVaultDlibPath, MsixAzureKeyVaultUrl, MsixAzureKeyVaultCertificateId — set by the
+         consumer when Azure Key Vault signing is enabled. -->
+
+    <!-- Directory containing package-level images (StoreLogo, etc.) -->
+    <MsixPackageImagesDir Condition="'$(MsixPackageImagesDir)' == ''">$(MSBuildProjectDirectory)\Images</MsixPackageImagesDir>
+
+    <!-- Resource indexing (MakePri.exe) -->
+    <MsixResourceIndexEnabled Condition="'$(MsixResourceIndexEnabled)' == ''">auto</MsixResourceIndexEnabled>
+    <MsixPriConfigPath Condition="'$(MsixPriConfigPath)' == ''"></MsixPriConfigPath>
+    <MsixPriDefaultLanguage Condition="'$(MsixPriDefaultLanguage)' == ''">en-US</MsixPriDefaultLanguage>
+
+    <!-- Symbol package (.msixsym) — bundles the PDBs from the layout for Partner Center crash analysis. -->
+    <MsixSymbolPackageEnabled Condition="'$(MsixSymbolPackageEnabled)' == ''">false</MsixSymbolPackageEnabled>
+    <!-- MsixSymbolPackageOutput defaults to the .msix output path with a .msixsym extension. -->
+
+    <!-- App Installer (.appinstaller) — generates a sideload auto-update file. -->
+    <MsixAppInstallerEnabled Condition="'$(MsixAppInstallerEnabled)' == ''">false</MsixAppInstallerEnabled>
+    <!-- MsixAppInstallerUri — full URL where the .appinstaller file will be hosted (required when enabled). -->
+    <!-- MsixAppInstallerPackageUri — full URL of the hosted .msix/.msixbundle; derived from MsixAppInstallerUri when empty. -->
+    <!-- Hours between update checks on launch. 0 checks on every launch. -->
+    <MsixAppInstallerUpdateCheckHours Condition="'$(MsixAppInstallerUpdateCheckHours)' == ''">0</MsixAppInstallerUpdateCheckHours>
+    <!-- MsixAppInstallerOutput defaults to the .msix output path with an .appinstaller extension. -->
+
+    <!-- App bundle (.msixbundle) — packs each architecture and bundles them together. -->
+    <MsixBundleEnabled Condition="'$(MsixBundleEnabled)' == ''">false</MsixBundleEnabled>
+    <!-- Pipe-separated architectures to build and bundle, e.g. x64|x86|arm64. -->
+    <MsixBundlePlatforms Condition="'$(MsixBundlePlatforms)' == ''">x64</MsixBundlePlatforms>
+    <!-- MsixBundleOutput defaults to the output path with a .msixbundle extension. -->
+
+    <!-- Store upload package (.msixupload) — wraps the bundle (and symbol) for Partner Center. Requires a bundle. -->
+    <MsixStoreUploadEnabled Condition="'$(MsixStoreUploadEnabled)' == ''">false</MsixStoreUploadEnabled>
+    <!-- MsixStoreUploadOutput defaults to the output path with a .msixupload extension. -->
+
+    <!--
+      Windows SDK tooling (MakeAppx/SignTool/MakePri) is located via the
+      Microsoft.Windows.SDK.BuildTools.MSIX package tasks. The package resolves
+      the architecture-specific tool automatically; MsixToolArchitecture is no
+      longer used and is kept only for backward compatibility.
+    -->
+    <!-- Version of Microsoft.Windows.SDK.BuildTools.MSIX restored for the build tasks. -->
+    <MsixSdkBuildToolsVersion Condition="'$(MsixSdkBuildToolsVersion)' == ''">1.7.260518100</MsixSdkBuildToolsVersion>
+
+    <!-- Windows SDK version used to resolve the build tools (e.g. 10.0.26100.0). Empty = auto-detect latest. -->
+    <MsixWindowsSdkVersion Condition="'$(MsixWindowsSdkVersion)' == ''"></MsixWindowsSdkVersion>
+
+    <!-- Hash algorithm used when packing and signing the MSIX. -->
+    <MsixHashAlgorithmId Condition="'$(MsixHashAlgorithmId)' == ''">SHA256</MsixHashAlgorithmId>
+
+    <!-- Deploy-on-Build: auto-register the layout after build for fast dev-loop testing -->
+    <MsixDeployOnBuild Condition="'$(MsixDeployOnBuild)' == ''">false</MsixDeployOnBuild>
+    <!-- When true, auto-enables MsixDeployOnBuild when building inside Visual Studio -->
+    <MsixAutoDeployInVS Condition="'$(MsixAutoDeployInVS)' == ''">true</MsixAutoDeployInVS>
+    <!-- Deployment mode: 'layout' (fast, Add-AppxPackage -Register) or 'msix' (full install) -->
+    <MsixDeployMode Condition="'$(MsixDeployMode)' == ''">layout</MsixDeployMode>
+  </PropertyGroup>
+
+  <!--
+    Bring in the Microsoft.Windows.SDK.BuildTools.MSIX package that provides the
+    compiled MSBuild tasks (MakeAppx/SignTool wrappers and SDK tool discovery).
+    The package's own build/buildTransitive targets are excluded so its heavyweight
+    WinAppSDK packaging pipeline is not imported — only the task assembly is used,
+    located via the generated $(PkgMicrosoft_Windows_SDK_BuildTools_MSIX) path.
+    GeneratePathProperty requires the version inline; VersionOverride is used under
+    Central Package Management so no central PackageVersion entry is required.
+  -->
+  <ItemGroup Condition="'$(ManagePackageVersionsCentrally)' != 'true'">
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools.MSIX"
+                      Version="$(MsixSdkBuildToolsVersion)"
+                      GeneratePathProperty="true"
+                      ExcludeAssets="build;buildTransitive;compile;runtime"
+                      PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(ManagePackageVersionsCentrally)' == 'true'">
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools.MSIX"
+                      VersionOverride="$(MsixSdkBuildToolsVersion)"
+                      GeneratePathProperty="true"
+                      ExcludeAssets="build;buildTransitive;compile;runtime"
+                      PrivateAssets="all" />
+  </ItemGroup>
+
+  <!-- Auto-enable deploy when building inside Visual Studio -->
+  <PropertyGroup Condition="'$(BuildingInsideVisualStudio)' == 'true' AND '$(MsixAutoDeployInVS)' == 'true'">
+    <MsixDeployOnBuild>true</MsixDeployOnBuild>
+  </PropertyGroup>
+
+  <!-- Register the VS property page for Project Properties UI -->
+  <ItemGroup>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)Microsoft.Build.MsixPackaging.PropertyPage.xaml">
+      <Context>Project</Context>
+    </PropertyPageSchema>
+  </ItemGroup>
+
+  <!-- Import per-user settings from .user file (for property page persistence) -->
+  <Import Project="$(MSBuildProjectFullPath).user" Condition="Exists('$(MSBuildProjectFullPath).user') AND '$(MsixUserSettingsImported)' != 'true'" />
+  <PropertyGroup>
+    <MsixUserSettingsImported>true</MsixUserSettingsImported>
+  </PropertyGroup>
+
+</Project>

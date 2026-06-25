@@ -1,0 +1,51 @@
+<!--
+  SamplePackaging.msbuildproj
+  ===========================
+  Sample project that consumes Microsoft.Build.MsixPackaging to package
+  SampleConsoleApp into an MSIX. During development, the SDK targets are
+  imported directly from the source tree rather than from a NuGet package.
+
+  Production usage would be:
+    <Project Sdk="Microsoft.Build.MsixPackaging/1.0.0">
+-->
+<Project>
+
+  <!-- Import SDK props (includes NoTargets Sdk.props) -->
+  <Import Project="..\..\src\MsixPackaging\Sdk\Sdk.props" />
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <MsixFileName>MsixPackagingSample</MsixFileName>
+
+    <!-- Demonstrate signing with an auto-generated test certificate (no .pfx needed). -->
+    <MsixSigningEnabled>true</MsixSigningEnabled>
+    <MsixGenerateTestCertificate>true</MsixGenerateTestCertificate>
+
+    <!-- Demonstrate the symbol package (.msixsym) and App Installer (.appinstaller). -->
+    <MsixSymbolPackageEnabled>true</MsixSymbolPackageEnabled>
+    <MsixAppInstallerEnabled>true</MsixAppInstallerEnabled>
+    <MsixAppInstallerUri>https://example.com/apps/MsixPackagingSample.appinstaller</MsixAppInstallerUri>
+
+    <!--
+      Multi-architecture bundle (.msixbundle) and Store upload (.msixupload) are
+      opt-in because they build every architecture. Try them with:
+
+        dotnet build SamplePackaging.msbuildproj `
+          /p:MsixBundleEnabled=true `
+          "/p:MsixBundlePlatforms=x64|x86" `
+          /p:MsixStoreUploadEnabled=true
+
+      SampleConsoleApp declares the matching <RuntimeIdentifiers> so restore covers them.
+    -->
+  </PropertyGroup>
+
+  <!-- App projects to include in the MSIX -->
+  <ItemGroup>
+    <ProjectReference Include="SampleConsoleApp\SampleConsoleApp.csproj"
+                      LayoutDir="SampleConsoleApp" />
+  </ItemGroup>
+
+  <!-- Import SDK targets (includes NoTargets Sdk.targets + packaging pipeline) -->
+  <Import Project="..\..\src\MsixPackaging\Sdk\Sdk.targets" />
+
+</Project>

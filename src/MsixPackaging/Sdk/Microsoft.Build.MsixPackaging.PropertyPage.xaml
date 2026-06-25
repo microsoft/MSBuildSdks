@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Copyright (c) Microsoft Corporation. All rights reserved.
+  
+  Licensed under the MIT license.
+-->
+<Rule
+    xmlns="http://schemas.microsoft.com/build/2009/properties"
+    Name="MsixPackagingSdk"
+    Description="MSIX Packaging SDK properties for building and deploying multi-app MSIX packages."
+    DisplayName="MSIX Packaging"
+    Order="500"
+    PageTemplate="generic">
+
+    <Rule.Categories>
+        <Category Name="Package" DisplayName="Package Identity" />
+        <Category Name="Deployment" DisplayName="Deployment" />
+        <Category Name="Signing" DisplayName="Signing" />
+        <Category Name="Bundle" DisplayName="Bundle" />
+        <Category Name="Distribution" DisplayName="Distribution" />
+        <Category Name="Resources" DisplayName="Resources" />
+    </Rule.Categories>
+
+    <!-- ============================================================
+         Package Identity
+         ============================================================ -->
+
+    <StringProperty
+        Name="MsixFileName"
+        Category="Package"
+        Description="Output MSIX file name (without extension). Defaults to the project name."
+        DisplayName="Package File Name">
+        <StringProperty.DataSource>
+            <DataSource HasConfigurationCondition="False" Persistence="ProjectFile" SourceOfDefaultValue="AfterContext" />
+        </StringProperty.DataSource>
+    </StringProperty>
+
+    <StringProperty
+        Name="MsixPackageVersion"
+        Category="Package"
+        Description="Four-part numeric version (e.g. 1.0.0.0) stamped into the manifest Identity/@Version. Leave empty to use the version from the base manifest template."
+        DisplayName="Package Version">
+        <StringProperty.DataSource>
+            <DataSource HasConfigurationCondition="False" Persistence="ProjectFile" SourceOfDefaultValue="AfterContext" />
+        </StringProperty.DataSource>
+    </StringProperty>
+
+    <EnumProperty
+        Name="MsixTargetArchitecture"
+        Category="Package"
+        Description="Target processor architecture stamped into the manifest. Leave empty to use the value from the base manifest template."
+        DisplayName="Target Architecture">
+        <EnumProperty.DataSource>
+            <DataSource HasConfigurationCondition="False" Persistence="ProjectFile" SourceOfDefaultValue="AfterContext" />
+        </EnumProperty.DataSource>
+        <EnumValue Name="" DisplayName="(from manifest)" />
+        <EnumValue Name="x64" DisplayName="x64" />
+        <EnumValue Name="x86" DisplayName="x86" />
+        <EnumValue Name="arm64" DisplayName="ARM64" />
+        <EnumValue Name="neutral" DisplayName="Neutral" />
+    </EnumProperty>
+
+    <!-- ============================================================
+         Deployment
+         ============================================================ -->
+
+    <BoolProperty
+        Name="MsixDeployOnBuild"
+        Category="Deployment"
+        Default="false"
+        Description="Automatically register the MSIX layout after each build for fast dev-loop testing."
+        DisplayName="Deploy on Build">
+        <BoolProperty.DataSource>
+            <DataSource HasConfigurationCondition="False" Persistence="UserFile" SourceOfDefaultValue="AfterContext" />
+        </BoolProperty.DataSource>
+    </BoolProperty>
+
+    <BoolProperty
+        Name="MsixAutoDeployInVS"
+        Category="Deployment"
+        Default="true"
+        Description="When enabled, automatically sets Deploy on Build to true when building inside Visual Studio."
+        DisplayName="Auto-Deploy in Visual Studio">
+        <BoolProperty.DataSource>
+            <DataSource HasConfigurationCondition="False" Persistence="UserFile" SourceOfDefaultValue="AfterContext" />
+        </BoolProperty.DataSource>
+    </BoolProperty>
+
+    <EnumProperty
+        Name="MsixDeployMode"
+        Category="Deployment"
+        Default="layout"
+        Description="How the package is deployed during development. Layout mode is faster (skips MakeAppx)."
+        DisplayName="Deploy Mode">
+        <EnumProperty.DataSource>
+            <DataSource HasConfigurationCondition="False" Persistence="UserFile" SourceOfDefaultValue="AfterContext" />
+        </EnumProperty.DataSource>
+        <EnumValue
+            Name="layout"
+            Description="Register loose layout files directly (fast, skips MakeAppx/SignTool)"
+            DisplayName="Layout (fast)" />
+        <EnumValue
+            Name="msix"
+            Description="Build full MSIX and install via Add-AppxPackage (slower, production-like)"
+            DisplayName="MSIX (full install)" />
+    </EnumProperty>
+
+    <!-- ============================================================
+         Signing
+         ============================================================ -->
+
+    <BoolProperty
+        Name="MsixSigningEnabled"
+        Category="Signing"
+        Default="false"
+        Description="Sign the MSIX package with a certificate after packing."
+        DisplayName="Enable Signing">
+        <BoolProperty.DataSource>
+            <DataSource HasConfigurationCondition="False" Persistence="ProjectFile" SourceOfDefaultValue="AfterContext" />
+        </BoolProperty.DataSource>
+    </BoolProperty>
+
+    <StringProperty
+        Name="MsixCertificatePath"
+        Category="Signing"
+        Description="Path to the .pfx certificate file used for signing."
+        DisplayName="Certificate Path (.pfx)"
+        Subtype="file">
+        <StringProperty.DataSource>
+            <DataSource HasConfigurationCondition="False" Persistence="ProjectFile" SourceOfDefaultValue="AfterContext" />
+        </StringProperty.DataSource>
+    </StringProperty>
+
+    <BoolProperty
+        Name="MsixGenerateTestCertificate"
+        Category="Signing"
+        Default="false"
+        Description="When signing is enabled and no certificate is supplied, generate a throwaway self-signed test certificate (matching the manifest Publisher) for local/dev signing."
+        DisplayName="Generate Test Certificate">
+        <BoolProperty.DataSource>
+            <DataSource HasConfigurationCondition="False" Persistence="UserFile" SourceOfDefaultValue="AfterContext" />
+        </BoolProperty.DataSource>
+    </BoolProperty>
+
+    <BoolProperty
+        Name="MsixValidateSigningCertificate"
+        Category="Signing"
+        Default="true"
+        Description="Validate the manifest Publisher matches the signing certificate before signing."
+        DisplayName="Validate Certificate">
+        <BoolProperty.DataSource>
+            <DataSource HasConfigurationCondition="False" Persistence="ProjectFile" SourceOfDefaultValue="AfterContext" />
+        </BoolProperty.DataSource>
+    </BoolProperty>
+
+    <StringProperty
+        Name="MsixTimestampUrl"
+        Category="Signing"
+        Description="Optional RFC 3161 timestamp server URL applied when signing with a certificate file."
+        DisplayName="Timestamp Server URL">
+        <StringProperty.DataSource>
+            <DataSource HasConfigurationCondition="False" Persistence="ProjectFile" SourceOfDefaultValue="AfterContext" />
+        </StringProperty.DataSource>
+    </StringProperty>
+
+    <!-- ============================================================
+         Bundle
+         ============================================================ -->
+
+    <BoolProperty
+        Name="MsixBundleEnabled"
+        Category="Bundle"
+        Default="false"
+        Description="Build one MSIX per architecture and combine them into a single .msixbundle."
+        DisplayName="Build App Bundle">
+        <BoolProperty.DataSource>
+            <DataSource HasConfigurationCondition="False" Persistence="ProjectFile" SourceOfDefaultValue="AfterContext" />
+        </BoolProperty.DataSource>
+    </BoolProperty>
+
+    <StringProperty
+        Name="MsixBundlePlatforms"
+        Category="Bundle"
+        Default="x64"
+        Description="Pipe-separated architectures to build and bundle, e.g. x64|x86|arm64. Referenced apps must declare these in &lt;RuntimeIdentifiers&gt;."
+        DisplayName="Bundle Platforms">
+        <StringProperty.DataSource>
+            <DataSource HasConfigurationCondition="False" Persistence="ProjectFile" SourceOfDefaultValue="AfterContext" />
+        </StringProperty.DataSource>
+    </StringProperty>
+
+    <BoolProperty
+        Name="MsixStoreUploadEnabled"
+        Category="Bundle"
+        Default="false"
+        Description="Wrap the bundle (and symbol package, if any) into a .msixupload for Partner Center. Requires Build App Bundle."
+        DisplayName="Create Store Upload (.msixupload)">
+        <BoolProperty.DataSource>
+            <DataSource HasConfigurationCondition="False" Persistence="ProjectFile" SourceOfDefaultValue="AfterContext" />
+        </BoolProperty.DataSource>
+    </BoolProperty>
+
+    <!-- ============================================================
+         Distribution
+         ============================================================ -->
+
+    <BoolProperty
+        Name="MsixSymbolPackageEnabled"
+        Category="Distribution"
+        Default="false"
+        Description="Produce a .msixsym symbol package (the PDBs from the layout) for Partner Center crash analysis."
+        DisplayName="Generate Symbol Package">
+        <BoolProperty.DataSource>
+            <DataSource HasConfigurationCondition="False" Persistence="ProjectFile" SourceOfDefaultValue="AfterContext" />
+        </BoolProperty.DataSource>
+    </BoolProperty>
+
+    <BoolProperty
+        Name="MsixAppInstallerEnabled"
+        Category="Distribution"
+        Default="false"
+        Description="Generate an .appinstaller file for sideload auto-update."
+        DisplayName="Generate App Installer">
+        <BoolProperty.DataSource>
+            <DataSource HasConfigurationCondition="False" Persistence="ProjectFile" SourceOfDefaultValue="AfterContext" />
+        </BoolProperty.DataSource>
+    </BoolProperty>
+
+    <StringProperty
+        Name="MsixAppInstallerUri"
+        Category="Distribution"
+        Description="Full URL where the .appinstaller file will be hosted (required when App Installer is enabled)."
+        DisplayName="App Installer URL">
+        <StringProperty.DataSource>
+            <DataSource HasConfigurationCondition="False" Persistence="ProjectFile" SourceOfDefaultValue="AfterContext" />
+        </StringProperty.DataSource>
+    </StringProperty>
+
+    <!-- ============================================================
+         Resources
+         ============================================================ -->
+
+    <EnumProperty
+        Name="MsixResourceIndexEnabled"
+        Category="Resources"
+        Default="auto"
+        Description="Controls whether MakePri.exe generates a resources.pri for localized .resw assets."
+        DisplayName="Resource Indexing">
+        <EnumProperty.DataSource>
+            <DataSource HasConfigurationCondition="False" Persistence="ProjectFile" SourceOfDefaultValue="AfterContext" />
+        </EnumProperty.DataSource>
+        <EnumValue
+            Name="auto"
+            Description="Run MakePri only if .resw files are found in the layout"
+            DisplayName="Auto-detect" />
+        <EnumValue
+            Name="true"
+            Description="Always run MakePri"
+            DisplayName="Always" />
+        <EnumValue
+            Name="false"
+            Description="Never run MakePri"
+            DisplayName="Never" />
+    </EnumProperty>
+
+    <StringProperty
+        Name="MsixPriDefaultLanguage"
+        Category="Resources"
+        Default="en-US"
+        Description="Default language qualifier for auto-generated PRI configuration."
+        DisplayName="Default Language">
+        <StringProperty.DataSource>
+            <DataSource HasConfigurationCondition="False" Persistence="ProjectFile" SourceOfDefaultValue="AfterContext" />
+        </StringProperty.DataSource>
+    </StringProperty>
+
+</Rule>
