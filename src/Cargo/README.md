@@ -78,8 +78,30 @@ msbuild /t:clearcargocache
  ### Using MSRustup (Microsoft internal use only)
  To enable use of MSRustup, you will need to have a rust-toolchain.toml at the root of your repo. The toml file should include a channel specifier that has "ms-" as a prefix, followed by the channel version.
  ```toml
-
  [toolchain]    
- channel - ms-<version>
+ channel = "ms-<version>"
  ```
- 
+
+#### Optional MSRustup configuration properties
+
+ The SDK exposes a handful of MSBuild properties for advanced scenarios.
+
+##### `CargoProfile`
+
+By default the SDK derives the Cargo profile from the MSBuild `Configuration`: `Debug` uses Cargo's default debug profile, and any other configuration is
+passed as the `--<Configuration>` value (so `Release` becomes `--release`).
+
+Set `CargoProfile` to override this and pass `--profile <CargoProfile>` to Cargo instead. This is useful when your `Cargo.toml` defines a custom profile
+such as `release-windows`.
+
+##### `MsRustupTargets`
+
+A semicolon-separated list of target triples to install when running `msrustup toolchain install`.
+Each value becomes a `--target <triple>` argument. Use this to enable cross-compilation.
+
+```xml
+<PropertyGroup>
+  <MsRustupTargets>aarch64-pc-windows-msvc;x86_64-pc-windows-msvc</MsRustupTargets>
+</PropertyGroup>
+```
+

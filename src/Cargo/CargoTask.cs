@@ -103,6 +103,19 @@ namespace Microsoft.Build.Cargo
         /// </summary>
         public string CargoOutputDir { get; set; } = string.Empty;
 
+        /// <summary>
+        /// Gets or sets an optional Cargo profile to pass to cargo as "--profile &lt;value&gt;" for MSRustup.
+        /// When set, this overrides the behavior of deriving the profile from Configuration.
+        /// </summary>
+        public string CargoProfile { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets an optional semicolon-separated list of additional target triples to install when running "msrustup toolchain install"
+        /// (e.g. "aarch64-pc-windows-msvc;x86_64-pc-windows-msvc"). Each value is passed to MSRustup as "--target &lt;triple&gt;".
+        /// Use this to enable cross-compilation.
+        /// </summary>
+        public string MsRustupTargets { get; set; } = string.Empty;
+
         /// <inheritdoc/>
         public override bool Execute()
         {
@@ -178,7 +191,7 @@ namespace Microsoft.Build.Cargo
 
                             foreach (var registry in GetRegistries(Path.Combine(RepoRoot, _cargoConfigFilePath)))
                             {
-                                var registryName = registry.Key.Trim().ToUpper();
+                                var registryName = registry.Key.Trim().ToUpper().Replace('-', '_');
                                 _cargoRegistries.Add(registryName);
                                 var tokenName = $"CARGO_REGISTRIES_{registryName}_TOKEN";
                                 AddOrUpdateEnvVar(tokenName, $"Bearer {val}");
@@ -247,19 +260,35 @@ namespace Microsoft.Build.Cargo
 
                 if (!string.IsNullOrEmpty(customCargo))
                 {
-                    bool isDebugConfiguration = true;
-                    if (!Configuration.Equals("debug", StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        isDebugConfiguration = false;
-                    }
-
-                    return await ExecuteProcessAsync(GetCustomToolChainCargoBin() !, $"{command} {args}  --offline {(isDebugConfiguration ? string.Empty : "--" + Configuration.ToLowerInvariant())} --config {Path.Combine(RepoRoot, _cargoConfigFilePath)}", ".", _envVars);
+                    return await ExecuteProcessAsync(GetCustomToolChainCargoBin() !, $"{command} {args}  --offline {GetMsRustupProfileArgument()} --config {Path.Combine(RepoRoot, _cargoConfigFilePath)}", ".", _envVars);
                 }
 
                 return ExitCode.Failed;
             }
 
             return await ExecuteProcessAsync(_cargoPath, $"{command} {args}", ".", _envVars);
+        }
+
+        /// <summary>
+        /// For MSRustup, determines the appropriate Cargo profile argument to pass based on the CargoProfile and Configuration properties.
+        /// </summary>
+        /// <returns>The Cargo profile argument string, if needed; else an empty string.</returns>
+        private string GetMsRustupProfileArgument()
+        {
+            // Explicit CargoProfile wins over the Configuration-derived value.
+            if (!string.IsNullOrEmpty(CargoProfile))
+            {
+                return $"--profile {CargoProfile}";
+            }
+
+            // No flag for the default (Debug) profile.
+            if (string.IsNullOrEmpty(Configuration) || Configuration.Equals("debug", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return string.Empty;
+            }
+
+            // Use the Configuration as a Cargo profile shorthand (e.g. "--release").
+            return "--" + Configuration.ToLowerInvariant();
         }
 
         private async Task<bool> DownloadAndInstallRust()
@@ -643,7 +672,7 @@ namespace Microsoft.Build.Cargo
                     AddOrUpdateEnvVar("MSRUSTUP_PAT", val);
                 }
 
-                exitCodeLatest = await ExecuteProcessAsync(rustUpBinary, $"toolchain install {GetToolChainVersion()}", StartupProj, _envVars);
+                exitCodeLatest = await ExecuteProcessAsync(rustUpBinary, $"toolchain install {GetToolChainVersion()}{GetMsRustupTargetArgs()}", StartupProj, _envVars);
 
                 if (exitCodeLatest == ExitCode.Succeeded)
                 {
@@ -661,6 +690,35 @@ namespace Microsoft.Build.Cargo
             }
 
             return exitCode == 0 && exitCodeLatest == 0;
+        }
+
+        /// <summary>
+        /// Builds the target arguments to pass to "msrustup toolchain install" from the <see cref="MsRustupTargets"/> property.
+        /// </summary>
+        /// <returns>
+        /// Each target in the semicolon-separated list becomes its own "--target &lt;triple&gt;" argument in the returned string.
+        /// Returns the empty string when no targets are configured.
+        /// </returns>
+        private string GetMsRustupTargetArgs()
+        {
+            if (string.IsNullOrWhiteSpace(MsRustupTargets))
+            {
+                return string.Empty;
+            }
+
+            var sb = new System.Text.StringBuilder();
+            foreach (var target in MsRustupTargets.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                var trimmed = target.Trim();
+                if (trimmed.Length == 0)
+                {
+                    continue;
+                }
+
+                sb.Append(" --target ").Append(trimmed);
+            }
+
+            return sb.ToString();
         }
 
         private async Task<bool> VerifyInitHashAsync()
