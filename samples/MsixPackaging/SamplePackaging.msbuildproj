@@ -1,9 +1,17 @@
 <!--
   SamplePackaging.msbuildproj
   ===========================
-  Sample project that consumes Microsoft.Build.MsixPackaging to package
-  SampleConsoleApp into an MSIX. During development, the SDK targets are
-  imported directly from the source tree rather than from a NuGet package.
+  Sample project that consumes Microsoft.Build.MsixPackaging to package several
+  apps of different types into a single MSIX:
+
+    - SampleConsoleApp   (net10.0,         console, with a CLI execution alias)
+    - SampleWpfApp       (net10.0-windows, WPF GUI, Start Menu only)
+    - SampleWinFormsApp  (net10.0-windows, WinForms GUI, Start Menu only)
+
+  Each app publishes independently with its own target framework; their
+  per-project AppxFragment.xml entries are merged into Package.base.appxmanifest.
+  During development, the SDK targets are imported directly from the source tree
+  rather than from a NuGet package.
 
   Production usage would be:
     <Project Sdk="Microsoft.Build.MsixPackaging/1.0.0">
@@ -35,14 +43,18 @@
           "/p:MsixBundlePlatforms=x64|x86" `
           /p:MsixStoreUploadEnabled=true
 
-      SampleConsoleApp declares the matching <RuntimeIdentifiers> so restore covers them.
+      Every referenced app declares the matching <RuntimeIdentifiers> so restore covers them.
     -->
   </PropertyGroup>
 
-  <!-- App projects to include in the MSIX -->
+  <!-- App projects to include in the MSIX (each publishes with its own TFM). -->
   <ItemGroup>
     <ProjectReference Include="SampleConsoleApp\SampleConsoleApp.csproj"
                       LayoutDir="SampleConsoleApp" />
+    <ProjectReference Include="SampleWpfApp\SampleWpfApp.csproj"
+                      LayoutDir="SampleWpfApp" />
+    <ProjectReference Include="SampleWinFormsApp\SampleWinFormsApp.csproj"
+                      LayoutDir="SampleWinFormsApp" />
   </ItemGroup>
 
   <!-- Import SDK targets (includes NoTargets Sdk.targets + packaging pipeline) -->
