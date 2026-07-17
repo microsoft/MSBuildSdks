@@ -263,3 +263,21 @@ Signing is performed by the package's SignTool task, which also supports
 timestamping and Azure Code Signing / Azure Key Vault when the corresponding
 properties are supplied.
 
+## Sample
+
+[`samples/MsixPackaging`](../../samples/MsixPackaging) packages three apps of two
+different types into a single MSIX, showing how apps with their own target
+frameworks are merged via per-project `AppxFragment.xml`:
+
+| Project | Type | TFM | Manifest entry |
+|---------|------|-----|----------------|
+| `SampleConsoleApp` | Console | `net10.0` | Application + `windows.appExecutionAlias` (CLI alias) |
+| `SampleWpfApp` | WPF GUI | `net10.0-windows` | Application (Start Menu only) |
+| `SampleWinFormsApp` | WinForms GUI | `net10.0-windows` | Application (Start Menu only) |
+
+The default build produces a single signed `.msix` (with an auto-generated test
+certificate) plus a `.msixsym` and `.appinstaller`. The multi-architecture bundle
+and Store upload are available via opt-in properties — see the comments in
+`SamplePackaging.msbuildproj`. Each app declares `<RuntimeIdentifiers>` so the
+bundle build can publish it per architecture.
+
