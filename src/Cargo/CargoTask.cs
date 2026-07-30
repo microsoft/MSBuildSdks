@@ -104,10 +104,10 @@ namespace Microsoft.Build.Cargo
         public string CargoOutputDir { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets an optional Cargo profile to pass to cargo as "--profile &lt;value&gt;" for MSRustup.
+        /// Gets or sets an optional CargoBuild profile override to pass to Cargo as "--profile &lt;value&gt;" for MSRustup.
         /// When set, this overrides the behavior of deriving the profile from Configuration.
         /// </summary>
-        public string CargoProfile { get; set; } = string.Empty;
+        public string MsRustupCargoProfile { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets an optional semicolon-separated list of additional target triples to install when running "msrustup toolchain install"
@@ -260,7 +260,7 @@ namespace Microsoft.Build.Cargo
 
                 if (!string.IsNullOrEmpty(customCargo))
                 {
-                    return await ExecuteProcessAsync(GetCustomToolChainCargoBin() !, $"{command} {args}  --offline {GetMsRustupProfileArgument()} --config {Path.Combine(RepoRoot, _cargoConfigFilePath)}", ".", _envVars);
+                    return await ExecuteProcessAsync(GetCustomToolChainCargoBin() !, $"{command} {args}  --offline {GetMsRustupBuildProfileArgument()} --config {Path.Combine(RepoRoot, _cargoConfigFilePath)}", ".", _envVars);
                 }
 
                 return ExitCode.Failed;
@@ -270,15 +270,15 @@ namespace Microsoft.Build.Cargo
         }
 
         /// <summary>
-        /// For MSRustup, determines the appropriate Cargo profile argument to pass based on the CargoProfile and Configuration properties.
+        /// For MSRustup, determines the appropriate Cargo build profile argument to pass based on the MsRustupCargoProfile and Configuration properties.
         /// </summary>
-        /// <returns>The Cargo profile argument string, if needed; else an empty string.</returns>
-        private string GetMsRustupProfileArgument()
+        /// <returns>The Cargo build profile argument string, if needed; else an empty string.</returns>
+        private string GetMsRustupBuildProfileArgument()
         {
-            // Explicit CargoProfile wins over the Configuration-derived value.
-            if (!string.IsNullOrEmpty(CargoProfile))
+            // Explicit MsRustupCargoProfile wins over the Configuration-derived value.
+            if (!string.IsNullOrEmpty(MsRustupCargoProfile))
             {
-                return $"--profile {CargoProfile}";
+                return $"--profile {MsRustupCargoProfile}";
             }
 
             // No flag for the default (Debug) profile.
