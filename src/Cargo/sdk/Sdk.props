@@ -94,6 +94,7 @@
     <!--
       Optional CargoBuild profile override, e.g. "release-windows".
       When set, the SDK passes the value as the Cargo "profile" argument, instead of deriving the profile from Configuration.
+      Only applies when the msrustup toolchain is in use.
     -->
     <MsRustupCargoProfile Condition="'$(MsRustupCargoProfile)' == ''"></MsRustupCargoProfile>
     <!--

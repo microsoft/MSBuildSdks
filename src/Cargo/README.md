@@ -88,8 +88,8 @@ msbuild /t:clearcargocache
 
 ##### `MsRustupCargoProfile`
 
-By default the `CargoBuild` target derives the Cargo profile from the MSBuild `Configuration`: `Debug` uses Cargo's default debug profile, and any other
-configuration is passed as the `--<Configuration>` value (so `Release` becomes `--release`).
+By default the `CargoBuild` target derives the msrustup Cargo profile from the MSBuild `Configuration`: `Debug` uses Cargo's default debug profile,
+and any other configuration is passed as the `--<Configuration>` value (so `Release` becomes `--release`).
 
 Set `MsRustupCargoProfile` to override this for `CargoBuild` and pass `--profile <MsRustupCargoProfile>` to Cargo instead. This is useful when your
 `Cargo.toml` defines a custom profile such as `release-windows`.
