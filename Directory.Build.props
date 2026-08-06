@@ -19,6 +19,13 @@
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
   </PropertyGroup>
 
+  <ItemGroup Condition="'$(IsTestProject)' == 'true' And '$(TargetFramework)' == 'net472'">
+    <!-- MSBuild.ProjectCreation loads MSBuild's runtime closure from Visual Studio. -->
+    <PackageReference Include="System.Threading.Tasks.Extensions"
+                      ExcludeAssets="runtime"
+                      PrivateAssets="all" />
+  </ItemGroup>
+
   <!-- Symbols and Source Link -->
   <PropertyGroup>
     <DebugType>embedded</DebugType>
