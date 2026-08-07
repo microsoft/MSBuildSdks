@@ -112,14 +112,14 @@
     <MSBuild
        Projects="$(MSBuildThisFileDirectory)InstallCargo.proj"
        Targets="InstallCargo"
-       Properties="EnableTelemetryLoggerCopy=$(EnableTelemetryLoggerCopy);TelemetryLoggerLocation=$(TelemetryLoggerLocation);TelemetryLoggerSourcePath=$(TelemetryLoggerSourcePath);TelemetryLoggerInstallId=$(TelemetryLoggerInstallId);RepoRoot=$(RepoRoot);CargoInstallationRoot=$(CargoInstallationRoot);MsRustupAuthType=$(MsRustupAuthType);CargoOutputDir=$(CargoOutputDir)"
+       Properties="EnableTelemetryLoggerCopy=$(EnableTelemetryLoggerCopy);TelemetryLoggerLocation=$(TelemetryLoggerLocation);TelemetryLoggerSourcePath=$(TelemetryLoggerSourcePath);TelemetryLoggerInstallId=$(TelemetryLoggerInstallId);RepoRoot=$(RepoRoot);CargoInstallationRoot=$(CargoInstallationRoot);MsRustupAuthType=$(MsRustupAuthType);CargoOutputDir=$(CargoOutputDir);MsRustupTargets=$(MsRustupTargets)"
        RemoveProperties="NuGetInteractive;MSBuildRestoreSessionId;TargetFramework;RuntimeIdentifier" />
   </Target>
   <Target Name="CargoFetch" AfterTargets="InstallCargo">
     <CargoTask EnableAuth="$(AuthMode)" StartupProj="$(StartupProj)" Command="fetch"  RepoRoot="$(RepoRoot)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
   </Target>
   <Target Name="CargoBuild" AfterTargets="CoreCompile">
-    <CargoTask EnableAuth="$(AuthMode)" StartupProj="$(StartupProj)" Command="build" CommandArgs="$(CargoBuildCommandArgs)" Configuration="$(Configuration)" RepoRoot="$(RepoRoot)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
+    <CargoTask EnableAuth="$(AuthMode)" StartupProj="$(StartupProj)" Command="build" CommandArgs="$(CargoBuildCommandArgs)" Configuration="$(Configuration)" RepoRoot="$(RepoRoot)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" MsRustupCargoProfile="$(MsRustupCargoProfile)" />
   </Target>
   <Target Name="CargoTest" DependsOnTargets="CargoFetch">
     <CargoTask StartupProj="$(StartupProj)" Command="test" CommandArgs="$(CargoTestCommandArgs)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
