@@ -378,13 +378,16 @@ namespace Microsoft.Build.Cargo.UnitTests
         }
 
         [Theory]
-        [InlineData(null, null)]
-        [InlineData("cargo-target", null)]
-        [InlineData(null, @"artifacts\obj\Cargo\")]
-        public void PublishesOnlyDeclaredCargoBuildOutputs(string cargoOutputDirectoryName, string baseIntermediateOutputPath)
+        [InlineData(null, false)]
+        [InlineData("cargo-target", false)]
+        [InlineData(null, true)]
+        public void PublishesOnlyDeclaredCargoBuildOutputs(string cargoOutputDirectoryName, bool useCustomBaseIntermediateOutputPath)
         {
             string projectDirectory = Path.Combine(TestRootPath, "Cargo");
             string projectPath = Path.Combine(projectDirectory, "rust.cargoproj");
+            string baseIntermediateOutputPath = useCustomBaseIntermediateOutputPath
+                ? Path.Combine("artifacts", "obj", "Cargo") + Path.DirectorySeparatorChar
+                : null;
             string cargoOutputDirectory = cargoOutputDirectoryName == null
                 ? Path.Combine(projectDirectory, baseIntermediateOutputPath ?? "obj", "cargo")
                 : Path.Combine(projectDirectory, cargoOutputDirectoryName);
@@ -393,6 +396,7 @@ namespace Microsoft.Build.Cargo.UnitTests
             string intermediatePath = Path.Combine(sourceDirectory, "deps", "dependency.rlib");
             string outputDirectory = Path.Combine(projectDirectory, "artifacts", "bin", "Release", CargoTargetFramework);
             string publishedPath = Path.Combine(outputDirectory, "native", "rust_lib_external.lib");
+            string targetPath = Path.Combine("native", "rust_lib_external.lib");
 
             Directory.CreateDirectory(Path.GetDirectoryName(intermediatePath));
             File.WriteAllText(sourcePath, "primary output");
@@ -410,10 +414,10 @@ namespace Microsoft.Build.Cargo.UnitTests
                 .Property("OutputPath", @"artifacts\bin\$(Configuration)")
                 .ItemInclude(
                     "CargoBuildOutput",
-                    @"$(CargoOutputDir)\$(Configuration)\rust_lib_external.dll.lib",
+                    Path.Combine("$(CargoOutputDir)", "$(Configuration)", "rust_lib_external.dll.lib"),
                     metadata: new Dictionary<string, string>
                     {
-                        ["TargetPath"] = @"native\rust_lib_external.lib",
+                        ["TargetPath"] = targetPath,
                     })
                 .Target("InstallCargo")
                 .Target("CargoFetch")
@@ -436,7 +440,7 @@ namespace Microsoft.Build.Cargo.UnitTests
             File.ReadAllText(publishedPath).ShouldBe("primary output");
             File.Exists(Path.Combine(outputDirectory, "deps", "dependency.rlib")).ShouldBeFalse();
             buildOutput.Messages.High.ShouldContain(
-                $"CargoPublishedOutput={publishedPath}|{sourcePath}|native\\rust_lib_external.lib",
+                $"CargoPublishedOutput={publishedPath}|{sourcePath}|{targetPath}",
                 buildOutput.GetConsoleLog());
         }
 
