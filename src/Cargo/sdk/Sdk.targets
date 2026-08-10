@@ -53,6 +53,13 @@
 
     <!-- Don't emit a reference assembly -->
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+
+    <GetCopyToOutputDirectoryItemsDependsOn>
+      _AddCargoPublishedOutputsToContentItems;
+      $(GetCopyToOutputDirectoryItemsDependsOn)
+    </GetCopyToOutputDirectoryItemsDependsOn>
+
+    <_CargoBuildOutputsCacheFile>$(IntermediateOutputPath)Microsoft.Build.Cargo.outputs</_CargoBuildOutputsCacheFile>
   </PropertyGroup>
 
   <!-- Clear output group items which are read by the IDE and NuGet. -->
@@ -70,15 +77,24 @@
   -->
   <Target Name="ComputeIntermediateSatelliteAssemblies" />
 
-  <!--
-    Cargo projects do not build an assembly so dependent projects shouldn't get a path to the target.  Override the GetTargetPath to do nothing.
-  -->
-  <Target Name="GetTargetPath" />
+  <Target Name="GetTargetPath"
+          DependsOnTargets="GetTargetPathWithTargetPlatformMoniker"
+          Returns="@(TargetPathWithTargetPlatformMoniker)" />
 
-  <!--
-    The GetTargetPathWithTargetPlatformMoniker target uses a BeforeTargets so the only way to disable it is to override it with an empty target.
-  -->
-  <Target Name="GetTargetPathWithTargetPlatformMoniker" />
+  <Target Name="GetTargetPathWithTargetPlatformMoniker"
+          DependsOnTargets="_ComputeCargoPublishedOutputs"
+          Returns="@(TargetPathWithTargetPlatformMoniker)">
+    <ItemGroup>
+      <TargetPathWithTargetPlatformMoniker Include="@(CargoPublishedOutput)"
+                                           Condition="'%(CargoPublishedOutput.Optional)' != 'true' Or Exists('%(CargoPublishedOutput.FullPath)')">
+        <FileType>%(CargoPublishedOutput.FileType)</FileType>
+        <TargetPlatformMoniker>$(TargetPlatformMoniker)</TargetPlatformMoniker>
+        <TargetPlatformIdentifier>$(TargetPlatformIdentifier)</TargetPlatformIdentifier>
+        <TargetFrameworkIdentifier>$(TargetFrameworkIdentifier)</TargetFrameworkIdentifier>
+        <TargetFrameworkVersion>$(TargetFrameworkVersion.TrimStart('vV'))</TargetFrameworkVersion>
+      </TargetPathWithTargetPlatformMoniker>
+    </ItemGroup>
+  </Target>
 
   <!--
     The GetReferenceAssemblyPaths does not need to run since reference assemblies aren't needed.
@@ -119,7 +135,9 @@
     <CargoTask EnableAuth="$(AuthMode)" StartupProj="$(StartupProj)" Command="fetch"  RepoRoot="$(RepoRoot)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
   </Target>
   <Target Name="CargoBuild" AfterTargets="CoreCompile">
-    <CargoTask EnableAuth="$(AuthMode)" StartupProj="$(StartupProj)" Command="build" CommandArgs="$(CargoBuildCommandArgs)" Configuration="$(Configuration)" RepoRoot="$(RepoRoot)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" MsRustupCargoProfile="$(MsRustupCargoProfile)" />
+    <CargoTask EnableAuth="$(AuthMode)" StartupProj="$(StartupProj)" Command="build" CommandArgs="$(CargoBuildCommandArgs)" Configuration="$(Configuration)" RepoRoot="$(RepoRoot)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" MsRustupCargoProfile="$(MsRustupCargoProfile)">
+      <Output TaskParameter="BuildOutputs" ItemName="_DiscoveredCargoBuildOutput" />
+    </CargoTask>
   </Target>
   <Target Name="CargoTest" DependsOnTargets="CargoFetch">
     <CargoTask StartupProj="$(StartupProj)" Command="test" CommandArgs="$(CargoTestCommandArgs)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
@@ -144,5 +162,125 @@
   </Target>
   <Target Name="ClearCargoCache">
     <CargoTask StartupProj="$(StartupProj)" Command="clearcargocache" CommandArgs="$(ClearCargoCacheCommandArgs)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" />
+  </Target>
+
+  <!-- Cargo build output publication -->
+  <Target Name="_PrepareDiscoveredCargoBuildOutputs"
+          AfterTargets="CargoBuild">
+    <ItemGroup>
+      <_DiscoveredCargoBuildOutput Remove="@(CargoBuildOutput)"
+                                   MatchOnMetadata="FullPath"
+                                   MatchOnMetadataOptions="PathLike" />
+      <CargoBuildOutput Include="@(_DiscoveredCargoBuildOutput)">
+        <AutomaticallyDiscovered>true</AutomaticallyDiscovered>
+      </CargoBuildOutput>
+    </ItemGroup>
+    <Delete Files="$(_CargoBuildOutputsCacheFile)"
+            Condition="Exists('$(_CargoBuildOutputsCacheFile)')" />
+  </Target>
+
+  <Target Name="_LoadCachedCargoBuildOutputs"
+          Condition="Exists('$(_CargoBuildOutputsCacheFile)')">
+    <ReadLinesFromFile File="$(_CargoBuildOutputsCacheFile)">
+      <Output TaskParameter="Lines" ItemName="_CachedCargoPublishedOutput" />
+    </ReadLinesFromFile>
+    <ItemGroup>
+      <_CachedCargoPublishedOutput Remove="@(_CachedCargoPublishedOutput)"
+                                   Condition="!Exists('%(FullPath)')" />
+      <_CachedCargoPublishedOutput>
+        <AutomaticallyDiscovered>true</AutomaticallyDiscovered>
+        <FileType Condition="'%(Extension)' == '.lib'">lib</FileType>
+        <TargetPath>%(Filename)%(Extension)</TargetPath>
+      </_CachedCargoPublishedOutput>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_ComputeCargoPublishedOutputs"
+          DependsOnTargets="_LoadCachedCargoBuildOutputs"
+          Condition="'@(CargoBuildOutput)' != '' Or Exists('$(_CargoBuildOutputsCacheFile)')">
+    <PropertyGroup>
+      <_CargoPublishOutputPath>$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(OutDir)'))</_CargoPublishOutputPath>
+    </PropertyGroup>
+    <ItemGroup>
+      <_CargoBuildOutput Include="@(CargoBuildOutput)">
+        <FileType Condition="'%(CargoBuildOutput.FileType)' == '' And '%(CargoBuildOutput.Extension)' == '.lib'">lib</FileType>
+        <TargetPath Condition="'%(CargoBuildOutput.TargetPath)' == ''">%(CargoBuildOutput.Filename)%(CargoBuildOutput.Extension)</TargetPath>
+      </_CargoBuildOutput>
+      <_ComputedCargoPublishedOutput Include="@(_CargoBuildOutput->'$(_CargoPublishOutputPath)%(TargetPath)')">
+        <AutomaticallyDiscovered>%(_CargoBuildOutput.AutomaticallyDiscovered)</AutomaticallyDiscovered>
+        <FileType>%(_CargoBuildOutput.FileType)</FileType>
+        <Optional>%(_CargoBuildOutput.Optional)</Optional>
+        <SourcePath>%(_CargoBuildOutput.FullPath)</SourcePath>
+        <TargetPath>%(_CargoBuildOutput.TargetPath)</TargetPath>
+      </_ComputedCargoPublishedOutput>
+      <_CachedCargoPublishedOutput Remove="@(_ComputedCargoPublishedOutput)"
+                                   MatchOnMetadata="FullPath"
+                                   MatchOnMetadataOptions="PathLike" />
+      <CargoPublishedOutput Include="@(_ComputedCargoPublishedOutput);@(_CachedCargoPublishedOutput)" />
+    </ItemGroup>
+
+    <Error Text="Cargo build output TargetPath '%(CargoPublishedOutput.TargetPath)' must remain under '$(OutDir)'."
+           Condition="$([System.IO.Path]::IsPathRooted('%(CargoPublishedOutput.TargetPath)')) Or $([System.Text.RegularExpressions.Regex]::IsMatch('%(CargoPublishedOutput.TargetPath)', '(^|[\\/])\.\.([\\/]|$)'))" />
+  </Target>
+
+  <Target Name="PublishCargoBuildOutputs"
+          AfterTargets="_PrepareDiscoveredCargoBuildOutputs"
+          DependsOnTargets="_ComputeCargoPublishedOutputs"
+          Condition="'@(CargoBuildOutput)' != ''">
+    <ItemGroup>
+      <_CargoBuildOutputToPublish Include="@(_CargoBuildOutput)"
+                                  Condition="Exists('%(FullPath)')" />
+      <_StaleOptionalCargoPublishedOutput Include="@(CargoPublishedOutput)"
+                                          Condition="'%(Optional)' == 'true' And !Exists('%(SourcePath)') And Exists('%(FullPath)')" />
+    </ItemGroup>
+
+    <Error Text="Cargo build output '%(CargoBuildOutput.Identity)' does not exist."
+           Condition="'%(CargoBuildOutput.Optional)' != 'true' And !Exists('%(CargoBuildOutput.FullPath)')" />
+
+    <Delete Files="@(_StaleOptionalCargoPublishedOutput)" />
+
+    <Copy SourceFiles="@(_CargoBuildOutputToPublish)"
+          DestinationFiles="@(_CargoBuildOutputToPublish->'$(_CargoPublishOutputPath)%(TargetPath)')"
+          SkipUnchangedFiles="true"
+          OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+          Retries="$(CopyRetryCount)"
+          RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)">
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites" />
+    </Copy>
+
+    <ItemGroup>
+      <_DiscoveredCargoPublishedOutputToCache Include="@(CargoPublishedOutput)"
+                                              Condition="'%(AutomaticallyDiscovered)' == 'true' And Exists('%(FullPath)')" />
+      <FileWrites Include="$(_CargoBuildOutputsCacheFile)"
+                  Condition="'@(_DiscoveredCargoPublishedOutputToCache)' != ''" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(_CargoBuildOutputsCacheFile)"
+                      Lines="@(_DiscoveredCargoPublishedOutputToCache)"
+                      Overwrite="true"
+                      WriteOnlyWhenDifferent="true"
+                      Condition="'@(_DiscoveredCargoPublishedOutputToCache)' != ''" />
+  </Target>
+
+  <Target Name="_AddCargoPublishedOutputsToContentItems"
+          DependsOnTargets="_ComputeCargoPublishedOutputs"
+          Condition="'@(CargoBuildOutput)' != '' Or Exists('$(_CargoBuildOutputsCacheFile)')">
+    <ItemGroup>
+      <ContentWithTargetPath Include="@(CargoPublishedOutput)"
+                             Condition="Exists('%(FullPath)')">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <TargetPath>%(CargoPublishedOutput.TargetPath)</TargetPath>
+      </ContentWithTargetPath>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_RemoveCargoPublishedOutputsFromLocalCopyItems"
+          BeforeTargets="_CopyOutOfDateSourceItemsToOutputDirectory;_CopyOutOfDateSourceItemsToOutputDirectoryAlways;_CopyDifferingSourceItemsToOutputDirectory"
+          Condition="'@(CargoPublishedOutput)' != ''">
+    <ItemGroup>
+      <_CargoPublishedOutputFullPath Include="@(CargoPublishedOutput->'%(FullPath)')" />
+      <_SourceItemsToCopyToOutputDirectory Remove="@(_CargoPublishedOutputFullPath)" />
+      <_SourceItemsToCopyToOutputDirectoryAlways Remove="@(_CargoPublishedOutputFullPath)" />
+      <_SourceItemsToCopyToOutputDirectoryIfDifferent Remove="@(_CargoPublishedOutputFullPath)" />
+    </ItemGroup>
   </Target>
 </Project>
