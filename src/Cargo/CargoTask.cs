@@ -32,6 +32,7 @@ namespace Microsoft.Build.Cargo
         private static readonly string _loginCommand = "login";
         private static readonly string _rustUpDownloadLink = "https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe";
         private static readonly string _checkSumVerifyUrl = "https://static.rust-lang.org/rustup/dist/x86_64-pc-windows-msvc/rustup-init.exe.sha256";
+        private readonly object _logLock = new ();
         private string? _rustUpFile = Environment.GetEnvironmentVariable("MSRUSTUP_FILE");
         private bool _shouldCleanRustPath = false;
         private bool _installationFailure = false;
@@ -115,6 +116,12 @@ namespace Microsoft.Build.Cargo
         /// Use this to enable cross-compilation.
         /// </summary>
         public string MsRustupTargets { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets the primary artifacts produced by a Cargo build.
+        /// </summary>
+        [Output]
+        public ITaskItem[] BuildOutputs { get; private set; } = Array.Empty<ITaskItem>();
 
         /// <inheritdoc/>
         public override bool Execute()
@@ -252,7 +259,20 @@ namespace Microsoft.Build.Cargo
                 Log.LogMessage("'CargoOutputDir' is null or empty. Output directory will be the default Cargo output directory.");
             }
 
+            List<string>? buildOutputLines = null;
+            if (command.Equals("build", StringComparison.OrdinalIgnoreCase))
+            {
+                buildOutputLines = new List<string>();
+                if (!CargoBuildArguments.TryEnsureJsonMessageFormat(args, out args))
+                {
+                    Log.LogError("CargoBuildCommandArgs must use a JSON --message-format so the SDK can discover build outputs.");
+                    return ExitCode.Failed;
+                }
+            }
+
             Log.LogMessage(MessageImportance.Normal, $"Executing cargo command: {command} {args}");
+            Action<string>? buildOutputLineHandler = buildOutputLines == null ? null : buildOutputLines.Add;
+            ExitCode exitCode;
             if (_isMsRustUp)
             {
                 var customCargo = GetCustomToolChainCargoPath();
@@ -260,13 +280,35 @@ namespace Microsoft.Build.Cargo
 
                 if (!string.IsNullOrEmpty(customCargo))
                 {
-                    return await ExecuteProcessAsync(GetCustomToolChainCargoBin() !, $"{command} {args}  --offline {GetMsRustupBuildProfileArgument()} --config {Path.Combine(RepoRoot, _cargoConfigFilePath)}", ".", _envVars);
+                    exitCode = await ExecuteProcessAsync(
+                        GetCustomToolChainCargoBin() !,
+                        $"{command} {args}  --offline {GetMsRustupBuildProfileArgument()} --config {Path.Combine(RepoRoot, _cargoConfigFilePath)}",
+                        ".",
+                        _envVars,
+                        buildOutputLineHandler);
                 }
-
-                return ExitCode.Failed;
+                else
+                {
+                    return ExitCode.Failed;
+                }
+            }
+            else
+            {
+                exitCode = await ExecuteProcessAsync(_cargoPath, $"{command} {args}", ".", _envVars, buildOutputLineHandler);
             }
 
-            return await ExecuteProcessAsync(_cargoPath, $"{command} {args}", ".", _envVars);
+            if (exitCode == ExitCode.Succeeded && buildOutputLines != null)
+            {
+                string manifestPath = Path.Combine(
+                    Directory.GetParent(StartupProj)?.FullName ?? throw new InvalidOperationException("Invalid project path"),
+                    _cargoFileName);
+
+                BuildOutputs = CargoArtifactDiscovery.DiscoverPrimaryBuildOutputs(buildOutputLines, manifestPath)
+                    .Select(path => (ITaskItem)new Microsoft.Build.Utilities.TaskItem(path))
+                    .ToArray();
+            }
+
+            return exitCode;
         }
 
         /// <summary>
@@ -477,7 +519,12 @@ namespace Microsoft.Build.Cargo
             return await ExecuteProcessAsync(_cargoPath, _loginCommand, workingDir);
         }
 
-        private async Task<ExitCode> ExecuteProcessAsync(string fileName, string args, string workingDir, Dictionary<string, string>? envars = null)
+        private async Task<ExitCode> ExecuteProcessAsync(
+            string fileName,
+            string args,
+            string workingDir,
+            Dictionary<string, string>? envars = null,
+            Action<string>? standardOutputLineHandler = null)
         {
             try
             {
@@ -514,19 +561,30 @@ namespace Microsoft.Build.Cargo
                     Log.LogMessage(MessageImportance.Normal, $"\t\t\t\t\t\t*********** Start {nameAndExtension} logs ***********\n\n");
 
                     using StreamReader errReader = process!.StandardError;
-                    _ = Log.LogMessagesFromStream(errReader, MessageImportance.Normal);
-
                     using StreamReader outReader = process!.StandardOutput;
-                    _ = Log.LogMessagesFromStream(outReader, MessageImportance.Normal);
-                    Log.LogMessage(MessageImportance.Normal, $"\t\t\t\t\t\t*********** End {nameAndExtension} logs ***********\n\n");
+                    System.Threading.Tasks.Task errorLoggingTask = LogProcessStreamAsync(errReader);
+                    System.Threading.Tasks.Task outputLoggingTask = LogProcessStreamAsync(outReader, standardOutputLineHandler);
                     bool exited = process.WaitForExit(maxWait);
                     if (!exited)
                     {
-                        process.Kill();
+                        ProcessTreeTermination.Terminate(process, message => Log.LogWarning(message));
+                        if (!process.WaitForExit(30_000))
+                        {
+                            Log.LogWarning($"Process did not exit after its process tree was terminated: '{info.FileName}'.");
+                        }
+
+                        System.Threading.Tasks.Task streamLoggingTask = System.Threading.Tasks.Task.WhenAll(errorLoggingTask, outputLoggingTask);
+                        if (!streamLoggingTask.Wait(30_000))
+                        {
+                            Log.LogWarning($"Process streams did not close after its process tree was terminated: '{info.FileName}'.");
+                        }
+
                         Log.LogError($"Killed process after max timeout reached : '{info.FileName}'");
                         return -1;
                     }
 
+                    System.Threading.Tasks.Task.WhenAll(errorLoggingTask, outputLoggingTask).GetAwaiter().GetResult();
+                    Log.LogMessage(MessageImportance.Normal, $"\t\t\t\t\t\t*********** End {nameAndExtension} logs ***********\n\n");
                     return process.ExitCode;
                 });
 
@@ -538,6 +596,19 @@ namespace Microsoft.Build.Cargo
             {
                 Log.LogWarningFromException(ex);
                 return ExitCode.Failed;
+            }
+        }
+
+        private async System.Threading.Tasks.Task LogProcessStreamAsync(StreamReader reader, Action<string>? lineHandler = null)
+        {
+            string? line;
+            while ((line = await reader.ReadLineAsync()) != null)
+            {
+                lineHandler?.Invoke(line);
+                lock (_logLock)
+                {
+                    Log.LogMessage(MessageImportance.Normal, line);
+                }
             }
         }
 
