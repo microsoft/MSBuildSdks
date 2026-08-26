@@ -15,6 +15,101 @@ param (
 
 $ErrorActionPreference = "Stop"
 
+function Get-AzureArtifactsOrganization {
+    param (
+        [Parameter(Mandatory = $true)]
+        [Uri]$Uri
+    )
+
+    $hostName = $Uri.DnsSafeHost.ToLowerInvariant()
+    if ($hostName -eq 'pkgs.dev.azure.com') {
+        $segments = $Uri.AbsolutePath.Split(
+            [char[]]'/', [System.StringSplitOptions]::RemoveEmptyEntries)
+        if ($segments.Length -eq 0) {
+            throw "The URL must identify an Azure DevOps organization on 'pkgs.dev.azure.com'."
+        }
+
+        $organization = [Uri]::UnescapeDataString($segments[0])
+    } else {
+        $legacySuffix = '.pkgs.visualstudio.com'
+        if (-not $hostName.EndsWith($legacySuffix, [StringComparison]::OrdinalIgnoreCase) -or
+            $hostName.Length -le $legacySuffix.Length) {
+            throw "The URL host must be a Microsoft-hosted Azure Artifacts endpoint."
+        }
+
+        $organization = $hostName.Substring(0, $hostName.Length - $legacySuffix.Length)
+    }
+
+    if ($organization -notmatch '^[a-z0-9][a-z0-9-]*$') {
+        throw "The URL contains an invalid Azure DevOps organization name."
+    }
+
+    return $organization
+}
+
+function Resolve-TrustedAzureArtifactsUri {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$Value,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Description,
+
+        [string]$ExpectedOrganization,
+
+        [switch]$RequireServiceIndex,
+
+        [switch]$RequirePackageBase
+    )
+
+    $uri = $null
+    if (-not [Uri]::TryCreate($Value, [UriKind]::Absolute, [ref]$uri)) {
+        throw "$Description must be an absolute URI."
+    }
+
+    if ($uri.Scheme -ne [Uri]::UriSchemeHttps) {
+        throw "$Description must use HTTPS."
+    }
+
+    if ($uri.Port -ne 443) {
+        throw "$Description must use port 443."
+    }
+
+    if (-not [string]::IsNullOrEmpty($uri.UserInfo)) {
+        throw "$Description cannot contain user information."
+    }
+
+    if (-not [string]::IsNullOrEmpty($uri.Query) -or -not [string]::IsNullOrEmpty($uri.Fragment)) {
+        throw "$Description cannot contain a query string or fragment."
+    }
+
+    $organization = Get-AzureArtifactsOrganization -Uri $uri
+    if (-not [string]::IsNullOrEmpty($ExpectedOrganization) -and
+        -not $organization.Equals($ExpectedOrganization, [StringComparison]::OrdinalIgnoreCase)) {
+        throw "$Description must belong to the same Azure DevOps organization as the feed."
+    }
+
+    if ($uri.AbsolutePath.IndexOf('/_packaging/', [StringComparison]::OrdinalIgnoreCase) -lt 0) {
+        throw "$Description must identify an Azure Artifacts feed."
+    }
+
+    if ($RequireServiceIndex -and
+        -not $uri.AbsolutePath.EndsWith('/nuget/v3/index.json', [StringComparison]::OrdinalIgnoreCase)) {
+        throw "$Description must identify a NuGet v3 service index."
+    }
+
+    if ($RequirePackageBase -and
+        -not $uri.AbsolutePath.EndsWith('/nuget/v3/flat2/', [StringComparison]::OrdinalIgnoreCase)) {
+        throw "$Description must identify an Azure Artifacts NuGet package base."
+    }
+
+    return $uri
+}
+
+if ($MyInvocation.InvocationName -eq '.') {
+    return
+}
+
  # Create directory if it doesn't exist
     Write-Host $destinationDirectory
     if (-Not (Test-Path $destinationDirectory)) {
@@ -45,10 +140,18 @@ Switch ([System.Runtime.InteropServices.RuntimeInformation,mscorlib]::OSArchitec
 $package = "rust.msrustup-$target_arch-$target_rest"
 
 # Feed configuration
-$feed = if (Test-Path env:MSRUSTUP_FEED_URL) {
+$feedValue = if (Test-Path env:MSRUSTUP_FEED_URL) {
     $env:MSRUSTUP_FEED_URL
 } else {
     'https://mscodehub.pkgs.visualstudio.com/Rust/_packaging/Rust%40Release/nuget/v3/index.json'
+}
+
+try {
+    $feed = Resolve-TrustedAzureArtifactsUri -Value $feedValue -Description 'The MSRustup feed URL' -RequireServiceIndex
+    $feedOrganization = Get-AzureArtifactsOrganization -Uri $feed
+} catch {
+    Write-Error "Invalid MSRustup feed URL. $($_.Exception.Message)"
+    exit 1
 }
 
 # Get authentication token
@@ -82,12 +185,32 @@ elseif ((Get-Command "azureauth" -ErrorAction SilentlyContinue) -ne $null) {
 $h = @{'Authorization' = "$token"}
 try {
     # Download latest NuGet package
-    $response = Invoke-RestMethod -Headers $h $feed
-    $base = ($response.resources | Where-Object { $_.'@type' -eq 'PackageBaseAddress/3.0.0' }).'@id'
-    $version = (Invoke-RestMethod -Headers $h "$base/$package/index.json").versions[0]
-    Invoke-WebRequest -Headers $h "${base}${package}/$version/$package.$version.nupkg" -OutFile 'msrustup.zip'
+    $response = Invoke-RestMethod -UseBasicParsing -MaximumRedirection 0 -Headers $h -Uri $feed
+    $packageBaseResources = @($response.resources | Where-Object { $_.'@type' -eq 'PackageBaseAddress/3.0.0' })
+    if ($packageBaseResources.Count -ne 1) {
+        throw "The MSRustup feed must provide exactly one NuGet package base."
+    }
+
+    $base = Resolve-TrustedAzureArtifactsUri `
+        -Value $packageBaseResources[0].'@id' `
+        -Description 'The MSRustup package base URL' `
+        -ExpectedOrganization $feedOrganization `
+        -RequirePackageBase
+
+    $packageIndex = Resolve-TrustedAzureArtifactsUri `
+        -Value ([Uri]::new($base, "$package/index.json").AbsoluteUri) `
+        -Description 'The MSRustup package index URL' `
+        -ExpectedOrganization $feedOrganization
+
+    $version = (Invoke-RestMethod -UseBasicParsing -MaximumRedirection 0 -Headers $h -Uri $packageIndex).versions[0]
+    $packageDownload = Resolve-TrustedAzureArtifactsUri `
+        -Value ([Uri]::new($base, "$package/$version/$package.$version.nupkg").AbsoluteUri) `
+        -Description 'The MSRustup package download URL' `
+        -ExpectedOrganization $feedOrganization
+
+    Invoke-WebRequest -UseBasicParsing -MaximumRedirection 0 -Headers $h -Uri $packageDownload -OutFile 'msrustup.zip'
 } catch {
-    Write-Error "Failed to download msrustup package. Please check your access token and feed URL."
+    Write-Error "Failed to download msrustup package. $($_.Exception.Message)"
     exit 1
 }
 
