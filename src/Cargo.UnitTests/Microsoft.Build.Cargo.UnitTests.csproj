@@ -31,9 +31,11 @@
   <ItemGroup>
     <Compile Include="..\Cargo\CargoArtifactDiscovery.cs" Link="CargoArtifactDiscovery.cs" />
     <Compile Include="..\Cargo\CargoBuildArguments.cs" Link="CargoBuildArguments.cs" />
+    <Compile Include="..\Cargo\MsRustupFeedUrl.cs" Link="MsRustupFeedUrl.cs" />
     <Compile Include="..\Cargo\ProcessTreeTermination.cs" Link="ProcessTreeTermination.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\Cargo\dist\msrustup.ps1" Link="msrustup.ps1" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\Cargo\sdk\**\*" Link="Sdk\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest">
     </None>
   </ItemGroup>

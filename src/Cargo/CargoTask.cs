@@ -669,17 +669,16 @@ namespace Microsoft.Build.Cargo
                     KeyValuePair<string, string>? feedUrl = feedUrls.FirstOrDefault();
                     if (feedUrl.HasValue)
                     {
-                        string transformedFeedUrl = string.Empty;
                         if (string.IsNullOrEmpty(feedUrl.Value.Value))
                         {
                             Log.LogWarning("No valid nuget feed URL found in the cargo config file.");
                             return false;
                         }
 
-                        var match = Regex.Match(feedUrl.Value.Value, @"^(?:sparse\+)?(.*?)/Cargo/index/?$", RegexOptions.IgnoreCase);
-                        if (match.Success)
+                        if (!MsRustupFeedUrl.TryCreateFromCargoRegistry(feedUrl.Value.Value, out string transformedFeedUrl, out string error))
                         {
-                            transformedFeedUrl = $"{match.Groups[1].Value}/nuget/v3/index.json";
+                            Log.LogError($"The MSRustup Cargo registry URL is not trusted: {error}");
+                            return false;
                         }
 
                         AddOrUpdateEnvVar("MSRUSTUP_FEED_URL", transformedFeedUrl);

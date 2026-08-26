@@ -126,6 +126,15 @@ msbuild /t:clearcargocache
  channel = "ms-<version>"
  ```
 
+The authenticated MSRustup download supports Microsoft-hosted Azure Artifacts feeds in either of these forms:
+
+```text
+https://<organization>.pkgs.visualstudio.com/...
+https://pkgs.dev.azure.com/<organization>/...
+```
+
+For security, feed and package URLs must use HTTPS on port 443 without embedded credentials. Package URLs returned by the feed must remain in the same Azure DevOps organization, and authenticated redirects are rejected.
+
 #### Optional MSRustup configuration properties
 
  The SDK exposes a handful of MSBuild properties for advanced scenarios.
