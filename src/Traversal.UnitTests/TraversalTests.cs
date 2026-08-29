@@ -204,8 +204,15 @@ namespace Microsoft.Build.Traversal.UnitTests
         [InlineData("RestoreProjectStyle", null, "PackageReference")]
         [InlineData("StopOnFirstFailure", "false", "false")]
         [InlineData("StopOnFirstFailure", null, "true")]
+#if NETFRAMEWORK || NET9_0 // These map how MSBuild.ProjectCreation chooses SDK versions given the TFM of the test
         [InlineData("TargetFramework", "net6.0", "net6.0")]
-        [InlineData("TargetFramework", null, "net45")]
+        [InlineData("TargetFramework", null, "net9.0")]
+#elif NET8_0
+        [InlineData("TargetFramework", "net6.0", "net6.0")]
+        [InlineData("TargetFramework", null, "net8.0")]
+#else
+#error "Update test data for the given target framework"
+#endif
         [InlineData("TraversalProjectNames", "custom.proj", "custom.proj")]
         [InlineData("TraversalProjectNames", null, "dirs.proj")]
         [InlineData("UsingMicrosoftTraversalSdk", null, "true")]
