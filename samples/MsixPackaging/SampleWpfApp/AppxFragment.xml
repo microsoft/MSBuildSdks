@@ -1,0 +1,12 @@
+<Application
+  Id="SampleWpfApp"
+  Executable="SampleWpfApp\SampleWpfApp.exe"
+  EntryPoint="Windows.FullTrustApplication">
+  <uap3:VisualElements
+    DisplayName="Sample WPF App"
+    Description="A sample WPF app packaged with Microsoft.Build.MsixPackaging"
+    Square150x150Logo="Images\SampleWpfApp.Square44x44Logo.png"
+    Square44x44Logo="Images\SampleWpfApp.Square44x44Logo.png"
+    BackgroundColor="transparent"
+    VisualGroup="MsixPackaging Sample" />
+</Application>

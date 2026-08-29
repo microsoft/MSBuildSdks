@@ -1,0 +1,12 @@
+<Application
+  Id="SampleWinFormsApp"
+  Executable="SampleWinFormsApp\SampleWinFormsApp.exe"
+  EntryPoint="Windows.FullTrustApplication">
+  <uap3:VisualElements
+    DisplayName="Sample WinForms App"
+    Description="A sample WinForms app packaged with Microsoft.Build.MsixPackaging"
+    Square150x150Logo="Images\SampleWinFormsApp.Square44x44Logo.png"
+    Square44x44Logo="Images\SampleWinFormsApp.Square44x44Logo.png"
+    BackgroundColor="transparent"
+    VisualGroup="MsixPackaging Sample" />
+</Application>

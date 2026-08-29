@@ -1,0 +1,21 @@
+<Application
+  Id="SampleConsoleApp"
+  Executable="SampleConsoleApp\SampleConsoleApp.exe"
+  EntryPoint="Windows.FullTrustApplication">
+  <uap3:VisualElements
+    DisplayName="Sample Console App"
+    Description="A sample console app packaged with Microsoft.Build.MsixPackaging"
+    Square150x150Logo="Images\SampleConsoleApp.Square44x44Logo.png"
+    Square44x44Logo="Images\SampleConsoleApp.Square44x44Logo.png"
+    BackgroundColor="transparent"
+    VisualGroup="MsixPackaging Sample" />
+  <Extensions>
+    <uap5:Extension Category="windows.appExecutionAlias"
+                    Executable="SampleConsoleApp\SampleConsoleApp.exe"
+                    EntryPoint="Windows.FullTrustApplication">
+      <uap5:AppExecutionAlias>
+        <uap5:ExecutionAlias Alias="sampleconsoleapp.exe" />
+      </uap5:AppExecutionAlias>
+    </uap5:Extension>
+  </Extensions>
+</Application>

@@ -1,0 +1,710 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (c) Microsoft Corporation. All rights reserved.
+  
+  Licensed under the MIT license.
+-->
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- Import NoTargets SDK targets -->
+  <Import Project="Sdk.targets" Sdk="Microsoft.Build.NoTargets" />
+
+  <!-- ============================================================
+       Task registration — our own compiled tasks (fragment merge + validation)
+       ============================================================ -->
+  <PropertyGroup>
+    <!-- When consumed as a NuGet SDK, tasks live at ../build/netstandard2.0/ relative to this file.
+         For local development, override _MsixSdkTasksAssembly in Directory.Build.props. -->
+    <_MsixSdkTasksAssembly Condition="'$(_MsixSdkTasksAssembly)' == ''">$(MSBuildThisFileDirectory)..\build\netstandard2.0\Microsoft.Build.MsixPackaging.dll</_MsixSdkTasksAssembly>
+  </PropertyGroup>
+
+  <UsingTask TaskName="Microsoft.Build.MsixPackaging.Tasks.MergeAppxFragments" AssemblyFile="$(_MsixSdkTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.Build.MsixPackaging.Tasks.ValidateAppxManifest" AssemblyFile="$(_MsixSdkTasksAssembly)" />
+
+  <!-- ============================================================
+       Task registration — Windows SDK build tools (MakeAppx/SignTool wrappers
+       and SDK tool discovery) from the Microsoft.Windows.SDK.BuildTools.MSIX
+       package. The package reference is injected in Sdk.props; here we resolve
+       the task assembly from the restored package path and register only the
+       tasks we use. The net6.0 build is used under .NET (MSBuildRuntimeType=Core)
+       and net472 under desktop MSBuild.
+       ============================================================ -->
+  <PropertyGroup>
+    <_MsixBuildToolsTfm Condition="'$(MSBuildRuntimeType)' == 'Core'">net6.0</_MsixBuildToolsTfm>
+    <_MsixBuildToolsTfm Condition="'$(_MsixBuildToolsTfm)' == ''">net472</_MsixBuildToolsTfm>
+    <_MsixBuildToolsAssembly Condition="'$(_MsixBuildToolsAssembly)' == ''">$(PkgMicrosoft_Windows_SDK_BuildTools_MSIX)\tools\$(_MsixBuildToolsTfm)\Microsoft.Windows.SDK.BuildTools.MSIX.dll</_MsixBuildToolsAssembly>
+  </PropertyGroup>
+
+  <UsingTask TaskName="Microsoft.Build.Msix.WindowsTools.WinAppSdkGetSdkFileFullPath" AssemblyFile="$(_MsixBuildToolsAssembly)" />
+  <UsingTask TaskName="Microsoft.Build.Msix.MakeAppx.WinAppSdkMakeAppxPack" AssemblyFile="$(_MsixBuildToolsAssembly)" />
+  <UsingTask TaskName="Microsoft.Build.Msix.Crypto.WinAppSdkSignAppxPackage" AssemblyFile="$(_MsixBuildToolsAssembly)" />
+  <UsingTask TaskName="Microsoft.Build.Msix.BundleTasks.WinAppSdkValidatePublisherName" AssemblyFile="$(_MsixBuildToolsAssembly)" />
+  <UsingTask TaskName="Microsoft.Build.Msix.BundleTasks.WinAppSdkValidateSigningCertificate" AssemblyFile="$(_MsixBuildToolsAssembly)" />
+  <UsingTask TaskName="Microsoft.Build.Msix.Symbols.WinAppSdkGenerateAppxSymbolPackage" AssemblyFile="$(_MsixBuildToolsAssembly)" />
+  <UsingTask TaskName="Microsoft.Build.Msix.BundleTasks.WinAppSdkCreateAppStoreContainer" AssemblyFile="$(_MsixBuildToolsAssembly)" />
+
+  <!-- Inline task: resolve the latest installed Windows 10/11 SDK version that contains MakeAppx.exe. -->
+  <UsingTask TaskName="_MsixGetLatestWindowsSdkVersion"
+             TaskFactory="RoslynCodeTaskFactory"
+             AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <LatestVersion ParameterType="System.String" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Code Type="Fragment" Language="cs"><![CDATA[
+        var root = System.IO.Path.Combine(
+            System.Environment.GetFolderPath(System.Environment.SpecialFolder.ProgramFilesX86),
+            "Windows Kits", "10");
+        var binDir = System.IO.Path.Combine(root, "bin");
+        System.Version best = null;
+        if (System.IO.Directory.Exists(binDir)) {
+            foreach (var d in System.IO.Directory.GetDirectories(binDir, "10.*")) {
+                var name = System.IO.Path.GetFileName(d);
+                System.Version v;
+                if (System.Version.TryParse(name, out v)) {
+                    if (System.IO.File.Exists(System.IO.Path.Combine(d, "x64", "makeappx.exe")) ||
+                        System.IO.File.Exists(System.IO.Path.Combine(d, "x86", "makeappx.exe"))) {
+                        if (best == null || v > best) best = v;
+                    }
+                }
+            }
+        }
+        LatestVersion = best == null ? string.Empty : best.ToString();
+      ]]></Code>
+    </Task>
+  </UsingTask>
+
+  <!-- ============================================================
+       Target: ResolveWindowsSdkVersion
+       Determines the Windows SDK version used to locate MakeAppx/SignTool/MakePri.
+       Honors MsixWindowsSdkVersion when set; otherwise auto-detects the latest.
+       ============================================================ -->
+  <Target Name="ResolveWindowsSdkVersion">
+    <_MsixGetLatestWindowsSdkVersion Condition="'$(MsixWindowsSdkVersion)' == ''">
+      <Output TaskParameter="LatestVersion" PropertyName="_MsixResolvedSdkVersion" />
+    </_MsixGetLatestWindowsSdkVersion>
+    <PropertyGroup>
+      <_MsixResolvedSdkVersion Condition="'$(MsixWindowsSdkVersion)' != ''">$(MsixWindowsSdkVersion)</_MsixResolvedSdkVersion>
+    </PropertyGroup>
+    <Error Text="No Windows SDK was found. Install the Windows 10/11 SDK, or set MsixWindowsSdkVersion explicitly."
+           Condition="'$(_MsixResolvedSdkVersion)' == ''" />
+    <Message Text="Using Windows SDK version: $(_MsixResolvedSdkVersion)" Importance="normal" />
+  </Target>
+
+  <!-- ============================================================
+       Orchestrator: BuildMsix
+       Runs the full packaging pipeline via DependsOnTargets.
+       Individual targets can also be invoked directly.
+       ============================================================ -->
+  <PropertyGroup>
+    <!-- Full pipeline (default): build, merge, validate, copy, index, pack, sign -->
+    <_BuildMsixCoreDependsOn>
+      PublishToLayout;
+      DiscoverAppxFragments;
+      MergeAppxManifest;
+      ValidateAppxManifest;
+      CopyMsixAssets;
+      GenerateResourceIndex
+    </_BuildMsixCoreDependsOn>
+
+    <!-- Bundle output and the primary artifact downstream targets (sign/appinstaller) act on. -->
+    <MsixBundleOutput Condition="'$(MsixBundleOutput)' == ''">$(MsixOutputDir)\$(MsixFileName).msixbundle</MsixBundleOutput>
+    <_MsixPrimaryPackage Condition="'$(MsixBundleEnabled)' == 'true'">$(MsixBundleOutput)</_MsixPrimaryPackage>
+    <_MsixPrimaryPackage Condition="'$(_MsixPrimaryPackage)' == ''">$(MsixOutputDir)\$(MsixFileName).msix</_MsixPrimaryPackage>
+
+    <!-- Bundle mode: build every architecture, bundle, then symbol/sign/appinstaller/upload. -->
+    <BuildMsixDependsOn Condition="'$(MsixBundleEnabled)' == 'true'">
+      BundleMsix;
+      GenerateMsixSymbolPackage;
+      SignMsix;
+      GenerateMsixAppInstaller;
+      CreateMsixUpload
+    </BuildMsixDependsOn>
+
+    <!-- Layout-deploy mode: skip PackMsix and SignMsix for faster dev builds -->
+    <BuildMsixDependsOn Condition="'$(MsixBundleEnabled)' != 'true' AND '$(MsixDeployOnBuild)' == 'true' AND '$(MsixDeployMode)' == 'layout'">
+      $(_BuildMsixCoreDependsOn);
+      DeployMsixLayout
+    </BuildMsixDependsOn>
+
+    <!-- MSIX-deploy mode: full pipeline + install -->
+    <BuildMsixDependsOn Condition="'$(MsixBundleEnabled)' != 'true' AND '$(MsixDeployOnBuild)' == 'true' AND '$(MsixDeployMode)' == 'msix'">
+      $(_BuildMsixCoreDependsOn);
+      PackMsix;
+      GenerateMsixSymbolPackage;
+      SignMsix;
+      GenerateMsixAppInstaller;
+      DeployMsixInstall
+    </BuildMsixDependsOn>
+
+    <!-- No deploy: full pipeline (pack + sign) -->
+    <BuildMsixDependsOn Condition="'$(MsixBundleEnabled)' != 'true' AND '$(MsixDeployOnBuild)' != 'true'">
+      $(_BuildMsixCoreDependsOn);
+      PackMsix;
+      GenerateMsixSymbolPackage;
+      SignMsix;
+      GenerateMsixAppInstaller
+    </BuildMsixDependsOn>
+  </PropertyGroup>
+
+  <Target Name="BuildMsix" DependsOnTargets="$(BuildMsixDependsOn)" AfterTargets="Build" />
+
+  <!-- ============================================================
+       Target: PublishToLayout
+       Publishes each referenced project into MsixLayout/{LayoutDir}/
+       ============================================================ -->
+  <Target Name="PublishToLayout">
+    <Message Text="Publishing projects to MSIX layout: $(MsixLayoutDir)" Importance="high" />
+
+    <MakeDir Directories="$(MsixLayoutDir)" />
+
+    <!--
+      Publish each ProjectReference that has LayoutDir metadata.
+      Projects without LayoutDir are built normally but not published to the layout.
+      In bundle mode a RuntimeIdentifier is set; referenced apps must declare the
+      target architectures in <RuntimeIdentifiers> so restore covers them.
+    -->
+    <MSBuild
+      Projects="@(ProjectReference)"
+      Targets="Publish"
+      Properties="
+        Configuration=$(Configuration);
+        PublishDir=$(MsixLayoutDir)\%(ProjectReference.LayoutDir)\;
+        RuntimeIdentifier=$(_MsixPublishRid);
+        SelfContained=false;
+        PublishSingleFile=false"
+      Condition="'%(ProjectReference.LayoutDir)' != ''" />
+
+    <Message Text="  Published all projects to layout" Importance="high" />
+  </Target>
+
+  <!-- ============================================================
+       Target: DiscoverAppxFragments
+       Discovers fragment files early for incremental build inputs.
+       ============================================================ -->
+  <Target Name="DiscoverAppxFragments">
+    <ItemGroup>
+      <_FragmentCandidate Include="@(ProjectReference->'%(RootDir)%(Directory)$(AppxFragmentFileName)')" />
+      <_DiscoveredFragment Include="@(_FragmentCandidate)" Condition="Exists('%(Identity)')" />
+    </ItemGroup>
+  </Target>
+
+  <!-- ============================================================
+       Target: MergeAppxManifest
+       Discovers AppxFragment.xml from project dirs and merges.
+       ============================================================ -->
+  <Target Name="MergeAppxManifest" DependsOnTargets="DiscoverAppxFragments">
+    <Message Text="Merging AppxManifest from fragments..." Importance="high" />
+
+    <Message Text="  Found fragment: %(_DiscoveredFragment.Identity)" Importance="high"
+             Condition="'@(_DiscoveredFragment)' != ''" />
+    <Warning Text="No $(AppxFragmentFileName) files found in any project reference directory."
+             Condition="'@(_DiscoveredFragment)' == ''" />
+
+    <MergeAppxFragments
+      BaseManifestPath="$(BaseAppxManifest)"
+      FragmentPaths="@(_DiscoveredFragment)"
+      OutputPath="$(MsixLayoutDir)\AppxManifest.xml"
+      PackageVersion="$(MsixPackageVersion)"
+      TargetArchitecture="$(MsixTargetArchitecture)" />
+  </Target>
+
+  <!-- ============================================================
+       Target: ValidateAppxManifest
+       Validates the merged manifest for well-formedness and required elements.
+       ============================================================ -->
+  <Target Name="ValidateAppxManifest">
+    <ValidateAppxManifest ManifestPath="$(MsixLayoutDir)\AppxManifest.xml" />
+  </Target>
+
+  <!-- ============================================================
+       Target: CopyMsixAssets
+       Copies images into the MSIX layout.
+       ============================================================ -->
+  <Target Name="CopyMsixAssets">
+    <Message Text="Copying MSIX assets to layout..." Importance="high" />
+
+    <!-- Package-level images (StoreLogo, etc.) -->
+    <ItemGroup>
+      <_PackageImage Include="$(MsixPackageImagesDir)\*.png" Condition="Exists('$(MsixPackageImagesDir)')" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_PackageImage)"
+          DestinationFolder="$(MsixLayoutDir)\Images"
+          SkipUnchangedFiles="true"
+          Condition="'@(_PackageImage)' != ''" />
+
+    <!-- Per-project images from MsixImages/ directories -->
+    <ItemGroup>
+      <_MsixImageCandidate Include="@(ProjectReference->'%(RootDir)%(Directory)MsixImages\*.png')" />
+      <_DiscoveredMsixImage Include="@(_MsixImageCandidate)" Condition="Exists('%(Identity)')" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_DiscoveredMsixImage)"
+          DestinationFolder="$(MsixLayoutDir)\Images"
+          SkipUnchangedFiles="true"
+          Condition="'@(_DiscoveredMsixImage)' != ''" />
+
+    <!-- Arbitrary content files declared by the consumer -->
+    <Copy SourceFiles="@(MsixContent)"
+          DestinationFiles="@(MsixContent->'$(MsixLayoutDir)\%(PackagePath)')"
+          SkipUnchangedFiles="true"
+          Condition="'@(MsixContent)' != ''" />
+
+    <Message Text="  Copied assets to layout" Importance="high" />
+  </Target>
+
+  <!-- ============================================================
+       Target: GenerateResourceIndex
+       Runs MakePri.exe to create resources.pri for localized assets.
+       ============================================================ -->
+  <Target Name="GenerateResourceIndex" DependsOnTargets="ResolveWindowsSdkVersion">
+    <!-- Auto-detect: check if any .resw files exist in the layout -->
+    <ItemGroup Condition="'$(MsixResourceIndexEnabled)' == 'auto'">
+      <_ReswFile Include="$(MsixLayoutDir)\**\*.resw" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <_RunMakePri Condition="'$(MsixResourceIndexEnabled)' == 'true'">true</_RunMakePri>
+      <_RunMakePri Condition="'$(MsixResourceIndexEnabled)' == 'auto' AND '@(_ReswFile)' != ''">true</_RunMakePri>
+      <_RunMakePri Condition="'$(MsixResourceIndexEnabled)' == 'false'">false</_RunMakePri>
+      <_RunMakePri Condition="'$(_RunMakePri)' == ''">false</_RunMakePri>
+
+      <_PriConfigPath>$(MsixPriConfigPath)</_PriConfigPath>
+      <_PriConfigPath Condition="'$(_PriConfigPath)' == ''">$(IntermediateOutputPath)priconfig.xml</_PriConfigPath>
+      <_GeneratePriConfig Condition="'$(_RunMakePri)' == 'true' AND '$(MsixPriConfigPath)' == ''">true</_GeneratePriConfig>
+    </PropertyGroup>
+
+    <Message Text="Resource indexing skipped (no .resw files found in layout)" Importance="normal"
+             Condition="'$(_RunMakePri)' == 'false' AND '$(MsixResourceIndexEnabled)' == 'auto'" />
+
+    <!-- Locate MakePri.exe via the Windows SDK build tools -->
+    <WinAppSdkGetSdkFileFullPath FileName="makepri.exe" TargetPlatformVersion="$(_MsixResolvedSdkVersion)" Condition="'$(_RunMakePri)' == 'true'">
+      <Output TaskParameter="ActualFullFilePath" PropertyName="_MakePriPath" />
+    </WinAppSdkGetSdkFileFullPath>
+
+    <!-- Auto-generate a PRI config if the consumer didn't provide one -->
+    <Exec Command="&quot;$(_MakePriPath)&quot; createconfig /cf &quot;$(_PriConfigPath)&quot; /dq &quot;$(MsixPriDefaultLanguage)&quot; /o"
+          Condition="'$(_GeneratePriConfig)' == 'true'" />
+
+    <!-- Generate resources.pri -->
+    <Message Text="Generating resources.pri from layout..." Importance="high"
+             Condition="'$(_RunMakePri)' == 'true'" />
+
+    <Exec Command="&quot;$(_MakePriPath)&quot; new /pr &quot;$(MsixLayoutDir)&quot; /cf &quot;$(_PriConfigPath)&quot; /of &quot;$(MsixLayoutDir)\resources.pri&quot; /mn &quot;$(MsixLayoutDir)\AppxManifest.xml&quot; /o"
+          Condition="'$(_RunMakePri)' == 'true'" />
+
+    <Message Text="  Generated resources.pri" Importance="high"
+             Condition="'$(_RunMakePri)' == 'true'" />
+  </Target>
+
+  <!-- ============================================================
+       Target: PackMsix
+       Produces the .msix from the layout using the MakeAppx build task.
+       The task packs from a generated mapping file (the [Files] section
+       lists each layout file and its package-relative destination).
+       ============================================================ -->
+  <Target Name="PackMsix" DependsOnTargets="ResolveWindowsSdkVersion">
+    <WinAppSdkGetSdkFileFullPath FileName="MakeAppx.exe" TargetPlatformVersion="$(_MsixResolvedSdkVersion)">
+      <Output TaskParameter="ActualFullFilePath" PropertyName="_MakeAppxPath" />
+    </WinAppSdkGetSdkFileFullPath>
+
+    <MakeDir Directories="$(MsixOutputDir)" />
+
+    <!-- Build a MakeAppx mapping file describing every file in the layout. -->
+    <ItemGroup>
+      <_MsixLayoutFile Include="$(MsixLayoutDir)\**\*" />
+      <_MsixMapLine Include="&quot;%(_MsixLayoutFile.FullPath)&quot; &quot;%(_MsixLayoutFile.RecursiveDir)%(_MsixLayoutFile.Filename)%(_MsixLayoutFile.Extension)&quot;" />
+    </ItemGroup>
+    <PropertyGroup>
+      <_MsixMapFile>$(IntermediateOutputPath)$(MsixFileName).map.txt</_MsixMapFile>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(_MsixMapFile)" Lines="[Files]" Overwrite="true" />
+    <WriteLinesToFile File="$(_MsixMapFile)" Lines="@(_MsixMapLine)" Overwrite="false" />
+
+    <Message Text="Packing MSIX: $(MsixOutputDir)\$(MsixFileName).msix" Importance="high" />
+
+    <WinAppSdkMakeAppxPack
+        MakeAppxExeFullPath="$(_MakeAppxPath)"
+        FileMap="$(_MsixMapFile)"
+        Output="$(MsixOutputDir)\$(MsixFileName).msix"
+        HashAlgorithmId="$(MsixHashAlgorithmId)" />
+
+    <Message Text="MSIX package created: $(MsixOutputDir)\$(MsixFileName).msix" Importance="high" />
+  </Target>
+
+  <!-- ============================================================
+       Bundle mode: shared properties/items and the per-architecture loop.
+       ============================================================ -->
+  <PropertyGroup Condition="'$(MsixBundleEnabled)' == 'true'">
+    <!-- Absolute roots so per-architecture publish/pack paths resolve against this
+         project (not the referenced app projects). -->
+    <_MsixBundleRoot>$([System.IO.Path]::Combine($(MSBuildProjectDirectory), $(IntermediateOutputPath), 'bundle'))</_MsixBundleRoot>
+    <_MsixBundlePackagesDir>$(_MsixBundleRoot)\packages</_MsixBundlePackagesDir>
+    <!-- First architecture in the list, used for the representative layout. -->
+    <_MsixFirstArch>$(MsixBundlePlatforms)</_MsixFirstArch>
+    <_MsixFirstArch Condition="$(MsixBundlePlatforms.Contains('|'))">$(MsixBundlePlatforms.Substring(0, $(MsixBundlePlatforms.IndexOf('|'))))</_MsixFirstArch>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(MsixBundleEnabled)' == 'true'">
+    <!-- Split "x64|x86|arm64" into items. Unescape so the ';' acts as a list separator. -->
+    <_MsixBundleArch Include="$([MSBuild]::Unescape($(MsixBundlePlatforms.Replace('|', ';'))))" />
+  </ItemGroup>
+
+  <!-- Start from a clean packages directory (makeappx bundle /d requires only .msix files). -->
+  <Target Name="_PrepareBundlePackages">
+    <RemoveDir Directories="$(_MsixBundlePackagesDir)" />
+    <MakeDir Directories="$(_MsixBundlePackagesDir);$(MsixOutputDir)" />
+    <Message Text="Building MSIX bundle for architectures: $(MsixBundlePlatforms)" Importance="high" />
+  </Target>
+
+  <!-- Pack one architecture (target-batched once per architecture). -->
+  <Target Name="_PackOneArchitecture"
+          DependsOnTargets="_PrepareBundlePackages"
+          Outputs="%(_MsixBundleArch.Identity)">
+    <Message Text="  Packing architecture: %(_MsixBundleArch.Identity)" Importance="high" />
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="_PackArchitecture"
+      Properties="
+        MsixBundleEnabled=false;
+        MsixTargetArchitecture=%(_MsixBundleArch.Identity);
+        _MsixPublishRid=win-%(_MsixBundleArch.Identity);
+        MsixLayoutDir=$(_MsixBundleRoot)\%(_MsixBundleArch.Identity)\MsixLayout;
+        MsixOutputDir=$(_MsixBundlePackagesDir);
+        MsixFileName=$(MsixFileName)-%(_MsixBundleArch.Identity);
+        MsixSigningEnabled=false;
+        MsixSymbolPackageEnabled=false;
+        MsixAppInstallerEnabled=false;
+        MsixDeployOnBuild=false" />
+  </Target>
+
+  <!-- ============================================================
+       Target: BundleMsix (bundle mode)
+       Builds one MSIX per architecture in MsixBundlePlatforms (each via the
+       per-architecture pack chain), then combines them into a .msixbundle.
+       A representative layout is copied to MsixLayoutDir so the downstream
+       sign/symbol/appinstaller targets can read identity and PDBs.
+       ============================================================ -->
+  <Target Name="BundleMsix" DependsOnTargets="ResolveWindowsSdkVersion;_PackOneArchitecture">
+    <WinAppSdkGetSdkFileFullPath FileName="MakeAppx.exe" TargetPlatformVersion="$(_MsixResolvedSdkVersion)">
+      <Output TaskParameter="ActualFullFilePath" PropertyName="_MakeAppxPath" />
+    </WinAppSdkGetSdkFileFullPath>
+
+    <!-- Copy the first architecture's layout so downstream targets can read identity and PDBs. -->
+    <ItemGroup>
+      <_MsixRepresentativeLayout Include="$(_MsixBundleRoot)\$(_MsixFirstArch)\MsixLayout\**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_MsixRepresentativeLayout)"
+          DestinationFiles="@(_MsixRepresentativeLayout->'$(MsixLayoutDir)\%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true" />
+
+    <Message Text="Bundling MSIX: $(MsixBundleOutput)" Importance="high" />
+    <Exec Command="&quot;$(_MakeAppxPath)&quot; bundle /d &quot;$(_MsixBundlePackagesDir)&quot; /p &quot;$(MsixBundleOutput)&quot; /o" />
+    <Message Text="MSIX bundle created: $(MsixBundleOutput)" Importance="high" />
+  </Target>
+
+  <!-- ============================================================
+       Target: CreateMsixUpload (opt-in, bundle mode)
+       Wraps the .msixbundle (and the .msixsym symbol package when present)
+       into a .msixupload container for Partner Center submission.
+       ============================================================ -->
+  <Target Name="CreateMsixUpload" Condition="'$(MsixStoreUploadEnabled)' == 'true'">
+    <Error Text="MsixStoreUploadEnabled requires MsixBundleEnabled=true (a .msixupload wraps a bundle)."
+           Condition="'$(MsixBundleEnabled)' != 'true'" />
+    <Error Text="Bundle not found: $(MsixBundleOutput). Run a bundle build first."
+           Condition="!Exists('$(MsixBundleOutput)')" />
+
+    <PropertyGroup>
+      <MsixStoreUploadOutput Condition="'$(MsixStoreUploadOutput)' == ''">$(MsixOutputDir)\$(MsixFileName).msixupload</MsixStoreUploadOutput>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_MsixUploadItem Include="$(MsixBundleOutput)" />
+      <_MsixUploadItem Include="$(MsixSymbolPackageOutput)"
+                       Condition="'$(MsixSymbolPackageEnabled)' == 'true' AND '$(MsixSymbolPackageOutput)' != '' AND Exists('$(MsixSymbolPackageOutput)')" />
+    </ItemGroup>
+
+    <Delete Files="$(MsixStoreUploadOutput)" Condition="Exists('$(MsixStoreUploadOutput)')" />
+    <Message Text="Creating Store upload package: $(MsixStoreUploadOutput)" Importance="high" />
+
+    <WinAppSdkCreateAppStoreContainer
+        Items="@(_MsixUploadItem)"
+        ProjectName="$(MsixFileName)"
+        OutputPath="$(MsixStoreUploadOutput)" />
+
+    <Message Text="  Store upload package created: $(MsixStoreUploadOutput)" Importance="high" />
+  </Target>
+
+  <!-- ============================================================
+       Target: _PackArchitecture (internal)
+       Runs the single-package pack chain for one architecture. Invoked by
+       _PackOneArchitecture with per-architecture global property overrides.
+       ============================================================ -->
+  <Target Name="_PackArchitecture"
+          DependsOnTargets="PublishToLayout;DiscoverAppxFragments;MergeAppxManifest;ValidateAppxManifest;CopyMsixAssets;GenerateResourceIndex;PackMsix" />
+
+  <!-- ============================================================
+       Target: GenerateMsixSymbolPackage (opt-in)
+       Bundles the PDBs from the layout into a .msixsym symbol package for
+       Partner Center crash analysis. Enabled with MsixSymbolPackageEnabled.
+       ============================================================ -->
+  <Target Name="GenerateMsixSymbolPackage" Condition="'$(MsixSymbolPackageEnabled)' == 'true'">
+    <PropertyGroup>
+      <MsixSymbolPackageOutput Condition="'$(MsixSymbolPackageOutput)' == ''">$(MsixOutputDir)\$(MsixFileName).msixsym</MsixSymbolPackageOutput>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_MsixPdbPayload Include="$(MsixLayoutDir)\**\*.pdb" />
+    </ItemGroup>
+
+    <Warning Text="No .pdb files were found in the layout; the symbol package will be empty."
+             Condition="'@(_MsixPdbPayload)' == ''" />
+
+    <MakeDir Directories="$(MsixOutputDir)" />
+    <Message Text="Generating symbol package: $(MsixSymbolPackageOutput)" Importance="high" />
+
+    <WinAppSdkGenerateAppxSymbolPackage
+        InputPdbs="@(_MsixPdbPayload)"
+        ProjectName="$(MsixFileName)"
+        IntermediateSymbolRoot="$(IntermediateOutputPath)symbols"
+        AppxSymbolPackageOutput="$(MsixSymbolPackageOutput)" />
+
+    <Message Text="  Symbol package created: $(MsixSymbolPackageOutput)" Importance="high" />
+  </Target>
+
+  <!-- ============================================================
+       Target: GenerateMsixAppInstaller (opt-in)
+       Generates an .appinstaller file for sideload auto-update. Reads the
+       package identity from the merged manifest and points at the hosted
+       package. References the bundle when MsixBundleEnabled=true, else the .msix.
+       ============================================================ -->
+  <Target Name="GenerateMsixAppInstaller" Condition="'$(MsixAppInstallerEnabled)' == 'true'">
+    <Error Text="MsixAppInstallerUri must be set to the URL where the .appinstaller file will be hosted."
+           Condition="'$(MsixAppInstallerUri)' == ''" />
+    <Error Text="Merged manifest not found at $(MsixLayoutDir)\AppxManifest.xml"
+           Condition="!Exists('$(MsixLayoutDir)\AppxManifest.xml')" />
+
+    <PropertyGroup>
+      <_AppInstallerNs>&lt;Namespace Prefix='appx' Uri='http://schemas.microsoft.com/appx/manifest/foundation/windows10' /&gt;</_AppInstallerNs>
+      <MsixAppInstallerOutput Condition="'$(MsixAppInstallerOutput)' == ''">$(MsixOutputDir)\$(MsixFileName).appinstaller</MsixAppInstallerOutput>
+      <_AppInstallerIsBundle Condition="'$(MsixBundleEnabled)' == 'true'">true</_AppInstallerIsBundle>
+      <_AppInstallerPkgFile Condition="'$(_AppInstallerIsBundle)' == 'true'">$(MsixFileName).msixbundle</_AppInstallerPkgFile>
+      <_AppInstallerPkgFile Condition="'$(_AppInstallerPkgFile)' == ''">$(MsixFileName).msix</_AppInstallerPkgFile>
+    </PropertyGroup>
+
+    <!-- Read identity from the merged manifest. -->
+    <XmlPeek XmlInputPath="$(MsixLayoutDir)\AppxManifest.xml" Query="/appx:Package/appx:Identity/@Name" Namespaces="$(_AppInstallerNs)">
+      <Output TaskParameter="Result" PropertyName="_AppInstallerName" />
+    </XmlPeek>
+    <XmlPeek XmlInputPath="$(MsixLayoutDir)\AppxManifest.xml" Query="/appx:Package/appx:Identity/@Publisher" Namespaces="$(_AppInstallerNs)">
+      <Output TaskParameter="Result" PropertyName="_AppInstallerPublisher" />
+    </XmlPeek>
+    <XmlPeek XmlInputPath="$(MsixLayoutDir)\AppxManifest.xml" Query="/appx:Package/appx:Identity/@Version" Namespaces="$(_AppInstallerNs)">
+      <Output TaskParameter="Result" PropertyName="_AppInstallerVersion" />
+    </XmlPeek>
+    <XmlPeek XmlInputPath="$(MsixLayoutDir)\AppxManifest.xml" Query="/appx:Package/appx:Identity/@ProcessorArchitecture" Namespaces="$(_AppInstallerNs)">
+      <Output TaskParameter="Result" PropertyName="_AppInstallerArch" />
+    </XmlPeek>
+
+    <!-- Derive the package URL from the .appinstaller URL when not given explicitly. -->
+    <PropertyGroup>
+      <_AppInstallerPkgUri>$(MsixAppInstallerPackageUri)</_AppInstallerPkgUri>
+      <_AppInstallerPkgUri Condition="'$(_AppInstallerPkgUri)' == ''">$(MsixAppInstallerUri.Substring(0, $(MsixAppInstallerUri.LastIndexOf('/'))))/$(_AppInstallerPkgFile)</_AppInstallerPkgUri>
+      <_AppInstallerMainElement Condition="'$(_AppInstallerIsBundle)' == 'true'">&lt;MainBundle Name="$(_AppInstallerName)" Publisher="$(_AppInstallerPublisher)" Version="$(_AppInstallerVersion)" Uri="$(_AppInstallerPkgUri)" /&gt;</_AppInstallerMainElement>
+      <_AppInstallerMainElement Condition="'$(_AppInstallerMainElement)' == ''">&lt;MainPackage Name="$(_AppInstallerName)" Publisher="$(_AppInstallerPublisher)" Version="$(_AppInstallerVersion)" ProcessorArchitecture="$(_AppInstallerArch)" Uri="$(_AppInstallerPkgUri)" /&gt;</_AppInstallerMainElement>
+    </PropertyGroup>
+
+    <MakeDir Directories="$(MsixOutputDir)" />
+    <Message Text="Generating App Installer file: $(MsixAppInstallerOutput)" Importance="high" />
+
+    <ItemGroup>
+      <_AppInstallerLines Include="&lt;AppInstaller xmlns=&quot;http://schemas.microsoft.com/appx/appinstaller/2018&quot; Version=&quot;$(_AppInstallerVersion)&quot; Uri=&quot;$(MsixAppInstallerUri)&quot;&gt;" />
+      <_AppInstallerLines Include="  $(_AppInstallerMainElement)" />
+      <_AppInstallerLines Include="  &lt;UpdateSettings&gt;" />
+      <_AppInstallerLines Include="    &lt;OnLaunch HoursBetweenUpdateChecks=&quot;$(MsixAppInstallerUpdateCheckHours)&quot; /&gt;" />
+      <_AppInstallerLines Include="  &lt;/UpdateSettings&gt;" />
+      <_AppInstallerLines Include="&lt;/AppInstaller&gt;" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(MsixAppInstallerOutput)" Lines="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;" Overwrite="true" />
+    <WriteLinesToFile File="$(MsixAppInstallerOutput)" Lines="@(_AppInstallerLines)" Overwrite="false" />
+
+    <Message Text="  App Installer file created: $(MsixAppInstallerOutput)" Importance="high" />
+  </Target>
+
+  <!-- ============================================================
+       Target: SignMsix (optional)
+       Signs the MSIX when MsixSigningEnabled=true using the SignTool build task.
+       Supports a certificate file, RFC 3161 timestamping, Azure Code Signing,
+       and Azure Key Vault. When an Azure signing mode is enabled a certificate
+       file is not required.
+       ============================================================ -->
+  <PropertyGroup>
+    <_MsixUseTestCert Condition="'$(MsixSigningEnabled)' == 'true' AND '$(MsixGenerateTestCertificate)' == 'true' AND '$(MsixCertificatePath)' == '' AND '$(MsixAzureCodeSigningEnabled)' != 'true' AND '$(MsixAzureKeyVaultEnabled)' != 'true'">true</_MsixUseTestCert>
+    <_MsixSignReady Condition="'$(MsixSigningEnabled)' == 'true' AND ('$(MsixCertificatePath)' != '' OR '$(_MsixUseTestCert)' == 'true' OR '$(MsixAzureCodeSigningEnabled)' == 'true' OR '$(MsixAzureKeyVaultEnabled)' == 'true')">true</_MsixSignReady>
+  </PropertyGroup>
+
+  <!-- ============================================================
+       Target: GenerateMsixTestCertificate
+       Creates a throwaway self-signed code-signing certificate whose subject
+       matches the merged manifest Publisher, exports it to a temporary .pfx,
+       and removes it from the certificate store. Used only for local/dev
+       signing when MsixGenerateTestCertificate=true and no certificate is set.
+       ============================================================ -->
+  <Target Name="GenerateMsixTestCertificate" Condition="'$(_MsixUseTestCert)' == 'true'">
+    <Error Text="Cannot generate a test certificate: merged manifest not found at $(MsixLayoutDir)\AppxManifest.xml"
+           Condition="!Exists('$(MsixLayoutDir)\AppxManifest.xml')" />
+
+    <!-- Read the Publisher subject from the merged manifest. -->
+    <XmlPeek XmlInputPath="$(MsixLayoutDir)\AppxManifest.xml"
+             Query="/appx:Package/appx:Identity/@Publisher"
+             Namespaces="&lt;Namespace Prefix='appx' Uri='http://schemas.microsoft.com/appx/manifest/foundation/windows10' /&gt;">
+      <Output TaskParameter="Result" PropertyName="_MsixTestCertSubject" />
+    </XmlPeek>
+    <Error Text="Could not read Identity/@Publisher from the merged manifest." Condition="'$(_MsixTestCertSubject)' == ''" />
+
+    <PropertyGroup>
+      <_MsixTestCertPath>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)$(MsixFileName).testcert.pfx'))</_MsixTestCertPath>
+      <_MsixTestCertPassword>$([System.Guid]::NewGuid().ToString())</_MsixTestCertPassword>
+    </PropertyGroup>
+
+    <MakeDir Directories="$(IntermediateOutputPath)" />
+    <Message Text="Generating test signing certificate for Publisher: $(_MsixTestCertSubject)" Importance="high" />
+
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)New-MsixTestCertificate.ps1&quot; -Subject &quot;$(_MsixTestCertSubject)&quot; -OutputPath &quot;$(_MsixTestCertPath)&quot; -Password &quot;$(_MsixTestCertPassword)&quot;" />
+
+    <Message Text="  Test certificate written to $(_MsixTestCertPath)" Importance="normal" />
+  </Target>
+
+  <!-- ============================================================
+       Target: SignMsix (optional)
+       Signs the MSIX when MsixSigningEnabled=true using the SignTool build task.
+       Supports a certificate file, an auto-generated test certificate, RFC 3161
+       timestamping, Azure Code Signing, and Azure Key Vault. When an Azure
+       signing mode is enabled a certificate file is not required.
+       ============================================================ -->
+  <Target Name="SignMsix"
+          DependsOnTargets="ResolveWindowsSdkVersion;GenerateMsixTestCertificate"
+          Condition="'$(_MsixSignReady)' == 'true'">
+    <WinAppSdkGetSdkFileFullPath FileName="signtool.exe" TargetPlatformVersion="$(_MsixResolvedSdkVersion)">
+      <Output TaskParameter="ActualFullFilePath" PropertyName="_SignToolPath" />
+    </WinAppSdkGetSdkFileFullPath>
+
+    <!-- Effective certificate: an explicit certificate file, or the generated test certificate. -->
+    <PropertyGroup>
+      <_MsixSignCertFile>$(MsixCertificatePath)</_MsixSignCertFile>
+      <_MsixSignCertPassword>$(MsixCertificatePassword)</_MsixSignCertPassword>
+      <_MsixSignCertFile Condition="'$(_MsixUseTestCert)' == 'true'">$(_MsixTestCertPath)</_MsixSignCertFile>
+      <_MsixSignCertPassword Condition="'$(_MsixUseTestCert)' == 'true'">$(_MsixTestCertPassword)</_MsixSignCertPassword>
+    </PropertyGroup>
+
+    <Message Text="Signing MSIX: $(_MsixPrimaryPackage)" Importance="high" />
+
+    <!-- Validate the manifest Publisher matches the signing certificate (skipped for Azure modes). -->
+    <ItemGroup Condition="'$(MsixValidateSigningCertificate)' == 'true' AND '$(_MsixSignCertFile)' != '' AND '$(MsixAzureCodeSigningEnabled)' != 'true' AND '$(MsixAzureKeyVaultEnabled)' != 'true'">
+      <_MsixMergedManifest Include="$(MsixLayoutDir)\AppxManifest.xml" />
+    </ItemGroup>
+    <WinAppSdkValidateSigningCertificate
+        Condition="'@(_MsixMergedManifest)' != ''"
+        CertificateFile="$(_MsixSignCertFile)"
+        CertificatePassword="$(_MsixSignCertPassword)" />
+    <WinAppSdkValidatePublisherName
+        Condition="'@(_MsixMergedManifest)' != ''"
+        IsPackageSigningEnabled="true"
+        EnableSigningChecks="true"
+        CertificateFile="$(_MsixSignCertFile)"
+        CertificatePassword="$(_MsixSignCertPassword)"
+        AppxManifest="@(_MsixMergedManifest)" />
+
+    <WinAppSdkSignAppxPackage
+        AppxPackageToSign="$(_MsixPrimaryPackage)"
+        SignAppxPackageExeFullPath="$(_SignToolPath)"
+        CertificateFile="$(_MsixSignCertFile)"
+        CertificatePassword="$(_MsixSignCertPassword)"
+        TempCertificateFilePath="$(IntermediateOutputPath)$(MsixFileName).signing.cer"
+        HashAlgorithmId="$(MsixHashAlgorithmId)"
+        SigningTimestampServerUrl="$(MsixTimestampUrl)"
+        SigningTimestampDigestAlgorithm="$(MsixTimestampDigestAlgorithm)"
+        AzureCodeSigningEnabled="$(MsixAzureCodeSigningEnabled)"
+        AzureCodeSigningDlibFilePath="$(MsixAzureCodeSigningDlibPath)"
+        AzureCodeSigningEndpoint="$(MsixAzureCodeSigningEndpoint)"
+        AzureCodeSigningAccountName="$(MsixAzureCodeSigningAccountName)"
+        AzureCodeSigningCertificateProfileName="$(MsixAzureCodeSigningCertificateProfileName)"
+        AzureKeyVaultEnabled="$(MsixAzureKeyVaultEnabled)"
+        AzureKeyVaultDlibFilePath="$(MsixAzureKeyVaultDlibPath)"
+        AzureKeyVaultUrl="$(MsixAzureKeyVaultUrl)"
+        AzureKeyVaultCertificateId="$(MsixAzureKeyVaultCertificateId)" />
+
+    <!-- The generated test certificate is throwaway; remove it once signing is done. -->
+    <Delete Files="$(_MsixTestCertPath)" Condition="'$(_MsixUseTestCert)' == 'true' AND Exists('$(_MsixTestCertPath)')" />
+
+    <Message Text="MSIX signed successfully" Importance="high" />
+  </Target>
+
+  <!-- ============================================================
+       Target: CleanMsixLayout
+       Removes MSIX build artifacts and unregisters the package on clean.
+       ============================================================ -->
+  <Target Name="CleanMsixLayout" AfterTargets="Clean">
+    <!-- Unregister the package if it was deployed via layout registration -->
+    <Exec Command="powershell -NoProfile -Command &quot;Get-AppxPackage -Name '$(MsixFileName)' -ErrorAction SilentlyContinue | Remove-AppxPackage -ErrorAction SilentlyContinue&quot;"
+          IgnoreExitCode="true"
+          Condition="'$(MsixDeployOnBuild)' == 'true'" />
+    <RemoveDir Directories="$(MsixLayoutDir)" />
+    <Delete Files="$(MsixOutputDir)\$(MsixFileName).msix" Condition="Exists('$(MsixOutputDir)\$(MsixFileName).msix')" />
+    <Message Text="Cleaned MSIX layout and output" Importance="high" />
+  </Target>
+
+  <!-- ============================================================
+       Target: DeployMsixLayout
+       Auto-registers the layout directory during build (deploy-on-build).
+       ============================================================ -->
+  <Target Name="DeployMsixLayout">
+    <Error Text="Layout manifest not found: $(MsixLayoutDir)\AppxManifest.xml"
+           Condition="!Exists('$(MsixLayoutDir)\AppxManifest.xml')" />
+    <Message Text="Registering MSIX layout for dev-loop testing..." Importance="high" />
+    <Exec Command="powershell -NoProfile -Command &quot;Add-AppxPackage -Register '$(MsixLayoutDir)\AppxManifest.xml' -ForceApplicationShutdown&quot;" />
+    <Message Text="  Layout registered — apps are ready to launch" Importance="high" />
+  </Target>
+
+  <!-- ============================================================
+       Target: DeployMsixInstall
+       Auto-installs the built MSIX during build (deploy-on-build).
+       ============================================================ -->
+  <Target Name="DeployMsixInstall">
+    <Error Text="MSIX not found: $(MsixOutputDir)\$(MsixFileName).msix"
+           Condition="!Exists('$(MsixOutputDir)\$(MsixFileName).msix')" />
+    <Message Text="Installing MSIX package..." Importance="high" />
+    <Exec Command="powershell -NoProfile -Command &quot;Add-AppxPackage -Path '$(MsixOutputDir)\$(MsixFileName).msix' -ForceApplicationShutdown&quot;" />
+    <Message Text="  Installed $(MsixFileName).msix" Importance="high" />
+  </Target>
+
+  <!-- ============================================================
+       Target: InstallMsix (opt-in, not in default pipeline)
+       Invoke with: dotnet msbuild -t:InstallMsix
+       ============================================================ -->
+  <Target Name="InstallMsix">
+    <Error Text="MSIX not found: $(MsixOutputDir)\$(MsixFileName).msix. Run a build first."
+           Condition="!Exists('$(MsixOutputDir)\$(MsixFileName).msix')" />
+    <Exec Command="powershell -NoProfile -Command &quot;Add-AppxPackage -Path '$(MsixOutputDir)\$(MsixFileName).msix' -ForceApplicationShutdown&quot;" />
+    <Message Text="Installed $(MsixFileName).msix" Importance="high" />
+  </Target>
+
+  <!-- ============================================================
+       Target: RegisterMsixLayout (opt-in, not in default pipeline)
+       Invoke with: dotnet msbuild -t:RegisterMsixLayout
+       ============================================================ -->
+  <Target Name="RegisterMsixLayout">
+    <Error Text="Layout manifest not found: $(MsixLayoutDir)\AppxManifest.xml. Run a build first."
+           Condition="!Exists('$(MsixLayoutDir)\AppxManifest.xml')" />
+    <Exec Command="powershell -NoProfile -Command &quot;Add-AppxPackage -Register '$(MsixLayoutDir)\AppxManifest.xml'&quot;" />
+    <Message Text="Registered layout from $(MsixLayoutDir)" Importance="high" />
+  </Target>
+
+  <!-- ============================================================
+       Target: UninstallMsix (opt-in, not in default pipeline)
+       Invoke with: dotnet msbuild -t:UninstallMsix
+       ============================================================ -->
+  <Target Name="UninstallMsix">
+    <Exec Command="powershell -NoProfile -Command &quot;Get-AppxPackage -Name '$(MsixFileName)' | Remove-AppxPackage&quot;" />
+    <Message Text="Uninstalled $(MsixFileName)" Importance="high" />
+  </Target>
+
+</Project>

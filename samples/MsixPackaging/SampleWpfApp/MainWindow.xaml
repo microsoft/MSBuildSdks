@@ -1,0 +1,10 @@
+<Window x:Class="SampleWpfApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Sample WPF App" Width="480" Height="240">
+    <Grid>
+        <TextBlock Text="Hello from SampleWpfApp inside an MSIX package!"
+                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                   FontSize="18" TextWrapping="Wrap" />
+    </Grid>
+</Window>
