@@ -1,0 +1,34 @@
+{
+  "properties": {
+    "helpUri": "https://eng.ms/docs/microsoft-security/security/azure-security/cloudai-security-fundamentals-engineering/security-integration/guardian-wiki/microsoft-guardian/general/baselines"
+  },
+  "version": "1.0.0",
+  "baselines": {
+    "default": {
+      "name": "default",
+      "createdDate": "2026-05-29 15:39:08Z",
+      "lastUpdatedDate": "2026-05-29 15:39:08Z"
+    }
+  },
+  "results": {
+    "eea1b928d32ae16d15cd45abb9182fdec5a260ba0fd1117c0e04bf26d107edc7": {
+      "signature": "eea1b928d32ae16d15cd45abb9182fdec5a260ba0fd1117c0e04bf26d107edc7",
+      "alternativeSignatures": [
+        "96a9ecdf5316a69fd242cca8b9fda66747bcb83a04809e1fefef27311ad7a3cb",
+        "00f4eb6d109ebd7f6ebaa30a37e0d44b75d76199baa77981d275e667b0073506",
+        "93c2f550b85641ba8034edf349fcc375528a96b194bf8fa29ba7f920082ab570"
+      ],
+      "target": "src/Cargo/CargoTask.cs",
+      "line": 759,
+      "uriBaseId": "file:///D:/a/_work/1/s/",
+      "memberOf": [
+        "default"
+      ],
+      "tool": "roslynanalyzers",
+      "ruleId": "CA1310",
+      "createdDate": "2026-05-29 15:39:08Z",
+      "expirationDate": "2026-11-15 16:00:42Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2026-05-29 16:00:42Z"
+    }
+  }
+}
