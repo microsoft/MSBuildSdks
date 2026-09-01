@@ -5,7 +5,7 @@
     <!-- Please use caution adding a dependency to MSBuild packages. Use latest for testing and
          use the minimum version for compilation for back compat. -->
     <MicrosoftBuildPackageVersion>18.0.2</MicrosoftBuildPackageVersion>
-    <MicrosoftBuildPackageNet8>17.11.48</MicrosoftBuildPackageNet8>
+    <MicrosoftBuildPackageNet8>18.9.6</MicrosoftBuildPackageNet8>
     <MicrosoftBuildPackageNet9>17.14.28</MicrosoftBuildPackageNet9>
   </PropertyGroup>
 
