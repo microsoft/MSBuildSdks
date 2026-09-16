@@ -207,13 +207,13 @@ namespace Microsoft.Build.UniversalPackages.UnitTests
             IDictionary<string, string>? globalProperties = null)
         {
             var logger = new TestLogger();
-#if NETFRAMEWORK
+#if NET8_0
+            IDictionary<string, string> requestGlobalProperties = globalProperties
+                ?? new Dictionary<string, string>();
+#else
             IDictionary<string, string?> requestGlobalProperties = globalProperties?
                 .ToDictionary(property => property.Key, property => (string?)property.Value)
                 ?? new Dictionary<string, string?>();
-#else
-            IDictionary<string, string> requestGlobalProperties = globalProperties
-                ?? new Dictionary<string, string>();
 #endif
             var request = new BuildRequestData(
                 projectPath,
