@@ -44,7 +44,7 @@
     <PackageVersion Include="Microsoft.Bcl.HashCode" Version="6.0.0" />
   
 
-    <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     
     
     <PackageVersion Include="System.Net.Http" Version="4.3.4" />
