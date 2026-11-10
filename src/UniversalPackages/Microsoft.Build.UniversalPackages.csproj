@@ -2,7 +2,7 @@
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <TargetFrameworks>net8.0;net472</TargetFrameworks>
+    <TargetFrameworks>net10.0;net472</TargetFrameworks>
     <Description>Provides targets for downloading universal packages on restore.</Description>
     <PackageTags>MSBuild MSBuildSdk universalpackages</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
