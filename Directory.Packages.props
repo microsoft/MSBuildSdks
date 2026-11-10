@@ -6,9 +6,10 @@
          use the minimum supported version for compilation for back compat:
            * MSBuild.exe (.NET Framework / netstandard2.0): Visual Studio 2022 17.14 (latest patch)
            * dotnet build (.NET): .NET 10 SDK (10.0.100 shipped MSBuild 18.0) -->
-    <MicrosoftBuildPackageVersion>18.0.2</MicrosoftBuildPackageVersion>
+    <MicrosoftBuildPackageVersion>18.11.0</MicrosoftBuildPackageVersion>
     <MicrosoftBuildPackageNetFramework>17.14.28</MicrosoftBuildPackageNetFramework>
     <MicrosoftBuildPackageNet10>18.0.2</MicrosoftBuildPackageNet10>
+    <MicrosoftBuildPackageNet10Test>18.9.25</MicrosoftBuildPackageNet10Test>
   </PropertyGroup>
 
   <!--
@@ -29,17 +30,32 @@
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildPackageNet10)" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(IsTestProject)' == 'true' Or ('$(TargetFramework)' != 'net472' And '$(TargetFramework)' != 'netstandard2.0' And '$(TargetFramework)' != 'net10.0')">
+  <ItemGroup Condition="'$(IsTestProject)' == 'true' And '$(TargetFramework)' == 'net10.0'">
+    <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildPackageNet10Test)" />
+    <PackageVersion Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildPackageNet10Test)" />
+    <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildPackageNet10Test)" />
+    <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildPackageNet10Test)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="('$(IsTestProject)' == 'true' And '$(TargetFramework)' != 'net10.0') Or ('$(TargetFramework)' != 'net472' And '$(TargetFramework)' != 'netstandard2.0' And '$(TargetFramework)' != 'net10.0')">
     <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" />
     <PackageVersion Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildPackageVersion)" />
     <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildPackageVersion)" />
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildPackageVersion)" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(IsTestProject)' != 'true'">
     <PackageVersion Include="System.Text.Json" Version="9.0.0" />
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.0" />
+    <PackageVersion Include="System.Collections.Immutable" Version="9.0.0" />
     <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
+    <PackageVersion Include="System.Text.Json" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.10" />
+    <PackageVersion Include="System.Collections.Immutable" Version="10.0.10" />
+    <PackageVersion Include="System.Threading.Tasks.Dataflow" Version="10.0.10" />
   </ItemGroup>
   
   <ItemGroup>
@@ -53,7 +69,6 @@
     <PackageVersion Include="System.Net.Http" Version="4.3.4" />
     <PackageVersion Include="System.CodeDom" Version="9.0.0" />
     <PackageVersion Include="Microsoft.Win32.Registry" Version="5.0.0" />
-    <PackageVersion Include="System.Collections.Immutable" Version="9.0.0" />
     <PackageVersion Include="System.Security.Cryptography.Xml" Version="9.0.21" />
     <!--
     
@@ -71,9 +86,9 @@
   <ItemGroup Condition="'$(IsTestProject)' == 'true'">
     <PackageVersion Include="AssemblyShader" Version="1.1.3" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
-    <PackageVersion Include="MSBuild.ProjectCreation" Version="17.0.1" />
+    <PackageVersion Include="MSBuild.ProjectCreation" Version="20.0.0" />
     <PackageVersion Include="Shouldly" Version="4.2.1" />
-    <PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.6.0" />
+    <PackageVersion Include="System.Threading.Tasks.Extensions" Version="4.6.3" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.analyzers" Version="1.25.0" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
