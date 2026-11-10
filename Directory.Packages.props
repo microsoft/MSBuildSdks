@@ -9,7 +9,7 @@
     <MicrosoftBuildPackageVersion>18.11.0</MicrosoftBuildPackageVersion>
     <MicrosoftBuildPackageNetFramework>17.14.28</MicrosoftBuildPackageNetFramework>
     <MicrosoftBuildPackageNet10>18.0.2</MicrosoftBuildPackageNet10>
-    <MicrosoftBuildPackageNet10Test>18.9.25</MicrosoftBuildPackageNet10Test>
+    <MicrosoftBuildPackageNet10Test>18.9.6</MicrosoftBuildPackageNet10Test>
   </PropertyGroup>
 
   <!--
