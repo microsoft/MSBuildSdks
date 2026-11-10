@@ -7,7 +7,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
-    <UniversalPackagesTaskAssembly Condition="'$(UniversalPackagesTaskAssembly)' == '' and '$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)../tools/net8.0/Microsoft.Build.UniversalPackages.dll</UniversalPackagesTaskAssembly>
+    <UniversalPackagesTaskAssembly Condition="'$(UniversalPackagesTaskAssembly)' == '' and '$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)../tools/net10.0/Microsoft.Build.UniversalPackages.dll</UniversalPackagesTaskAssembly>
     <UniversalPackagesTaskAssembly Condition="'$(UniversalPackagesTaskAssembly)' == '' and '$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)../tools/net472/Microsoft.Build.UniversalPackages.dll</UniversalPackagesTaskAssembly>
 
     <!-- Base directory where version(s) of the ArtifactTool are downloaded -->

@@ -1,7 +1,7 @@
 <Project>
   <Import Project="$(MSBuildThisFileDirectory)Sdk.props"/>
   <Import Project="$(MSBuildThisFileDirectory)Sdk.targets"/>
-  <UsingTask TaskName="Microsoft.Build.Cargo.CargoTask" AssemblyFile="$(MSBuildThisFileDirectory)..\build\net8.0\Microsoft.Build.Cargo.dll" Condition="'$(MSBuildRuntimeType)' == 'Core'" />
+  <UsingTask TaskName="Microsoft.Build.Cargo.CargoTask" AssemblyFile="$(MSBuildThisFileDirectory)..\build\net10.0\Microsoft.Build.Cargo.dll" Condition="'$(MSBuildRuntimeType)' == 'Core'" />
   <UsingTask TaskName="Microsoft.Build.Cargo.CargoTask" AssemblyFile="$(MSBuildThisFileDirectory)..\build\net472\Microsoft.Build.Cargo.dll" Condition="'$(MSBuildRuntimeType)' != 'Core'" />
   <Target Name="InstallCargo">
     <CargoTask EnableAuth="$(AuthMode)" StartupProj="$(MSBuildStartupDirectory)" Command="installcargo" RepoRoot="$(RepoRoot)" CargoInstallationRoot="$(CargoInstallationRoot)" MsRustupAuthType="$(MsRustupAuthType)" CargoOutputDir="$(CargoOutputDir)" MsRustupTargets="$(MsRustupTargets)" />

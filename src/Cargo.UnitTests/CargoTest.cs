@@ -108,12 +108,10 @@ namespace Microsoft.Build.Cargo.UnitTests
         {
             ProjectCreator projectA = ProjectCreator.Templates.SdkCsproj(
                     path: Path.Combine(TestRootPath, "ProjectA", "ProjectA.csproj"),
-#if NETFRAMEWORK || NET8_0
-                    targetFramework: "net8.0")
-#elif NET9_0
-                    targetFramework: "net9.0")
-#elif NET10_0
+#if NETFRAMEWORK || NET10_0
                     targetFramework: "net10.0")
+#elif NET11_0
+                    targetFramework: "net11.0")
 #endif
                 .Save();
 
@@ -397,6 +395,12 @@ namespace Microsoft.Build.Cargo.UnitTests
             string outputDirectory = Path.Combine(projectDirectory, "artifacts", "bin", "Release", CargoTargetFramework);
             string publishedPath = Path.Combine(outputDirectory, "native", "rust_lib_external.lib");
             string targetPath = Path.Combine("native", "rust_lib_external.lib");
+            IDictionary<string, string> globalProperties = baseIntermediateOutputPath == null
+                ? null
+                : new Dictionary<string, string>
+                {
+                    ["BaseIntermediateOutputPath"] = baseIntermediateOutputPath,
+                };
 
             Directory.CreateDirectory(Path.GetDirectoryName(intermediatePath));
             File.WriteAllText(sourcePath, "primary output");
@@ -404,12 +408,7 @@ namespace Microsoft.Build.Cargo.UnitTests
 
             ProjectCreator cargoProject = ProjectCreator.Templates.CargoProject(
                     path: projectPath,
-                    globalProperties: baseIntermediateOutputPath == null
-                        ? null
-                        : new Dictionary<string, string>
-                        {
-                            ["BaseIntermediateOutputPath"] = baseIntermediateOutputPath,
-                        })
+                    globalProperties: globalProperties)
                 .Property("Configuration", "Release")
                 .Property("OutputPath", @"artifacts\bin\$(Configuration)")
                 .ItemInclude(
@@ -434,7 +433,7 @@ namespace Microsoft.Build.Cargo.UnitTests
 
             cargoProject
                 .Save()
-                .TryBuild(restore: true, "Build", out bool result, out BuildOutput buildOutput);
+                .TryBuild(restore: true, "Build", globalProperties, out bool result, out BuildOutput buildOutput);
 
             result.ShouldBeTrue(buildOutput.GetConsoleLog());
             File.ReadAllText(publishedPath).ShouldBe("primary output");
