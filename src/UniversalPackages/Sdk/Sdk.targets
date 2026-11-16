@@ -18,7 +18,9 @@
       Cache directory for packages.
       WARNING! Content should not be consumed from this location directly. This property is strictly to configure to internal cache used by ArtifactTool.
     -->
-    <UniversalPackagesCacheDirectory Condition="'$(UniversalPackagesCacheDirectory)' == ''">$(ArtifactToolBasePath)/.cache</UniversalPackagesCacheDirectory>
+    <UniversalPackagesCacheDirectory Condition="'$(UniversalPackagesCacheDirectory)' == '' and '$(NUGET_PACKAGES)' != ''">$(NUGET_PACKAGES)/.upack</UniversalPackagesCacheDirectory>
+    <UniversalPackagesCacheDirectory Condition="'$(UniversalPackagesCacheDirectory)' == '' and $([System.OperatingSystem]::IsWindows())">$(UserProfile)/.nuget/packages/.upack</UniversalPackagesCacheDirectory>
+    <UniversalPackagesCacheDirectory Condition="'$(UniversalPackagesCacheDirectory)' == '' and !$([System.OperatingSystem]::IsWindows())">$(HOME)/.nuget/packages/.upack</UniversalPackagesCacheDirectory>
 
     <!-- Enable interactive auth by default, but not when running in a known build environment. -->
     <UniversalPackagesInteractiveAuth Condition="'$(UniversalPackagesInteractiveAuth)' == '' and '$(TF_BUILD)' != ''">false</UniversalPackagesInteractiveAuth>

@@ -296,20 +296,26 @@ public sealed class DownloadUniversalPackages : Task
             generatedPropsFilePath = Path.GetFullPath(generatedPropsFilePath);
             if (pathProperties.Count > 0)
             {
-                Log.LogMessage(MessageImportance.Normal, $"Generating MSBuild file {generatedPropsFilePath}.");
-                using (StreamWriter generatedPropsFileStreamWriter = new StreamWriter(generatedPropsFilePath))
+                StringBuilder generatedPropsBuilder = new StringBuilder();
+                generatedPropsBuilder.AppendLine("<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"no\"?>");
+                generatedPropsBuilder.AppendLine("<Project>");
+                generatedPropsBuilder.AppendLine("  <PropertyGroup Condition=\" '$(ExcludeRestorePackageImports)' != 'true' \">");
+
+                foreach (KeyValuePair<string, string> pathProperty in pathProperties)
                 {
-                    generatedPropsFileStreamWriter.WriteLine("<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"no\"?>");
-                    generatedPropsFileStreamWriter.WriteLine("<Project>");
-                    generatedPropsFileStreamWriter.WriteLine("  <PropertyGroup Condition=\" '$(ExcludeRestorePackageImports)' != 'true' \">");
+                    generatedPropsBuilder.AppendLine($"    <{pathProperty.Key} Condition=\" '$({pathProperty.Key})' == '' \">{pathProperty.Value}</{pathProperty.Key}>");
+                }
 
-                    foreach (KeyValuePair<string, string> pathProperty in pathProperties)
-                    {
-                        generatedPropsFileStreamWriter.WriteLine($"    <{pathProperty.Key} Condition=\" '$({pathProperty.Key})' == '' \">{pathProperty.Value}</{pathProperty.Key}>");
-                    }
+                generatedPropsBuilder.AppendLine("  </PropertyGroup>");
+                generatedPropsBuilder.AppendLine("</Project>");
 
-                    generatedPropsFileStreamWriter.WriteLine("  </PropertyGroup>");
-                    generatedPropsFileStreamWriter.WriteLine("</Project>");
+                string generatedPropsContent = generatedPropsBuilder.ToString();
+                bool generatedPropsFileChanged = !File.Exists(generatedPropsFilePath)
+                    || !string.Equals(File.ReadAllText(generatedPropsFilePath), generatedPropsContent, StringComparison.Ordinal);
+                if (generatedPropsFileChanged)
+                {
+                    Log.LogMessage(MessageImportance.Normal, $"Generating MSBuild file {generatedPropsFilePath}.");
+                    File.WriteAllText(generatedPropsFilePath, generatedPropsContent);
                 }
             }
             else
