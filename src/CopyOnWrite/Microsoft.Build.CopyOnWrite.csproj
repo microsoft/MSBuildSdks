@@ -24,7 +24,7 @@
                  StrongName="StrongName" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CopyOnWrite"
+    <PackageReference Include="Microsoft.CopyOnWrite"
                       GeneratePathProperty="True"
                       PrivateAssets="All" />
     <!-- Note this is an API dependencies to support a minimum version of MSBuild. -->
@@ -32,6 +32,10 @@
                       PrivateAssets="all"
                       ExcludeAssets="Runtime"
                       IncludeAssets="compile; build; native; contentfiles; analyzers; buildtransitive" />
+    <!-- Registry APIs are provided by the runtime that hosts MSBuild; reference for compilation only. -->
+    <PackageReference Include="Microsoft.Win32.Registry"
+                      PrivateAssets="all"
+                      ExcludeAssets="Runtime" />
   </ItemGroup>
   <Target Name="IncludeReferenceCopyLocalPathsInBuildOutputInPackage"
           BeforeTargets="_GetBuildOutputFilesWithTfm"

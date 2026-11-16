@@ -122,7 +122,7 @@
   <!-- Disables the _CopyFilesMarkedCopyLocal target to not copy references when SkipCopyFilesMarkedCopyLocal is set to true. -->
   <Import Project="DisableCopyFilesMarkedCopyLocal.targets" Condition="'$(SkipCopyFilesMarkedCopyLocal)' == 'true'" />
   <!-- Rust specific targets -->
-  <UsingTask TaskName="Microsoft.Build.Cargo.CargoTask" AssemblyFile="$(MSBuildThisFileDirectory)..\build\net8.0\Microsoft.Build.Cargo.dll" Condition="'$(MSBuildRuntimeType)' == 'Core'" />
+  <UsingTask TaskName="Microsoft.Build.Cargo.CargoTask" AssemblyFile="$(MSBuildThisFileDirectory)..\build\net10.0\Microsoft.Build.Cargo.dll" Condition="'$(MSBuildRuntimeType)' == 'Core'" />
   <UsingTask TaskName="Microsoft.Build.Cargo.CargoTask" AssemblyFile="$(MSBuildThisFileDirectory)..\build\net472\Microsoft.Build.Cargo.dll" Condition="'$(MSBuildRuntimeType)' != 'Core'" />
   <Target Name="InstallCargo" AfterTargets="_CollectRestoreInputs">
     <MSBuild
