@@ -1,4 +1,11 @@
-### Cargo Sdk Prototype
+### Cargo Sdk Prototype - Deprecated
+
+The CargoProj SDK is deprecated and is no longer maintained or supported.
+No further releases or bug fixes will be provided.
+
+The SDK has been removed from the repository's build and release process.
+
+**Microsoft Internal:** Please refer to https://aka.ms/rust for guidance on an internal alternative.
 
 ### Project Setup
 To use this sdk you will need the following:
@@ -96,28 +103,6 @@ To clear the cargo home cache
 ```shell
 msbuild /t:clearcargocache
 ```
-
-### How to test locally
-
-1) After building the cargo build project, a nupkg file will be created in the `bin\Debug` or `bin\Release` folder. A file like `Microsoft.Build.Cargo.<someversionnumber>.nupkg` will be created
-
-2) In repo that contains your rust project(s), update your nuget.config file to point to the Cargo `bin\Debug` or `bin\Release` folder.
-
-```xml
-<packageSources>
-  <add key="local" value="C:\repos\MSBuildSdks\src\Rust\bin\Debug" />
-</packageSources>
- ```
-
- 3) In the repo that contains your rust project, update your `global.json` to include the Sdk. Use the version number from the nupkg file above as the sdk version.
-```json
-  "msbuild-sdks": {
-   ...,
-   "Microsoft.Build.Cargo": "<someversionnumber>"
-   }
-```
- 4) Once you run `msbuild /restore` in your rust project, the Cargo sdk will be restored from the local nuget source. You can now use the sdk locally.
-
 
  ### Using MSRustup (Microsoft internal use only)
  To enable use of MSRustup, you will need to have a rust-toolchain.toml at the root of your repo. The toml file should include a channel specifier that has "ms-" as a prefix, followed by the channel version.
